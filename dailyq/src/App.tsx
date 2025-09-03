@@ -1,17 +1,21 @@
-import { useState } from 'react'
+import { ThemeProvider } from '@emotion/react';
+import { useState } from 'react';
+import { theme } from './styles/theme';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   return (
-    <div className="App">
-      <h1>DailyQ 프로젝트</h1>
-      <p>협업을 위한 깔끔한 시작점입니다.</p>
-      <button onClick={() => setCount(count + 1)}>
-        카운트: {count}
-      </button>
-    </div>
-  )
+    <ThemeProvider theme={theme}>
+      <div className="App">
+        <h1>DailyQ 프로젝트</h1>
+        <p>협업을 위한 깔끔한 시작점입니다.</p>
+        <button onClick={() => setCount(count + 1)}>카운트: {count}</button>
+      </div>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
+
+
