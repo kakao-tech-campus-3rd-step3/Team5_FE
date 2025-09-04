@@ -24,6 +24,37 @@ const MainTitle = styled.h1`
   margin: 0;
 `;
 
+const PremiumCard = styled.div`
+  background-color: #E98B8B;
+  border: 2px solid #6699FF;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 16px;
+  text-align: center;
+`;
+
+const PremiumTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px 0;
+`;
+
+const PremiumDescription = styled.p`
+  font-size: 14px;
+  color: white;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+`;
+
+const PremiumPrice = styled.div`
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+`;
+
 const SubscribePage: React.FC = () => {
   return (
     <Container>
@@ -33,6 +64,14 @@ const SubscribePage: React.FC = () => {
           구독 후 자유롭게 이용하세요.
         </MainTitle>
       </HeaderSection>
+      
+      <PremiumCard>
+        <PremiumTitle>Premium 요금제</PremiumTitle>
+        <PremiumDescription>
+          당신만을 위한 AI 면접 도우미를 자유롭게 활용하세요.
+        </PremiumDescription>
+        <PremiumPrice>매달 ₩ 15,900</PremiumPrice>
+      </PremiumCard>
     </Container>
   );
 };
