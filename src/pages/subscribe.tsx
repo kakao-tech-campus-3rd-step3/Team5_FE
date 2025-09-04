@@ -90,6 +90,28 @@ const BenefitsPrice = styled.div`
   color: white;
 `;
 
+const SubscribeButton = styled.button`
+  background-color: #333333;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: 700;
+  width: 100%;
+  max-width: 320px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: #444444;
+  }
+  
+  &:active {
+    background-color: #222222;
+  }
+`;
+
 const SubscribePage: React.FC = () => {
   return (
     <Container>
@@ -116,6 +138,10 @@ const SubscribePage: React.FC = () => {
         </BenefitsList>
         <BenefitsPrice>매달 ₩15,900</BenefitsPrice>
       </BenefitsCard>
+      
+      <SubscribeButton>
+        구독하기
+      </SubscribeButton>
     </Container>
   );
 };
