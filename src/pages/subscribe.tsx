@@ -55,6 +55,41 @@ const PremiumPrice = styled.div`
   color: white;
 `;
 
+const BenefitsCard = styled.div`
+  background-color: #E98B8B;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 24px;
+  text-align: center;
+`;
+
+const BenefitsTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 16px 0;
+`;
+
+const BenefitsList = styled.div`
+  text-align: left;
+  margin-bottom: 16px;
+`;
+
+const BenefitItem = styled.div`
+  font-size: 14px;
+  color: white;
+  margin-bottom: 8px;
+  line-height: 1.4;
+`;
+
+const BenefitsPrice = styled.div`
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+`;
+
 const SubscribePage: React.FC = () => {
   return (
     <Container>
@@ -72,6 +107,15 @@ const SubscribePage: React.FC = () => {
         </PremiumDescription>
         <PremiumPrice>매달 ₩ 15,900</PremiumPrice>
       </PremiumCard>
+      
+      <BenefitsCard>
+        <BenefitsTitle>Premium 혜택</BenefitsTitle>
+        <BenefitsList>
+          <BenefitItem>• 일일 질문 한도 추가</BenefitItem>
+          <BenefitItem>• 자소서 기반 맞춤 질문 생성</BenefitItem>
+        </BenefitsList>
+        <BenefitsPrice>매달 ₩15,900</BenefitsPrice>
+      </BenefitsCard>
     </Container>
   );
 };
