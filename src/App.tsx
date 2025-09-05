@@ -1,7 +1,7 @@
 import { ThemeProvider } from '@emotion/react';
 import { useState } from 'react';
 import { theme } from './styles/theme';
-import TodayQuestion from './pages/FeedbackPage'; 
+import FeedbackPage from './pages/FeedbackPage'; 
 function App() {
   const [count, setCount] = useState(0);
 
@@ -12,7 +12,7 @@ function App() {
         <p>협업을 위한 깔끔한 시작점입니다.</p>
         <button onClick={() => setCount(count + 1)}>카운트: {count}</button>
       </div> */}
-      <TodayQuestion />
+      <FeedbackPage />
     </ThemeProvider>
   );
 }
