@@ -12,10 +12,10 @@ interface Props {
 export const makePolygon = ({ ctx, width, height, state }: Props) => {
   if (!ctx) return;
   let x = width / 2;
-  let y = height / 1.5;
-  let radius = height / 3.5;
-  let ratio = 1.5;
-  let sides = 9; // 질문 추가 시 ++
+  let y = height / 0.7;
+  let radius = height / 1.1;
+  let ratio = 35;
+  let sides = 10; // 질문 추가 시 ++
 
   ctx.save();
 
@@ -36,8 +36,8 @@ export const makePolygon = ({ ctx, width, height, state }: Props) => {
     ctx.fillStyle = 'coral';
     ctx.beginPath();
 
-    const w = 50 * ratio;
-    const h = 40 * ratio;
+    const w = 4 * ratio;
+    const h = 5 * ratio;
     ctx.roundRect(-w / 2, -h / 2, w, h, 12);
     ctx.fill();
 

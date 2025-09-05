@@ -1,15 +1,13 @@
-import { useEffect, useState, type RefObject } from 'react';
-import { onDown, onMove, onUp } from '../utils/eventHandlers';
+import { useEffect, type RefObject } from 'react';
+
 import { makePolygon } from '../utils/makePolygon';
+import { onDown, onMove, onUp } from '../utils/eventHandlers';
 
 interface Props {
   canvasRef: RefObject<HTMLCanvasElement | null>;
 }
 
 const useCanvas = ({ canvasRef }: Props) => {
-  const [width, setWidth] = useState(window.innerWidth);
-  const [height, setHeight] = useState(window.innerHeight);
-
   useEffect(() => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -22,13 +20,20 @@ const useCanvas = ({ canvasRef }: Props) => {
       rotate: 0,
     };
 
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+
     const resize = () => {
+      if (!ctx) return;
       const pixelRatio = window.devicePixelRatio > 1 ? 2 : 1;
-      setWidth(window.innerWidth);
-      setHeight(window.innerHeight);
+      width = window.innerWidth;
+      height = window.innerHeight * 0.5;
       canvas.width = width * pixelRatio;
       canvas.height = height * pixelRatio;
-      ctx?.scale(pixelRatio, pixelRatio);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      ctx.scale(pixelRatio, pixelRatio);
     };
 
     const animate = () => {
