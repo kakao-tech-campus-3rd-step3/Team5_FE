@@ -16,23 +16,88 @@ interface TopicGroupData {
 
 const goodPointsData = {
   title: '좋은 점',
-  content: [{
-    topic: '주제1',
-    points: ['내용', '내용'],
-  },
-  {
-    topic: '주제2',
-    points: ['내용', '내용'],
-  }],
+  content: [
+    {
+      topic: '주제1',
+      points: ['내용', '내용'],
+    },
+    {
+      topic: '주제2',
+      points: ['내용', '내용'],
+    },
+  ],
 };
 
 const improvementPointsData = {
   title: '개선할 수 있는 점',
-  content: [{
-    topic: '주제1',
-    points: ['내용', '내용'],
-  }],
+  content: [
+    {
+      topic: '주제1',
+      points: ['내용', '내용'],
+    },
+  ],
 };
+
+const FeedbackPage = () => {
+  return (
+    <PageLayout>
+      <SectionContainer>
+        <Title>오늘의 질문</Title>
+        <QuestionCard>
+          <QuestionText>{questionData.text}</QuestionText>
+        </QuestionCard>
+      </SectionContainer>
+
+      <SectionContainer>
+        <Title>나의 답변</Title>
+        <CardWrapper>
+          {answerData.content.map((paragraph, index) => (
+            <CardParagraph key={index}>{paragraph}</CardParagraph>
+          ))}
+        </CardWrapper>
+      </SectionContainer>
+
+      <SectionContainer>
+        <Title>AI 피드백</Title>
+
+        <CardWrapper>
+          <CardTitle>{goodPointsData.title}</CardTitle>
+          <CardList>
+            {goodPointsData.content.map((group: TopicGroupData, index: number) => (
+              <TopicGroup key={index}>
+                <TopicTitle>{group.topic}</TopicTitle>
+                <CardList>
+                  {group.points.map((point: string, pointIndex: number) => (
+                    <CardListItem key={pointIndex}>{point}</CardListItem>
+                  ))}
+                </CardList>
+              </TopicGroup>
+            ))}
+          </CardList>
+        </CardWrapper>
+      </SectionContainer>
+      <SectionContainer>
+        <CardWrapper>
+          <CardTitle>{improvementPointsData.title}</CardTitle>
+          <CardList>
+            {improvementPointsData.content.map((group: TopicGroupData, index: number) => (
+              <TopicGroup key={index}>
+                <TopicTitle>{group.topic}</TopicTitle>
+                <CardList>
+                  {group.points.map((point: string, pointIndex: number) => (
+                    <CardListItem key={pointIndex}>{point}</CardListItem>
+                  ))}
+                </CardList>
+              </TopicGroup>
+            ))}
+          </CardList>
+        </CardWrapper>
+      </SectionContainer>
+    </PageLayout>
+  );
+};
+
+export default FeedbackPage;
 
 const SectionContainer = styled.section`
   background-color: #ffffff;
@@ -124,64 +189,3 @@ const TopicTitle = styled.h4`
   color: #333;
   margin-bottom: 8px;
 `;
-
-const FeedbackPage = () => {
-  return (
-    <PageLayout>
-      <SectionContainer>
-        <Title>오늘의 질문</Title>
-        <QuestionCard>
-          <QuestionText>{questionData.text}</QuestionText>
-        </QuestionCard>
-      </SectionContainer>
-
-      <SectionContainer>
-        <Title>나의 답변</Title>
-        <CardWrapper>
-          {answerData.content.map((paragraph, index) => (
-            <CardParagraph key={index}>{paragraph}</CardParagraph>
-          ))}
-        </CardWrapper>
-      </SectionContainer>
-
-      <SectionContainer>
-        <Title>AI 피드백</Title>
-
-        <CardWrapper>
-          <CardTitle>{goodPointsData.title}</CardTitle>
-          <CardList>
-            {goodPointsData.content.map((group: TopicGroupData, index: number) => (
-              <TopicGroup key={index}>
-                <TopicTitle>{group.topic}</TopicTitle>
-                <CardList>
-                  {group.points.map((point: string, pointIndex: number) => (
-                    <CardListItem key={pointIndex}>{point}</CardListItem>
-                  ))}
-                </CardList>
-              </TopicGroup>
-            ))}
-          </CardList>
-        </CardWrapper>
-      </SectionContainer>
-      <SectionContainer>
-        <CardWrapper>
-          <CardTitle>{improvementPointsData.title}</CardTitle>
-          <CardList>
-            {improvementPointsData.content.map((group: TopicGroupData, index: number) => (
-              <TopicGroup key={index}>
-                <TopicTitle>{group.topic}</TopicTitle>
-                <CardList>
-                  {group.points.map((point: string, pointIndex: number) => (
-                    <CardListItem key={pointIndex}>{point}</CardListItem>
-                  ))}
-                </CardList>
-              </TopicGroup>
-            ))}
-          </CardList>
-        </CardWrapper>
-      </SectionContainer>
-    </PageLayout>
-  );
-};
-
-export default FeedbackPage;

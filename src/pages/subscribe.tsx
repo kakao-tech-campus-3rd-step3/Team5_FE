@@ -1,9 +1,57 @@
 import React from 'react';
 import styled from '@emotion/styled';
 
+const SubscribePage: React.FC = () => {
+  return (
+    <Container>
+      <HeaderSection>
+        <MainTitle>
+          더 많은 질문을 원하시나요?
+          <br />
+          구독 후 자유롭게 이용하세요.
+        </MainTitle>
+      </HeaderSection>
+
+      <PremiumCard>
+        <PremiumTitle>Premium 요금제</PremiumTitle>
+        <PremiumDescription>당신만을 위한 AI 면접 도우미를 자유롭게 활용하세요.</PremiumDescription>
+        <PremiumPrice>매달 ₩ 15,900</PremiumPrice>
+      </PremiumCard>
+
+      <BenefitsCard>
+        <BenefitsTitle>Premium 혜택</BenefitsTitle>
+        <BenefitsList>
+          <BenefitItem>• 일일 질문 한도 추가</BenefitItem>
+          <BenefitItem>• 자소서 기반 맞춤 질문 생성</BenefitItem>
+        </BenefitsList>
+        <BenefitsPrice>매달 ₩15,900</BenefitsPrice>
+      </BenefitsCard>
+
+      <SubscribeButton>구독하기</SubscribeButton>
+
+      <BottomNavigation>
+        <NavItem>
+          <HomeIcon />
+        </NavItem>
+        <NavItem>
+          <SearchIcon />
+        </NavItem>
+        <NavItem>
+          <DownloadIcon />
+        </NavItem>
+        <NavItem>
+          <ProfileIcon />
+        </NavItem>
+      </BottomNavigation>
+    </Container>
+  );
+};
+
+export default SubscribePage;
+
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(180deg, #F5F5DC 0%, #F0E68C 100%);
+  background: linear-gradient(180deg, #f5f5dc 0%, #f0e68c 100%);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -25,8 +73,8 @@ const MainTitle = styled.h1`
 `;
 
 const PremiumCard = styled.div`
-  background-color: #E98B8B;
-  border: 2px solid #6699FF;
+  background-color: #e98b8b;
+  border: 2px solid #6699ff;
   border-radius: 16px;
   padding: 24px;
   width: 100%;
@@ -56,7 +104,7 @@ const PremiumPrice = styled.div`
 `;
 
 const BenefitsCard = styled.div`
-  background-color: #E98B8B;
+  background-color: #e98b8b;
   border-radius: 16px;
   padding: 24px;
   width: 100%;
@@ -103,11 +151,11 @@ const SubscribeButton = styled.button`
   cursor: pointer;
   transition: background-color 0.2s ease;
   margin-bottom: 80px;
-  
+
   &:hover {
     background-color: #444444;
   }
-  
+
   &:active {
     background-color: #222222;
   }
@@ -118,12 +166,12 @@ const BottomNavigation = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #F5F5DC;
+  background-color: #f5f5dc;
   padding: 12px 0;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  border-top: 1px solid #E0E0E0;
+  border-top: 1px solid #e0e0e0;
 `;
 
 const NavItem = styled.div`
@@ -133,7 +181,7 @@ const NavItem = styled.div`
   cursor: pointer;
   padding: 8px;
   transition: opacity 0.2s ease;
-  
+
   &:hover {
     opacity: 0.7;
   }
@@ -145,7 +193,7 @@ const NavIcon = styled.div`
   background-color: #333;
   margin-bottom: 4px;
   border-radius: 2px;
-  
+
   /* 아이콘을 간단한 도형으로 표현 */
   &:nth-of-type(1) {
     /* 홈 아이콘 - 집 모양 */
@@ -160,7 +208,7 @@ const HomeIcon = styled.div`
   margin-bottom: 4px;
   border-radius: 2px;
   position: relative;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -172,7 +220,7 @@ const HomeIcon = styled.div`
     border-bottom: none;
     border-radius: 2px 2px 0 0;
   }
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -191,7 +239,7 @@ const SearchIcon = styled.div`
   margin-bottom: 4px;
   border-radius: 50%;
   position: relative;
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -211,7 +259,7 @@ const DownloadIcon = styled.div`
   margin-bottom: 4px;
   border-radius: 2px;
   position: relative;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -219,9 +267,9 @@ const DownloadIcon = styled.div`
     left: 6px;
     right: 6px;
     height: 2px;
-    background-color: #F5F5DC;
+    background-color: #f5f5dc;
   }
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -229,7 +277,7 @@ const DownloadIcon = styled.div`
     left: 10px;
     width: 4px;
     height: 4px;
-    background-color: #F5F5DC;
+    background-color: #f5f5dc;
     border-radius: 50%;
   }
 `;
@@ -241,7 +289,7 @@ const ProfileIcon = styled.div`
   margin-bottom: 4px;
   border-radius: 50%;
   position: relative;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -249,10 +297,10 @@ const ProfileIcon = styled.div`
     left: 6px;
     right: 6px;
     height: 8px;
-    background-color: #F5F5DC;
+    background-color: #f5f5dc;
     border-radius: 4px 4px 0 0;
   }
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -260,58 +308,7 @@ const ProfileIcon = styled.div`
     left: 8px;
     right: 8px;
     height: 6px;
-    background-color: #F5F5DC;
+    background-color: #f5f5dc;
     border-radius: 0 0 3px 3px;
   }
 `;
-
-const SubscribePage: React.FC = () => {
-  return (
-    <Container>
-      <HeaderSection>
-        <MainTitle>
-          더 많은 질문을 원하시나요?<br />
-          구독 후 자유롭게 이용하세요.
-        </MainTitle>
-      </HeaderSection>
-      
-      <PremiumCard>
-        <PremiumTitle>Premium 요금제</PremiumTitle>
-        <PremiumDescription>
-          당신만을 위한 AI 면접 도우미를 자유롭게 활용하세요.
-        </PremiumDescription>
-        <PremiumPrice>매달 ₩ 15,900</PremiumPrice>
-      </PremiumCard>
-      
-      <BenefitsCard>
-        <BenefitsTitle>Premium 혜택</BenefitsTitle>
-        <BenefitsList>
-          <BenefitItem>• 일일 질문 한도 추가</BenefitItem>
-          <BenefitItem>• 자소서 기반 맞춤 질문 생성</BenefitItem>
-        </BenefitsList>
-        <BenefitsPrice>매달 ₩15,900</BenefitsPrice>
-      </BenefitsCard>
-      
-      <SubscribeButton>
-        구독하기
-      </SubscribeButton>
-      
-      <BottomNavigation>
-        <NavItem>
-          <HomeIcon />
-        </NavItem>
-        <NavItem>
-          <SearchIcon />
-        </NavItem>
-        <NavItem>
-          <DownloadIcon />
-        </NavItem>
-        <NavItem>
-          <ProfileIcon />
-        </NavItem>
-      </BottomNavigation>
-    </Container>
-  );
-};
-
-export default SubscribePage;
