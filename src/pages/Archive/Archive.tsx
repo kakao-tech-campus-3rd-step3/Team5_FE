@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import { useRef } from 'react';
 import useCanvas from './hooks/useCanvas';
 
-const Archive = () => {
+const ArchivePage = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useCanvas({ canvasRef });
 
@@ -22,7 +22,7 @@ const Archive = () => {
   );
 };
 
-export default Archive;
+export default ArchivePage;
 
 const Wrapper = styled.div`
   position: relative;

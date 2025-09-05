@@ -1,7 +1,7 @@
 import { ThemeProvider } from '@emotion/react';
 import { useState } from 'react';
 import { theme } from './styles/theme';
-import FeedbackPage from './pages/FeedbackPage'; 
+import FeedbackPage from './pages/Feedback'; 
 function App() {
   const [count, setCount] = useState(0);
 
