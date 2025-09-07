@@ -1,14 +1,26 @@
 import styled from '@emotion/styled';
 import Description from './components/Description';
-import PinnedItems from './components/PinnedItems';
+import PinnedQuestionList from './components/PinnedQuestionList';
+import QuestionList from './components/QuestionList';
+import useSectionScroll from './hooks/useSectionScroll';
 
 const ArchivePage = () => {
+  const {
+    refs: { sectionFirstRef, sectionSecondRef },
+    handlers: { handleDownClick, handleUpClick },
+  } = useSectionScroll();
   return (
     <Wrapper>
-      <SectionFirst>
+      <SectionFirst ref={sectionFirstRef}>
         <Description />
-        <PinnedItems />
+        <ScrollDownButton onClick={handleDownClick}>Down</ScrollDownButton>
+        <PinnedQuestionList />
       </SectionFirst>
+
+      <SectionSecond ref={sectionSecondRef}>
+        <QuestionList />
+        <ScrollUpButton onClick={handleUpClick}>Up</ScrollUpButton>
+      </SectionSecond>
     </Wrapper>
   );
 };
@@ -38,3 +50,18 @@ const SectionFirst = styled.section`
     rgba(255, 200, 44, 0.3) 100%
   );
 `;
+
+const SectionSecond = styled.section`
+  height: 100vh;
+  scroll-snap-align: start;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #ff6d6d;
+`;
+
+const ScrollDownButton = styled.button``;
+
+const ScrollUpButton = styled.button``;

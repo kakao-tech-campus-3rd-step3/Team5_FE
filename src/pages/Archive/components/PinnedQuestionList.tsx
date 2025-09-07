@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import usePolygonAnimation from '../hooks/usePolygonAnimation';
 import { pinnedDatas } from '../datas/pinnedDatas';
 
-const PinnedItems = () => {
+const PinnedQuestionList = () => {
   const { pinnedItemWrapperRef, pinnedItemRefs } = usePolygonAnimation();
   return (
     <PinnedItemWrapper ref={pinnedItemWrapperRef}>
@@ -20,7 +20,7 @@ const PinnedItems = () => {
   );
 };
 
-export default PinnedItems;
+export default PinnedQuestionList;
 
 const PinnedItemWrapper = styled.div`
   position: absolute;
