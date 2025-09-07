@@ -13,7 +13,7 @@ const PinnedQuestionList = () => {
             pinnedItemRefs.current[i] = pinnedItemRef;
           }}
         >
-          {data.question}
+          <ItemText>{data.question}</ItemText>
         </PinnedItem>
       ))}
     </PinnedItemWrapper>
@@ -28,8 +28,17 @@ const PinnedItemWrapper = styled.div`
 
 const PinnedItem = styled.div`
   position: absolute;
-  width: 100px;
-  height: 200px;
+  width: 140px;
+  height: 230px;
   background: rgba(255, 99, 71, 1);
   border-radius: 12px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ItemText = styled.div`
+  font-weight: 700;
+  transform: rotate(90deg);
 `;
