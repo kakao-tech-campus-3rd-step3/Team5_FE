@@ -1,48 +1,38 @@
+import type { RefObject } from 'react';
 import type { State } from '../types';
 
 const PI2 = Math.PI * 2;
 
 interface Props {
-  ctx: CanvasRenderingContext2D | null;
-  width: number;
-  height: number;
   state: State;
+  pinnedItemRefs: RefObject<HTMLDivElement[] | null>;
+  pinnedItemWrapperRef: RefObject<HTMLDivElement | null>;
 }
 
-export const makePolygon = ({ ctx, width, height, state }: Props) => {
-  if (!ctx) return;
-  let x = width / 2;
-  let y = height / 0.7;
-  let radius = height / 1.1;
-  let ratio = 35;
-  let sides = 10; // 질문 추가 시 ++
+export const makePolygon = ({ state, pinnedItemRefs, pinnedItemWrapperRef }: Props) => {
+  const pinnedItems = pinnedItemRefs.current;
+  const pinnedItemWrapper = pinnedItemWrapperRef.current;
+  if (!pinnedItemWrapper || !pinnedItems) return;
 
-  ctx.save();
-
+  const width = window.innerWidth;
+  const height = window.innerHeight * 0.5;
+  const x = width * 0;
+  const y = height * 1.4;
+  const radius = height * 0.6;
+  const sides = pinnedItems.length;
   const angle = PI2 / sides;
+  state.rotate += state.moveX * 0.006;
+  state.moveX *= 0.92;
 
-  ctx.translate(x, y);
-  state.rotate += state.moveX * 0.008;
-  ctx.rotate(state.rotate);
+  pinnedItemWrapper.style.transform = `translate(${x}px, ${y}px) rotate(${state.rotate}rad)`;
 
-  for (let i = 0; i < sides; i++) {
+  pinnedItems.forEach((pinnedItem, i) => {
     const px = radius * Math.cos(angle * i);
     const py = radius * Math.sin(angle * i);
+    const itemRotation = angle * i;
 
-    ctx.save();
-    ctx.translate(px, py);
-    ctx.rotate(angle * i);
-
-    ctx.fillStyle = 'coral';
-    ctx.beginPath();
-
-    const w = 4 * ratio;
-    const h = 5 * ratio;
-    ctx.roundRect(-w / 2, -h / 2, w, h, 12);
-    ctx.fill();
-
-    ctx.closePath();
-    ctx.restore();
-  }
-  ctx.restore();
+    pinnedItem.style.left = `${px}px`;
+    pinnedItem.style.top = `${py}px`;
+    pinnedItem.style.transform = `translate(-50%, -50%) rotate(${itemRotation}rad)`;
+  });
 };

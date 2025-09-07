@@ -1,32 +1,64 @@
 import styled from '@emotion/styled';
-import { useRef } from 'react';
-import useCanvas from './hooks/useCanvas';
+import usePolygonAnimation from './hooks/usePolygonAnimation';
+import { pinnedDatas } from './datas/pinnedDatas';
 
 const ArchivePage = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  useCanvas({ canvasRef });
+  const { pinnedItemWrapperRef, pinnedItemRefs } = usePolygonAnimation();
 
   return (
     <Wrapper>
-      <DescriptionWrapper>
-        <Title>나의 아카이브</Title>
-        <SubTitle>겹겹이 쌓인 당신의 노력을 확인하세요!</SubTitle>
-      </DescriptionWrapper>
+      <SectionFirst>
+        <DescriptionWrapper>
+          <Title>나의 아카이브</Title>
+          <SubTitle>겹겹이 쌓인 당신의 노력을 확인하세요!</SubTitle>
+          <Pinned>
+            <SubTitle>Pinned</SubTitle>
+          </Pinned>
+        </DescriptionWrapper>
 
-      <Pinned>
-        <SubTitle>Pinned</SubTitle>
-      </Pinned>
-
-      <Canvas ref={canvasRef} />
+        <PinnedItemWrapper ref={pinnedItemWrapperRef}>
+          {pinnedDatas.map((data, i) => (
+            <PinnedItem
+              key={data.id}
+              ref={(pinnedItemRef: HTMLDivElement) => {
+                pinnedItemRefs.current[i] = pinnedItemRef;
+              }}
+            >
+              {data.question}
+            </PinnedItem>
+          ))}
+        </PinnedItemWrapper>
+      </SectionFirst>
     </Wrapper>
   );
 };
 
 export default ArchivePage;
 
+const PinnedItem = styled.div`
+  position: absolute;
+  width: 100px;
+  height: 200px;
+  background: rgba(255, 99, 71, 1);
+  border-radius: 12px;
+`;
+
 const Wrapper = styled.div`
+  overflow: hidden;
+  height: 100vh;
+`;
+
+const SectionFirst = styled.section`
   position: relative;
   overflow: hidden;
+  height: 100vh;
+  scroll-snap-align: start;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
   background: linear-gradient(
     180deg,
     rgba(247, 151, 30, 0.3) 14.9%,
@@ -43,25 +75,22 @@ const DescriptionWrapper = styled.div`
   justify-content: center;
 `;
 
+const PinnedItemWrapper = styled.div`
+  position: absolute;
+`;
+
 const Title = styled.h1`
-  font-size: 2rem;
+  font-size: 3rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 `;
 
-const SubTitle = styled.h1`
-  font-size: 1.1rem;
+const SubTitle = styled.h2`
+  font-size: 1.2rem;
   font-weight: 700;
-`;
-
-const Canvas = styled.canvas`
-  background-color: transparent;
 `;
 
 const Pinned = styled.div`
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
   justify-content: center;
   align-items: center;
