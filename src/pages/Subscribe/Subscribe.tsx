@@ -1,7 +1,13 @@
 import React from 'react';
 import styled from '@emotion/styled';
 
+// 통화 포맷팅 유틸리티 함수
+const formatCurrency = (amount: number): string => {
+  return amount.toLocaleString('ko-KR');
+};
+
 const SubscribePage: React.FC = () => {
+  const monthlyPrice = 15900;
   return (
     <Container>
       <HeaderSection>
@@ -15,7 +21,7 @@ const SubscribePage: React.FC = () => {
       <PremiumCard>
         <PremiumTitle>Premium 요금제</PremiumTitle>
         <PremiumDescription>당신만을 위한 AI 면접 도우미를 자유롭게 활용하세요.</PremiumDescription>
-        <PremiumPrice>매달 ₩ 15,900</PremiumPrice>
+        <PremiumPrice>매달 ₩{formatCurrency(monthlyPrice)}</PremiumPrice>
       </PremiumCard>
 
       <BenefitsCard>
@@ -24,7 +30,7 @@ const SubscribePage: React.FC = () => {
           <BenefitItem>• 일일 질문 한도 추가</BenefitItem>
           <BenefitItem>• 자소서 기반 맞춤 질문 생성</BenefitItem>
         </BenefitsList>
-        <BenefitsPrice>매달 ₩15,900</BenefitsPrice>
+        <BenefitsPrice>매달 ₩{formatCurrency(monthlyPrice)}</BenefitsPrice>
       </BenefitsCard>
 
       <SubscribeButton>구독하기</SubscribeButton>
