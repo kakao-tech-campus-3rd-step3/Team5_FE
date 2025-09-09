@@ -1,23 +1,26 @@
 import styled from '@emotion/styled';
-import { useRef } from 'react';
-import useCanvas from './hooks/useCanvas';
+import Description from './components/Description';
+import PinnedQuestionList from './components/PinnedQuestionList';
+import QuestionList from './components/QuestionList';
+import useSectionScroll from './hooks/useSectionScroll';
 
 const ArchivePage = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  useCanvas({ canvasRef });
-
+  const {
+    refs: { sectionFirstRef, sectionSecondRef },
+    handlers: { handleDownClick, handleUpClick },
+  } = useSectionScroll();
   return (
     <Wrapper>
-      <DescriptionWrapper>
-        <Title>나의 아카이브</Title>
-        <SubTitle>겹겹이 쌓인 당신의 노력을 확인하세요!</SubTitle>
-      </DescriptionWrapper>
+      <SectionFirst ref={sectionFirstRef}>
+        <Description />
+        <ScrollDownButton onClick={handleDownClick}>Down</ScrollDownButton>
+        <PinnedQuestionList />
+      </SectionFirst>
 
-      <Pinned>
-        <SubTitle>Pinned</SubTitle>
-      </Pinned>
-
-      <Canvas ref={canvasRef} />
+      <SectionSecond ref={sectionSecondRef}>
+        <QuestionList />
+        <ScrollUpButton onClick={handleUpClick}>Up</ScrollUpButton>
+      </SectionSecond>
     </Wrapper>
   );
 };
@@ -25,8 +28,21 @@ const ArchivePage = () => {
 export default ArchivePage;
 
 const Wrapper = styled.div`
+  overflow: hidden;
+  height: 100vh;
+`;
+
+const SectionFirst = styled.section`
   position: relative;
   overflow: hidden;
+  height: 100vh;
+  scroll-snap-align: start;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
   background: linear-gradient(
     180deg,
     rgba(247, 151, 30, 0.3) 14.9%,
@@ -35,39 +51,17 @@ const Wrapper = styled.div`
   );
 `;
 
-const DescriptionWrapper = styled.div`
-  height: 50vh;
+const SectionSecond = styled.section`
+  height: 100vh;
+  scroll-snap-align: start;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background-color: #ff6d6d;
 `;
 
-const Title = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-`;
+const ScrollDownButton = styled.button``;
 
-const SubTitle = styled.h1`
-  font-size: 1.1rem;
-  font-weight: 700;
-`;
-
-const Canvas = styled.canvas`
-  background-color: transparent;
-`;
-
-const Pinned = styled.div`
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  height: 28px;
-  padding: 0 22px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 1000px;
-`;
+const ScrollUpButton = styled.button``;
