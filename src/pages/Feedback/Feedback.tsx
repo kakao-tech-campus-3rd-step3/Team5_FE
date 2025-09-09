@@ -97,8 +97,6 @@ const FeedbackPage = () => {
   );
 };
 
-export default FeedbackPage;
-
 const SectionContainer = styled.section`
   background-color: #ffffff;
   padding: 40px 20px;
@@ -189,3 +187,5 @@ const TopicTitle = styled.h4`
   color: #333;
   margin-bottom: 8px;
 `;
+
+export default FeedbackPage;
