@@ -27,8 +27,8 @@ const SubscribePage: React.FC = () => {
       <BenefitsCard>
         <BenefitsTitle>Premium 혜택</BenefitsTitle>
         <BenefitsList>
-          <BenefitItem>• 일일 질문 한도 추가</BenefitItem>
-          <BenefitItem>• 자소서 기반 맞춤 질문 생성</BenefitItem>
+          <BenefitItem>일일 질문 한도 추가</BenefitItem>
+          <BenefitItem>자소서 기반 맞춤 질문 생성</BenefitItem>
         </BenefitsList>
         <BenefitsPrice>매달 ₩{formatCurrency(monthlyPrice)}</BenefitsPrice>
       </BenefitsCard>
@@ -126,12 +126,14 @@ const BenefitsTitle = styled.h2`
   margin: 0 0 16px 0;
 `;
 
-const BenefitsList = styled.div`
+const BenefitsList = styled.ul`
   text-align: left;
   margin-bottom: 16px;
+  padding-left: 20px;
+  list-style-type: disc;
 `;
 
-const BenefitItem = styled.div`
+const BenefitItem = styled.li`
   font-size: 14px;
   color: white;
   margin-bottom: 8px;
