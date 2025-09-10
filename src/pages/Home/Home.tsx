@@ -8,40 +8,27 @@ const HomePage = () => {
     setIsTextMode(!isTextMode);
   };
   return (
-    <GlobalWrapper>
-      <HomeWrapper>
-        <Title>오늘의 질문을 확인하세요!</Title>
-        <CardSection>
-          <GlassBackground>Click Here!</GlassBackground>
-          <button onClick={handleClick}></button>
-        </CardSection>
-        <TimerSection>
-          <Text>제한 시간을 입력하세요!</Text>
-        </TimerSection>
-      </HomeWrapper>
-    </GlobalWrapper>
+    <Wrapper>
+      <Title>오늘의 질문을 확인하세요!</Title>
+      <CardSection>
+        <GlassBackground>Click Here!</GlassBackground>
+        <button onClick={handleClick}></button>
+      </CardSection>
+      <TimerSection>
+        <Text>제한 시간을 입력하세요!</Text>
+      </TimerSection>
+    </Wrapper>
   );
 };
 
 export default HomePage;
 
-const GlobalWrapper = styled.div`
-  overflow: hidden;
-  height: 100vh;
-
-  background: linear-gradient(
-    180deg,
-    rgba(247, 151, 30, 0.3) 14.9%,
-    rgba(239, 108, 87, 0.4) 52.4%,
-    rgba(255, 200, 44, 0.3) 100%
-  );
-`;
-
-const HomeWrapper = styled.div`
+const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100%;
 `;
 
 const Title = styled.h1`

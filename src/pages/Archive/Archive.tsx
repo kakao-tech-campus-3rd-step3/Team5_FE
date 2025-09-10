@@ -3,8 +3,8 @@ import Description from './components/Description';
 import PinnedQuestionList from './components/PinnedQuestionList';
 import QuestionList from './components/QuestionList';
 import useSectionScroll from './hooks/useSectionScroll';
-import Lottie from 'lottie-react';
-import clickkAnimation from './assets/lottie/clickIcon.json';
+// import Lottie from 'lottie-react';
+// import clickkAnimation from './assets/lottie/clickIcon.json';
 
 const ArchivePage = () => {
   const {
@@ -37,7 +37,7 @@ export default ArchivePage;
 
 const Wrapper = styled.div`
   overflow: hidden;
-  height: 100vh;
+  height: 100%;
 `;
 
 const SectionFirst = styled.section`
