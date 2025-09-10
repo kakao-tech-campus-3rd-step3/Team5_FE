@@ -21,4 +21,9 @@ const Wrapper = styled.nav`
   justify-content: center;
   gap: 20px;
   font-weight: 700;
+
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 2000;
 `;

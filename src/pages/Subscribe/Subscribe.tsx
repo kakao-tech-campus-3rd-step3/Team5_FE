@@ -4,7 +4,6 @@ import GNB from '../../components/GNB/GNB';
 import PricingCard from './components/PricingCard';
 import BenefitsCard from './components/BenefitsCard';
 
-
 const SubscribePage: React.FC = () => {
   const monthlyPrice = 15900;
   const benefits = ['일일 질문 한도 추가', '자소서 기반 맞춤 질문 생성'];
@@ -39,7 +38,7 @@ export default SubscribePage;
 
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(180deg, #f5f5dc 0%, #f0e68c 100%);
+  // background: linear-gradient(180deg, #f5f5dc 0%, #f0e68c 100%);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -59,7 +58,6 @@ const MainTitle = styled.h1`
   line-height: 1.4;
   margin: 0;
 `;
-
 
 const SubscribeButton = styled.button`
   background-color: #333333;
@@ -83,4 +81,3 @@ const SubscribeButton = styled.button`
     background-color: #222222;
   }
 `;
-
