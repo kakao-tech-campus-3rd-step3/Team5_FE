@@ -4,4 +4,5 @@ export const ROUTE_PATH = {
   ARCHIVE: '/archive',
   FEEDBACK: '/feedback',
   SUBSCRIBE: '/subscribe',
+  LOGIN: '/login',
 };
