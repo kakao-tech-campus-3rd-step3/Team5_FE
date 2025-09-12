@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from '@emotion/styled';
 import GNB from '../../components/GNB/GNB';
-import PricingCard from '../../components/Subscribe/PricingCard';
-import BenefitsCard from '../../components/Subscribe/BenefitsCard';
+import PricingCard from './components/PricingCard';
+import BenefitsCard from './components/BenefitsCard';
 
 const SubscribePage: React.FC = () => {
   const monthlyPrice = 15900;
@@ -38,7 +38,7 @@ export default SubscribePage;
 
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(180deg, #f5f5dc 0%, #f0e68c 100%);
+  // background: linear-gradient(180deg, #f5f5dc 0%, #f0e68c 100%);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -58,7 +58,6 @@ const MainTitle = styled.h1`
   line-height: 1.4;
   margin: 0;
 `;
-
 
 const SubscribeButton = styled.button`
   background-color: #333333;
@@ -82,4 +81,3 @@ const SubscribeButton = styled.button`
     background-color: #222222;
   }
 `;
-
