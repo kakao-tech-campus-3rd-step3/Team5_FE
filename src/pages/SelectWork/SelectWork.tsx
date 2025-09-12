@@ -105,20 +105,15 @@ const OptionButton = styled.button<{ $isSelected: boolean; $color: string }>`
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  background-color: ${({ $isSelected, $color }) => 
-    $isSelected ? '#e98b8b' : $color};
+  background-color: ${({ $isSelected, $color }) => ($isSelected ? '#e98b8b' : $color)};
   color: ${({ $isSelected }) => ($isSelected ? 'white' : '#333')};
-  box-shadow: ${({ $isSelected }) => 
-    $isSelected 
-      ? '0 4px 12px rgba(233, 139, 139, 0.3)' 
-      : '0 2px 8px rgba(0, 0, 0, 0.1)'};
+  box-shadow: ${({ $isSelected }) =>
+    $isSelected ? '0 4px 12px rgba(233, 139, 139, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)'};
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: ${({ $isSelected }) => 
-      $isSelected 
-        ? '0 6px 16px rgba(233, 139, 139, 0.4)' 
-        : '0 4px 12px rgba(0, 0, 0, 0.15)'};
+    box-shadow: ${({ $isSelected }) =>
+      $isSelected ? '0 6px 16px rgba(233, 139, 139, 0.4)' : '0 4px 12px rgba(0, 0, 0, 0.15)'};
   }
 
   &:active {

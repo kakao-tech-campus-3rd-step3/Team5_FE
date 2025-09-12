@@ -48,4 +48,3 @@ const NavItem = styled.div`
     opacity: 0.7;
   }
 `;
-

@@ -7,7 +7,11 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ size = 'medium', color = '#333' }) => {
-  return <LogoText $size={size} $color={color}>DailyQ</LogoText>;
+  return (
+    <LogoText $size={size} $color={color}>
+      DailyQ
+    </LogoText>
+  );
 };
 
 export default Logo;
