@@ -1,22 +1,37 @@
 import styled from '@emotion/styled';
 import { useState } from 'react';
+import AnswerSection from './components/AnswerSection';
+import AnswerTypeSelector from './components/AnswerTypeSelector';
+
+export type AnswerType = 'voice' | 'text' | null;
 
 const HomePage = () => {
-  const [isTextMode, setIsTextMode] = useState(false);
+  const [answerType, setAnswerType] = useState<AnswerType>(null);
+  const [isAnswerStarted, setIsAnswerStarted] = useState(false);
 
-  const handleClick = () => {
-    setIsTextMode(!isTextMode);
+  const handleAnswerType = (type: AnswerType) => {
+    setAnswerType(type);
   };
+  
+  const handleAnswerState = () => {
+    setIsAnswerStarted(!isAnswerStarted);
+  };
+
   return (
     <Wrapper>
-      <Title>오늘의 질문을 확인하세요!</Title>
-      <CardSection>
-        <GlassBackground>Click Here!</GlassBackground>
-        <button onClick={handleClick}></button>
-      </CardSection>
-      <TimerSection>
-        <Text>제한 시간을 입력하세요!</Text>
-      </TimerSection>
+      <span>DailyQ 모의 면접</span>
+      <section>
+        <QuestionCard isStarted={isAnswerStarted === true}>
+          <GlassBackground>오늘의 질문을 확인하세요!</GlassBackground>
+        </QuestionCard>
+      </section>
+
+      {!isAnswerStarted && <AnswerTypeSelector type={answerType} onAnswerType={handleAnswerType} />}
+      {isAnswerStarted && <AnswerSection type={answerType} isActive={isAnswerStarted} />}
+
+      <AnswerButton onClick={handleAnswerState} disabled={!answerType}>
+        {isAnswerStarted ? '답변 완료' : '답변 시작'}
+      </AnswerButton>
     </Wrapper>
   );
 };
@@ -31,14 +46,11 @@ const Wrapper = styled.div`
   height: 100%;
 `;
 
-const Title = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-`;
+const QuestionCard = styled.div<{ isStarted: boolean }>`
+  width: 300px;
+  height: ${(props) => (props.isStarted ? '150px' : '300px')};
 
-const CardSection = styled.section`
-  position: relative;
+  transition: 0.3s ease-in-out;
 `;
 
 const GlassBackground = styled.div`
@@ -48,8 +60,8 @@ const GlassBackground = styled.div`
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 
-  height: 300px;
-  width: 300px;
+  width: 100%;
+  height: 100%;
 
   display: flex;
   flex-direction: column;
@@ -57,6 +69,19 @@ const GlassBackground = styled.div`
   justify-content: center;
 `;
 
-const TimerSection = styled.section``;
+const AnswerButton = styled.button`
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-const Text = styled.section``;
+  background: #333333;
+  border-radius: 8px;
+
+  width: 160px;
+  height: 40px;
+
+  font-weight: 700;
+  font-size: 18px;
+
+  color: #ffffff;
+`;
