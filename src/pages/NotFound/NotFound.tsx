@@ -1,6 +1,12 @@
 import styled from '@emotion/styled';
 
-const NotFoundPage = () => {return <Wrapper><h1>NOTFOUND</h1></Wrapper>};
+const NotFoundPage = () => {
+  return (
+    <Wrapper>
+      <h1>NOTFOUND</h1>
+    </Wrapper>
+  );
+};
 
 export default NotFoundPage;
 

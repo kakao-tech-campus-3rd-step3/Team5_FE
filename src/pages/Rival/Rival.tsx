@@ -10,7 +10,7 @@ const rivalData = {
 
 const RivalPage = () => {
   return (
-    <PageContainer>
+    <Wrapper>
       <SearchBar placeholder="🔍" />
 
       <ProfileCard>
@@ -32,19 +32,19 @@ const RivalPage = () => {
           <StatContent>{rivalData.answeredQuestions}</StatContent>
         </StatCard>
       </StatsContainer>
-      
+
       <StreakCard>
         <p>스트릭</p>
       </StreakCard>
 
-      <CheerButton>응원하기</CheerButton>
-    </PageContainer>
+      <CheerButton type="button">응원하기</CheerButton>
+    </Wrapper>
   );
 };
 
 export default RivalPage;
 
-const PageContainer = styled.div`
+const Wrapper = styled.div`
   min-height: 100vh;
   padding: 24px;
   display: flex;
@@ -60,7 +60,7 @@ const SearchBar = styled.input`
   border-radius: 100px;
   border: 1px solid rgb(117, 117, 117);
   font-size: 1rem;
-  
+
   &::placeholder {
     color: hsl(0, 0%, 0%);
   }

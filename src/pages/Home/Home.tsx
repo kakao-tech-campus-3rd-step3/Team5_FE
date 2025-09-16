@@ -12,7 +12,7 @@ const HomePage = () => {
   const handleAnswerType = (type: AnswerType) => {
     setAnswerType(type);
   };
-  
+
   const handleAnswerState = () => {
     setIsAnswerStarted(!isAnswerStarted);
   };
@@ -29,7 +29,7 @@ const HomePage = () => {
       {!isAnswerStarted && <AnswerTypeSelector type={answerType} onAnswerType={handleAnswerType} />}
       {isAnswerStarted && <AnswerSection type={answerType} isActive={isAnswerStarted} />}
 
-      <AnswerButton onClick={handleAnswerState} disabled={!answerType}>
+      <AnswerButton type="button" onClick={handleAnswerState} disabled={!answerType}>
         {isAnswerStarted ? '답변 완료' : '답변 시작'}
       </AnswerButton>
     </Wrapper>

@@ -40,7 +40,7 @@ const improvementPointsData = {
 
 const FeedbackPage = () => {
   return (
-    <PageLayout>
+    <Wrapper>
       <SectionContainer>
         <Title>오늘의 질문</Title>
         <QuestionCard>
@@ -93,7 +93,7 @@ const FeedbackPage = () => {
           </CardList>
         </CardWrapper>
       </SectionContainer>
-    </PageLayout>
+    </Wrapper>
   );
 };
 
@@ -105,7 +105,7 @@ const SectionContainer = styled.section`
   width: 100%;
 `;
 
-const PageLayout = styled.div`
+const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;

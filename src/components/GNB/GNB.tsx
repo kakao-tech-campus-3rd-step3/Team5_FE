@@ -2,9 +2,9 @@ import React from 'react';
 import styled from '@emotion/styled';
 import { HomeIcon, SearchIcon, DownloadIcon, ProfileIcon } from '../Icons/Icons';
 
-const GNB: React.FC = () => {
+const GNB = () => {
   return (
-    <BottomNavigation>
+    <Wrapper>
       <NavItem>
         <HomeIcon />
       </NavItem>
@@ -17,13 +17,13 @@ const GNB: React.FC = () => {
       <NavItem>
         <ProfileIcon />
       </NavItem>
-    </BottomNavigation>
+    </Wrapper>
   );
 };
 
 export default GNB;
 
-const BottomNavigation = styled.div`
+const Wrapper = styled.div`
   position: fixed;
   bottom: 0;
   left: 0;
