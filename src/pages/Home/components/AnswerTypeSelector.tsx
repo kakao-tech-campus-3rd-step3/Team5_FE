@@ -11,7 +11,7 @@ const AnswerTypeSelector = ({ type, onAnswerType }: AnswerTypeSelectorProps) => 
   return (
     <>
       <span>답변 방식을 선택해주세요.</span>
-      <AnswerTypeSelectorWrapper>
+      <Wrapper>
         <AnswerTypeButton isSelected={type === 'voice'} onClick={() => onAnswerType('voice')}>
           <Mic size={40} />
         </AnswerTypeButton>
@@ -19,14 +19,14 @@ const AnswerTypeSelector = ({ type, onAnswerType }: AnswerTypeSelectorProps) => 
         <AnswerTypeButton isSelected={type === 'text'} onClick={() => onAnswerType('text')}>
           <Keyboard size={40} />
         </AnswerTypeButton>
-      </AnswerTypeSelectorWrapper>
+      </Wrapper>
     </>
   );
 };
 
 export default AnswerTypeSelector;
 
-const AnswerTypeSelectorWrapper = styled.div`
+const Wrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;

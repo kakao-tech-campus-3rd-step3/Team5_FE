@@ -10,7 +10,7 @@ const rivalData = {
 
 const RivalPage = () => {
   return (
-    <PageContainer>
+    <Wrapper>
       <SearchBar placeholder="🔍" />
 
       <ProfileCard>
@@ -38,13 +38,13 @@ const RivalPage = () => {
       </StreakCard>
 
       <CheerButton>응원하기</CheerButton>
-    </PageContainer>
+    </Wrapper>
   );
 };
 
 export default RivalPage;
 
-const PageContainer = styled.div`
+const Wrapper = styled.div`
   min-height: 100vh;
   padding: 24px;
   display: flex;

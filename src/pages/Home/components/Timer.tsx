@@ -10,12 +10,12 @@ const Timer = ({ isActive }: TimerProps) => {
   const { min, sec } = useTimer({ userDefinedTime, isActive });
 
   return (
-    <TimerWrapper>
+    <Wrapper>
       {String(min).padStart(2, '0')}:{String(sec).padStart(2, '0')}
-    </TimerWrapper>
+    </Wrapper>
   );
 };
 
 export default Timer;
 
-const TimerWrapper = styled.div``;
+const Wrapper = styled.div``;

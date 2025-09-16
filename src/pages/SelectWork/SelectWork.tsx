@@ -20,7 +20,7 @@ const SelectWorkPage: React.FC = () => {
   };
 
   return (
-    <Container>
+    <Wrapper>
       <ContentSection>
         <Title>하루면접이 처음이신가요?</Title>
         <Subtitle>
@@ -44,13 +44,13 @@ const SelectWorkPage: React.FC = () => {
       </ContentSection>
 
       <NextButton onClick={handleNext}>다음</NextButton>
-    </Container>
+    </Wrapper>
   );
 };
 
 export default SelectWorkPage;
 
-const Container = styled.div`
+const Wrapper = styled.div`
   min-height: 100vh;
   background: linear-gradient(180deg, #f5f5dc 0%, #f4c2c2 100%);
   display: flex;

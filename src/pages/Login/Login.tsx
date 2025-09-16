@@ -15,7 +15,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <Container>
+    <Wrapper>
       <BrandingSection>
         <Logo size="large" color="#333" />
         <Tagline size="medium" color="#666" />
@@ -32,13 +32,13 @@ const LoginPage: React.FC = () => {
           Sign in with Google
         </GoogleLoginButton>
       </LoginButtonSection>
-    </Container>
+    </Wrapper>
   );
 };
 
 export default LoginPage;
 
-const Container = styled.div`
+const Wrapper = styled.div`
   min-height: 100vh;
   background: linear-gradient(180deg, #f5f5dc 0%, #f4c2c2 100%);
   display: flex;

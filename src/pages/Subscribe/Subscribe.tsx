@@ -9,7 +9,7 @@ const SubscribePage: React.FC = () => {
   const benefits = ['일일 질문 한도 추가', '자소서 기반 맞춤 질문 생성'];
 
   return (
-    <Container>
+    <Wrapper>
       <HeaderSection>
         <MainTitle>
           더 많은 질문을 원하시나요?
@@ -30,13 +30,13 @@ const SubscribePage: React.FC = () => {
       <SubscribeButton>구독하기</SubscribeButton>
 
       <GNB />
-    </Container>
+    </Wrapper>
   );
 };
 
 export default SubscribePage;
 
-const Container = styled.div`
+const Wrapper = styled.div`
   min-height: 100vh;
   // background: linear-gradient(180deg, #f5f5dc 0%, #f0e68c 100%);
   padding: 20px;

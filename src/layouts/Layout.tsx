@@ -8,9 +8,9 @@ const Layout = () => {
     <>
       <TempNav />
       <main>
-        <OutletWrapper>
+        <Wrapper>
           <Outlet />
-        </OutletWrapper>
+        </Wrapper>
       </main>
       <GNB />
     </>
@@ -19,6 +19,6 @@ const Layout = () => {
 
 export default Layout;
 
-const OutletWrapper = styled.div`
+const Wrapper = styled.div`
   height: 100vh;
 `;
