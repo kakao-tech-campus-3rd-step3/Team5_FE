@@ -12,7 +12,7 @@ const HomePage = () => {
   const handleAnswerType = (type: AnswerType) => {
     setAnswerType(type);
   };
-  
+
   const handleAnswerState = () => {
     setIsAnswerStarted(!isAnswerStarted);
   };

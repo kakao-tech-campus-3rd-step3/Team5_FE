@@ -44,7 +44,9 @@ const SelectWorkPage = () => {
         </OptionsCard>
       </ContentSection>
 
-      <NextButton type="button" onClick={handleNext}>다음</NextButton>
+      <NextButton type="button" onClick={handleNext}>
+        다음
+      </NextButton>
     </Wrapper>
   );
 };

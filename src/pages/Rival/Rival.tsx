@@ -32,7 +32,7 @@ const RivalPage = () => {
           <StatContent>{rivalData.answeredQuestions}</StatContent>
         </StatCard>
       </StatsContainer>
-      
+
       <StreakCard>
         <p>스트릭</p>
       </StreakCard>
@@ -60,7 +60,7 @@ const SearchBar = styled.input`
   border-radius: 100px;
   border: 1px solid rgb(117, 117, 117);
   font-size: 1rem;
-  
+
   &::placeholder {
     color: hsl(0, 0%, 0%);
   }
