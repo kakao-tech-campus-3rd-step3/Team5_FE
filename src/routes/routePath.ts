@@ -6,4 +6,5 @@ export const ROUTE_PATH = {
   SUBSCRIBE: '/subscribe',
   LOGIN: '/login',
   RIVAL: '/rival',
+  NOTFOUND: '*',
 };
