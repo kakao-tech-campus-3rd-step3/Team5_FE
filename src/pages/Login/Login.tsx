@@ -5,12 +5,12 @@ import Tagline from '../../components/Branding/Tagline';
 
 const LoginPage = () => {
   const handleKakaoLogin = () => {
-    // 카카오 로그인 로직 구현
+    // TODO: 카카오 로그인 로직 구현
     console.log('카카오 로그인');
   };
 
   const handleGoogleLogin = () => {
-    // 구글 로그인 로직 구현
+    // TODO: 구글 로그인 로직 구현
     console.log('구글 로그인');
   };
 

@@ -16,7 +16,7 @@ const SelectWorkPage = () => {
 
   const handleNext = () => {
     console.log('선택된 직업:', selectedWork);
-    // 다음 페이지로 이동 로직
+    // TODO: 다음 페이지로 이동 로직 구현
   };
 
   return (
