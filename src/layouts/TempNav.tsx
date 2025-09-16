@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { Link } from 'react-router-dom';
-import { ROUTE_PATH } from '../routes/routhPath';
+import { ROUTE_PATH } from '../routes/routePath';
 
 // TODO: 임시 네비바입니다. 추후 삭제 예정
 const TempNav = () => {
