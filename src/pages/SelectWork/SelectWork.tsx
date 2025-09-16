@@ -8,7 +8,7 @@ const workOptions = [
 ];
 
 const SelectWorkPage = () => {
-  const [selectedWork, setSelectedWork] = useState<string>('it');
+  const [selectedWork, setSelectedWork] = useState('it');
 
   const handleWorkSelect = (workId: string) => {
     setSelectedWork(workId);
