@@ -2,7 +2,7 @@ import React from 'react';
 import styled from '@emotion/styled';
 import { HomeIcon, SearchIcon, DownloadIcon, ProfileIcon } from '../Icons/Icons';
 
-const GNB: React.FC = () => {
+const GNB = () => {
   return (
     <Wrapper>
       <NavItem>

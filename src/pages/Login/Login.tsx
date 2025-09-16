@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 import Logo from '../../components/Branding/Logo';
 import Tagline from '../../components/Branding/Tagline';
 
-const LoginPage: React.FC = () => {
+const LoginPage = () => {
   const handleKakaoLogin = () => {
     // 카카오 로그인 로직 구현
     console.log('카카오 로그인');

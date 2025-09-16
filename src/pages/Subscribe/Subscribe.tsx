@@ -4,7 +4,7 @@ import GNB from '../../components/GNB/GNB';
 import PricingCard from './components/PricingCard';
 import BenefitsCard from './components/BenefitsCard';
 
-const SubscribePage: React.FC = () => {
+const SubscribePage = () => {
   const monthlyPrice = 15900;
   const benefits = ['일일 질문 한도 추가', '자소서 기반 맞춤 질문 생성'];
 

@@ -8,16 +8,16 @@ interface BenefitsCardProps {
   price: number;
 }
 
-const BenefitsCard: React.FC<BenefitsCardProps> = ({ title, benefits, price }) => {
+const BenefitsCard = (props: BenefitsCardProps) => {
   return (
     <Card>
-      <CardTitle>{title}</CardTitle>
+      <CardTitle>{props.title}</CardTitle>
       <BenefitsList>
-        {benefits.map((benefit, index) => (
+        {props.benefits.map((benefit, index) => (
           <BenefitItem key={index}>{benefit}</BenefitItem>
         ))}
       </BenefitsList>
-      <CardPrice>매달 ₩{formatCurrency(price)}</CardPrice>
+      <CardPrice>매달 ₩{formatCurrency(props.price)}</CardPrice>
     </Card>
   );
 };

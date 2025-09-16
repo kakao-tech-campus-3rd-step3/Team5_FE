@@ -7,7 +7,7 @@ const workOptions = [
   { id: 'consulting', label: '방송송', color: '#ffffff' },
 ];
 
-const SelectWorkPage: React.FC = () => {
+const SelectWorkPage = () => {
   const [selectedWork, setSelectedWork] = useState<string>('it');
 
   const handleWorkSelect = (workId: string) => {

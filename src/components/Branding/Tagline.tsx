@@ -6,7 +6,8 @@ interface TaglineProps {
   color?: string;
 }
 
-const Tagline: React.FC<TaglineProps> = ({ size = 'medium', color = '#666' }) => {
+const Tagline = (props: TaglineProps) => {
+  const { size = 'medium', color = '#666' } = props;
   return (
     <TaglineText $size={size} $color={color}>
       Layer by layer, you become one.
