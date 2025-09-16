@@ -10,6 +10,7 @@ const TempNav = () => {
       <Link to={ROUTE_PATH.ARCHIVE}>아카이브</Link>
       <Link to={ROUTE_PATH.FEEDBACK}>피드백 페이지</Link>
       <Link to={ROUTE_PATH.SUBSCRIBE}>구독 페이지</Link>
+      <Link to={ROUTE_PATH.RIVAL}>라이벌 페이지</Link>
     </Wrapper>
   );
 };

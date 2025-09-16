@@ -5,4 +5,5 @@ export const ROUTE_PATH = {
   FEEDBACK: '/feedback',
   SUBSCRIBE: '/subscribe',
   LOGIN: '/login',
+  RIVAL: '/rival',
 };
