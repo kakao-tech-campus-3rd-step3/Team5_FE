@@ -37,7 +37,7 @@ const RivalPage = () => {
         <p>스트릭</p>
       </StreakCard>
 
-      <CheerButton>응원하기</CheerButton>
+      <CheerButton type="button">응원하기</CheerButton>
     </Wrapper>
   );
 };

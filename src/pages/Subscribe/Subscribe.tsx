@@ -27,7 +27,7 @@ const SubscribePage = () => {
 
       <BenefitsCard title="Premium 혜택" benefits={benefits} price={monthlyPrice} />
 
-      <SubscribeButton>구독하기</SubscribeButton>
+      <SubscribeButton type="button">구독하기</SubscribeButton>
 
       <GNB />
     </Wrapper>

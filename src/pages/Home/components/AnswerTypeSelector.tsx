@@ -12,11 +12,11 @@ const AnswerTypeSelector = ({ type, onAnswerType }: AnswerTypeSelectorProps) => 
     <>
       <span>답변 방식을 선택해주세요.</span>
       <Wrapper>
-        <AnswerTypeButton isSelected={type === 'voice'} onClick={() => onAnswerType('voice')}>
+        <AnswerTypeButton type="button" isSelected={type === 'voice'} onClick={() => onAnswerType('voice')}>
           <Mic size={40} />
         </AnswerTypeButton>
 
-        <AnswerTypeButton isSelected={type === 'text'} onClick={() => onAnswerType('text')}>
+        <AnswerTypeButton type="button" isSelected={type === 'text'} onClick={() => onAnswerType('text')}>
           <Keyboard size={40} />
         </AnswerTypeButton>
       </Wrapper>

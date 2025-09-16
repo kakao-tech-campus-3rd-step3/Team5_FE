@@ -33,6 +33,7 @@ const SelectWorkPage = () => {
           {workOptions.map((option) => (
             <OptionButton
               key={option.id}
+              type="button"
               $isSelected={selectedWork === option.id}
               $color={option.color}
               onClick={() => handleWorkSelect(option.id)}
@@ -43,7 +44,7 @@ const SelectWorkPage = () => {
         </OptionsCard>
       </ContentSection>
 
-      <NextButton onClick={handleNext}>다음</NextButton>
+      <NextButton type="button" onClick={handleNext}>다음</NextButton>
     </Wrapper>
   );
 };

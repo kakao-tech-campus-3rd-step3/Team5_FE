@@ -16,7 +16,7 @@ const ArchivePage = () => {
       <SectionFirst ref={sectionFirstRef}>
         <Description />
         <ButtonWrapper>
-          <ScrollDownButton onClick={handleDownClick}>down</ScrollDownButton>
+          <ScrollDownButton type="button" onClick={handleDownClick}>down</ScrollDownButton>
         </ButtonWrapper>
         {/* <LottieWrapper> */}
         {/* <Lottie animationData={clickkAnimation} loop autoplay /> */}
@@ -27,7 +27,7 @@ const ArchivePage = () => {
 
       <SectionSecond ref={sectionSecondRef}>
         <QuestionList />
-        <ScrollUpButton onClick={handleUpClick}>Up</ScrollUpButton>
+        <ScrollUpButton type="button" onClick={handleUpClick}>Up</ScrollUpButton>
       </SectionSecond>
     </Wrapper>
   );

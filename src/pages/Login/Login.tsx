@@ -22,12 +22,12 @@ const LoginPage = () => {
       </BrandingSection>
 
       <LoginButtonSection>
-        <KakaoLoginButton onClick={handleKakaoLogin}>
+        <KakaoLoginButton type="button" onClick={handleKakaoLogin}>
           <KakaoIcon>💬</KakaoIcon>
           Login with Kakao
         </KakaoLoginButton>
 
-        <GoogleLoginButton onClick={handleGoogleLogin}>
+        <GoogleLoginButton type="button" onClick={handleGoogleLogin}>
           <GoogleIcon>G</GoogleIcon>
           Sign in with Google
         </GoogleLoginButton>
