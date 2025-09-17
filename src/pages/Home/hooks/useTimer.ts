@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 interface useTimerProps {
   userDefinedTime: number;
   isActive: boolean;
+  onAnswerDone: () => void;
 }
 
-const useTimer = ({ userDefinedTime: initialSeconds, isActive }: useTimerProps) => {
+const useTimer = ({ userDefinedTime: initialSeconds, isActive, onAnswerDone }: useTimerProps) => {
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
 
   const intervalRef = useRef<number | null>(null);
@@ -20,6 +21,7 @@ const useTimer = ({ userDefinedTime: initialSeconds, isActive }: useTimerProps) 
 
       if (newRemainingTime <= 0) {
         setRemainingSeconds(0);
+        onAnswerDone();
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
         }

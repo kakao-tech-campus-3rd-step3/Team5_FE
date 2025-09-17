@@ -3,11 +3,12 @@ import useTimer from '../hooks/useTimer';
 
 interface TimerProps {
   isActive: boolean;
+  onAnswerDone: () => void;
 }
 
-const Timer = ({ isActive }: TimerProps) => {
-  const userDefinedTime = 120;
-  const { min, sec } = useTimer({ userDefinedTime, isActive });
+const Timer = ({ isActive, onAnswerDone }: TimerProps) => {
+  const userDefinedTime = 10;
+  const { min, sec } = useTimer({ userDefinedTime, isActive, onAnswerDone });
 
   return (
     <Wrapper>

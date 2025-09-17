@@ -1,20 +1,36 @@
 import styled from '@emotion/styled';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AnswerSection from './components/AnswerSection';
 import AnswerTypeSelector from './components/AnswerTypeSelector';
+import { ROUTE_PATH } from '../../routes/routePath';
+import { useNavigate } from 'react-router-dom';
 
 export type AnswerType = 'voice' | 'text' | null;
 
 const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [isAnswerStarted, setIsAnswerStarted] = useState(false);
+  // const [isAnswered, setIsAnswered] = useState(false);
+  const [isAnswered, setIsAnswered] = useState(() => {
+    const saved = localStorage.getItem('isAnswered');
+    return saved === 'true';
+  });
+  useEffect(() => {
+    localStorage.setItem('isAnswered', String(isAnswered));
+  }, [isAnswered]);
+  const navigate = useNavigate();
 
   const handleAnswerType = (type: AnswerType) => {
     setAnswerType(type);
   };
 
+  const handleAnswerDone = () => {
+    setIsAnswered(true);
+    navigate(ROUTE_PATH.FEEDBACK);
+  };
+
   const handleAnswerState = () => {
-    setIsAnswerStarted(!isAnswerStarted);
+    setIsAnswerStarted(true);
   };
 
   return (
@@ -22,16 +38,45 @@ const HomePage = () => {
       <span>DailyQ 모의 면접</span>
       <section>
         <QuestionCard isStarted={isAnswerStarted === true}>
-          <GlassBackground>오늘의 질문을 확인하세요!</GlassBackground>
+          <GlassBackground>
+            {isAnswered
+              ? 'Cookie와 Local Storage의 차이점이 무엇인가요?'
+              : '오늘의 질문을 확인하세요!'}
+          </GlassBackground>
         </QuestionCard>
       </section>
 
-      {!isAnswerStarted && <AnswerTypeSelector type={answerType} onAnswerType={handleAnswerType} />}
-      {isAnswerStarted && <AnswerSection type={answerType} isActive={isAnswerStarted} />}
+      {!isAnswered && (
+        <>
+          {!isAnswerStarted && (
+            <>
+              <AnswerTypeSelector type={answerType} onAnswerType={handleAnswerType} />
+              <AnswerButton type="button" onClick={handleAnswerState} disabled={!answerType}>
+                답변 시작
+              </AnswerButton>
+            </>
+          )}
 
-      <AnswerButton type="button" onClick={handleAnswerState} disabled={!answerType}>
-        {isAnswerStarted ? '답변 완료' : '답변 시작'}
-      </AnswerButton>
+          {isAnswerStarted && (
+            <>
+              <AnswerSection
+                type={answerType}
+                isActive={isAnswerStarted}
+                onAnswerDone={handleAnswerDone}
+              />
+              <AnswerButton type="button" onClick={handleAnswerDone} disabled={!answerType}>
+                답변 완료
+              </AnswerButton>
+            </>
+          )}
+        </>
+      )}
+
+      {isAnswered && (
+        <>
+          <h1>답변 후 메인 페이지</h1>
+        </>
+      )}
     </Wrapper>
   );
 };

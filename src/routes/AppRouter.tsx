@@ -18,8 +18,9 @@ const AppRouter = () => {
         <Route path={ROUTE_PATH.ARCHIVE} element={<ArchivePage />} />
         <Route path={ROUTE_PATH.SUBSCRIBE} element={<SubscribePage />} />
         <Route path={ROUTE_PATH.NOTFOUND} element={<NotFound />} />
+        <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} />
       </Route>
-      <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} />
+
       <Route path={ROUTE_PATH.RIVAL} element={<RivalPage />} />
     </Routes>
   );
