@@ -9,8 +9,14 @@ import AnsweringSection from './components/AnsweringSection';
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
 
+interface User {
+  user_id: number;
+  name: string;
+}
+
 const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
+  // TODO: 삭제 예정
   // const [isAnswerStarted, setIsAnswerStarted] = useState(false);
   // const [isAnswered, setIsAnswered] = useState(false);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
@@ -23,6 +29,23 @@ const HomePage = () => {
   //   localStorage.setItem('isAnswered', String(isAnswered));
   // }, [isAnswered]);
   const navigate = useNavigate();
+
+  const [user, setUser] = useState<User | null>(null); 
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/users/1');
+        const data = await response.json();
+
+        setUser(data.user);
+      } catch (error) {
+        console.error('유저 데이터를 불러오는 데 실패했습니다:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleAnswerType = (type: AnswerType) => {
     setAnswerType(type);
@@ -49,6 +72,8 @@ const HomePage = () => {
   return (
     <Wrapper>
       <span>DailyQ 모의 면접</span>
+      {/* TOOD: 추후 위치 이동 */}
+      {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'}
       <QuestionCardSection isStarted={answerState} />
 
       {answerState === 'before-answer' ? (

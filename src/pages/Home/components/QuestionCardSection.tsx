@@ -16,6 +16,7 @@ const QuestionCardSection = ({ isStarted }: QuestionCardSectionProps) => {
         </GlassBackground>
       </QuestionCard>
     </section>
+
   );
 };
 
