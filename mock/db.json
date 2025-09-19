@@ -1,36 +1,33 @@
 {
-  "user": 
-  { 
-	  "user_id": 1,
-	  "email": "me@x.com", 
-	  "name": "Hyoseok", 
-	  "role": "FREE", 
-	  "streak": 3, 
-	  "solved_today": 0 
-	  },
-  "preferences": 
-  { 
-	  "daily_question_limit": 1, 
-	  "question_mode": "FLOW", 
-	  "answer_type": "VOICE", 
-	  "time_limit_seconds": 180, 
-	  "notify_time": "20:30", 
-	  "allow_push": true 
-	  },
-  "jobs": 
-  [ 
-	  { 
-		  "job_id": 10, 
-		  "job_name": "FE_WEB"
-		}, 
-		{ 
-			"job_id": 11,
-			"job_name": "BE_NODE"
-		}
-	],
-  "flow_progress": 
-	  { 
-		  "next_phase": "TECH1", 
-		  "updated_at": "2025-09-05T07:10:00Z" 
-		}
+  "users": [ 
+    {
+      "id": 1, 
+      "user": {
+        "user_id": 1,
+        "email": "me@x.com",
+        "name": "Alice",
+        "role": "FREE",
+        "streak": 3,
+        "solved_today": 0
+      },
+      "preferences": {
+        "daily_question_limit": 1,
+        "question_mode": "FLOW",
+        "answer_type": "VOICE",
+        "time_limit_seconds": 180,
+        "notify_time": "20:30",
+        "allow_push": true
+      },
+      "jobs": [
+        {
+          "job_id": 10,
+          "job_name": "FE_WEB"
+        }
+      ],
+      "flow_progress": {
+        "next_phase": "TECH1",
+        "updated_at": "2025-09-05T07:10:00Z"
+      }
+    }
+  ]
 }

@@ -1,13 +1,35 @@
 import styled from '@emotion/styled';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AnswerSection from './components/AnswerSection';
 import AnswerTypeSelector from './components/AnswerTypeSelector';
 
 export type AnswerType = 'voice' | 'text' | null;
 
+interface User {
+  user_id: number;
+  name: string;
+}
+
 const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [isAnswerStarted, setIsAnswerStarted] = useState(false);
+
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/users/1');
+        const data = await response.json();
+
+        setUser(data.user);
+      } catch (error) {
+        console.error("유저 데이터를 불러오는 데 실패했습니다:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleAnswerType = (type: AnswerType) => {
     setAnswerType(type);
@@ -22,7 +44,9 @@ const HomePage = () => {
       <span>DailyQ 모의 면접</span>
       <section>
         <QuestionCard isStarted={isAnswerStarted === true}>
-          <GlassBackground>오늘의 질문을 확인하세요!</GlassBackground>
+          <GlassBackground>
+            {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'}
+          </GlassBackground>
         </QuestionCard>
       </section>
 
