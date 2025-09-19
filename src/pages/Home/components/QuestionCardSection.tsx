@@ -1,13 +1,14 @@
 import styled from '@emotion/styled';
+import type { AnswerStateType } from '../Home';
 
 interface QuestionCardSectionProps {
-  isStarted: boolean;
+  isStarted: AnswerStateType;
 }
 
 const QuestionCardSection = ({ isStarted }: QuestionCardSectionProps) => {
   return (
     <section>
-      <QuestionCard isStarted={isStarted === true}>
+      <QuestionCard isStarted={isStarted === 'answering'}>
         <GlassBackground>
           {isStarted
             ? 'Cookie와 Local Storage의 차이점이 무엇인가요?'

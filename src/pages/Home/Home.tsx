@@ -7,11 +7,13 @@ import BeforeAnswerSection from './components/BeforeAnswerSection';
 import AnsweringSection from './components/AnsweringSection';
 
 export type AnswerType = 'voice' | 'text' | null;
+export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
 
 const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
-  const [isAnswerStarted, setIsAnswerStarted] = useState(false);
-  const [isAnswered, setIsAnswered] = useState(false);
+  // const [isAnswerStarted, setIsAnswerStarted] = useState(false);
+  // const [isAnswered, setIsAnswered] = useState(false);
+  const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   // TODO: 로컬스토리지 활용 코드 (추후 반영 예정)
   // const [isAnswered, setIsAnswered] = useState(() => {
   //   const saved = localStorage.getItem('isAnswered');
@@ -27,19 +29,19 @@ const HomePage = () => {
   };
 
   const handleAnswerDone = () => {
-    setIsAnswered(true);
+    setAnswerState('answered');
     navigate(ROUTE_PATH.FEEDBACK);
   };
 
   const handleAnswerState = () => {
-    setIsAnswerStarted(true);
+    setAnswerState('answering');
   };
 
-  if (isAnswered)
+  if (answerState === 'answered')
     return (
       <Wrapper>
         <span>DailyQ 모의 면접</span>
-        <QuestionCardSection isStarted={isAnswerStarted} />
+        <QuestionCardSection isStarted={answerState} />
         <h1>답변 후 메인 페이지</h1>
       </Wrapper>
     );
@@ -47,9 +49,9 @@ const HomePage = () => {
   return (
     <Wrapper>
       <span>DailyQ 모의 면접</span>
-      <QuestionCardSection isStarted={isAnswerStarted} />
+      <QuestionCardSection isStarted={answerState} />
 
-      {!isAnswerStarted ? (
+      {answerState === 'before-answer' ? (
         <BeforeAnswerSection
           type={answerType}
           onAnswerType={handleAnswerType}
@@ -58,7 +60,7 @@ const HomePage = () => {
       ) : (
         <AnsweringSection
           type={answerType}
-          isStarted={isAnswerStarted}
+          isStarted={answerState}
           onAnswerDone={handleAnswerDone}
         />
       )}
