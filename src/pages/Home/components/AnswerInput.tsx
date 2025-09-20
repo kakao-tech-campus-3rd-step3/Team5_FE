@@ -1,5 +1,5 @@
 import type { AnswerType } from '../Home';
-import TextAnswer from './TextInput';
+import TextInput from './TextInput';
 import Timer from './Timer';
 import VoiceInput from './VoiceInput';
 
@@ -15,7 +15,7 @@ const AnswerInput = ({ type, isActive, onAnswerDone }: AnswerInputProps) => {
     <>
       <Timer isActive={isActive} onAnswerDone={onAnswerDone} />
       {type === 'voice' && <VoiceInput />}
-      {type === 'text' && <TextAnswer />}
+      {type === 'text' && <TextInput />}
     </>
   );
 };
