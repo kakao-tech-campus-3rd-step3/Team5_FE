@@ -2,9 +2,9 @@ import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { ROUTE_PATH } from '../../routes/routePath';
 import { useNavigate } from 'react-router-dom';
-import QuestionCardSection from './components/QuestionCardSection';
-import BeforeAnswerSection from './components/BeforeAnswerSection';
-import AnsweringSection from './components/AnsweringSection';
+import QuestionCardSection from './components/sections/QuestionCardSection';
+import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
+import AnsweringSection from './components/sections/AnsweringSection';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';

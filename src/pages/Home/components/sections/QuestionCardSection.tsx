@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import type { AnswerStateType } from '../Home';
+import type { AnswerStateType } from '../../Home';
 
 interface QuestionCardSectionProps {
   isStarted: AnswerStateType;

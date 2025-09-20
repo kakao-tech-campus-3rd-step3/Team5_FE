@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
-import AnswerTypeSelector from './AnswerTypeSelector';
-import AnswerButton from '../../../components/Button/AnswerButton';
-import type { AnswerType } from '../Home';
+import AnswerTypeSelector from '../AnswerTypeSelector';
+import AnswerButton from '../../../../components/Button/AnswerButton';
+import type { AnswerType } from '../../Home';
 
 interface BeforeAnswerSectionProps {
   type: AnswerType;

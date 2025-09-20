@@ -1,6 +1,6 @@
-import AnswerButton from '../../../components/Button/AnswerButton';
-import type { AnswerStateType, AnswerType } from '../Home';
-import AnswerSection from './AnswerInput';
+import AnswerButton from '../../../../components/Button/AnswerButton';
+import type { AnswerStateType, AnswerType } from '../../Home';
+import AnswerSection from '../AnswerInput';
 interface AnsweringSectionProps {
   type: AnswerType;
   isStarted: AnswerStateType;
