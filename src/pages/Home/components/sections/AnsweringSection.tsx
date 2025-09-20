@@ -1,6 +1,7 @@
 import AnswerButton from '../../../../components/Button/AnswerButton';
 import type { AnswerStateType, AnswerType } from '../../Home';
-import AnswerSection from '../AnswerInput';
+import AnswerInput from '../AnswerInput';
+
 interface AnsweringSectionProps {
   type: AnswerType;
   answerState: AnswerStateType;
@@ -10,7 +11,7 @@ interface AnsweringSectionProps {
 const AnsweringSection = ({ type, answerState, onAnswerDone }: AnsweringSectionProps) => {
   return (
     <section>
-      <AnswerSection type={type} isActive={answerState === 'answering'} onAnswerDone={onAnswerDone} />
+      <AnswerInput type={type} isActive={answerState === 'answering'} onAnswerDone={onAnswerDone} />
       <AnswerButton type="button" onClick={onAnswerDone} disabled={!type}>
         답변 완료
       </AnswerButton>
