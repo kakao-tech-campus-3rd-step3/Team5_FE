@@ -1,6 +1,5 @@
-import React from 'react';
 import styled from '@emotion/styled';
-import { formatCurrency } from '../../../utils/currency';
+import { formatCurrency } from '../../../shared/utils/currency';
 
 interface PricingCardProps {
   title: string;

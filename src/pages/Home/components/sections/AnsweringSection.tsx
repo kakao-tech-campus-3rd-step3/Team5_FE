@@ -1,4 +1,4 @@
-import AnswerButton from '../../../../components/Button/AnswerButton';
+import AnswerButton from '../../../../shared/ui/SharedButton';
 import type { AnswerStateType, AnswerType } from '../../Home';
 import AnswerInput from '../AnswerInput';
 

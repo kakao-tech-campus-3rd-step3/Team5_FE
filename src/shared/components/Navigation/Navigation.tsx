@@ -1,5 +1,52 @@
 import styled from '@emotion/styled';
 
+const GNB = () => {
+  return (
+    <Wrapper>
+      <NavItem>
+        <HomeIcon />
+      </NavItem>
+      <NavItem>
+        <SearchIcon />
+      </NavItem>
+      <NavItem>
+        <DownloadIcon />
+      </NavItem>
+      <NavItem>
+        <ProfileIcon />
+      </NavItem>
+    </Wrapper>
+  );
+};
+
+export default GNB;
+
+const Wrapper = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #f5f5dc;
+  padding: 12px 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #e0e0e0;
+`;
+
+const NavItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.7;
+  }
+`;
+
 export const HomeIcon = styled.div`
   width: 24px;
   height: 24px;

@@ -1,9 +1,9 @@
 import styled from '@emotion/styled';
 import { Outlet } from 'react-router-dom';
-import GNB from '../components/GNB/GNB';
-import TempNav from './TempNav';
+import TempNav from '../components/Navigation/TempNav';
+import GNB from '../components/Navigation/Navigation';
 
-const Layout = () => {
+const MainLayout = () => {
   return (
     <>
       <TempNav />
@@ -17,7 +17,7 @@ const Layout = () => {
   );
 };
 
-export default Layout;
+export default MainLayout;
 
 const Wrapper = styled.div`
   height: 100vh;

@@ -7,7 +7,7 @@ interface AnswerButtonProps {
   disabled: boolean;
 }
 
-const AnswerButton = ({ children, type, onClick, disabled }: AnswerButtonProps) => {
+const SharedButton = ({ children, type, onClick, disabled }: AnswerButtonProps) => {
   return (
     <Wrapper type={type} onClick={onClick} disabled={disabled}>
       {children}
@@ -15,7 +15,7 @@ const AnswerButton = ({ children, type, onClick, disabled }: AnswerButtonProps) 
   );
 };
 
-export default AnswerButton;
+export default SharedButton;
 
 const Wrapper = styled.button`
   display: flex;
