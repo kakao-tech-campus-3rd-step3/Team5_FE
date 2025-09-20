@@ -1,7 +1,7 @@
 import type { AnswerType } from '../Home';
-import RecordAnswer from './RecordAnswer';
 import TextAnswer from './TextAnswer';
 import Timer from './Timer';
+import VoiceInput from './VoiceInput';
 
 interface AnswerInputProps {
   type: AnswerType;
@@ -13,8 +13,8 @@ const AnswerInput = ({ type, isActive, onAnswerDone }: AnswerInputProps) => {
   if (!isActive) return;
   return (
     <>
-      <Timer isActive={isActive} onAnswerDone={onAnswerDone}/>
-      {type === 'voice' && <RecordAnswer />}
+      <Timer isActive={isActive} onAnswerDone={onAnswerDone} />
+      {type === 'voice' && <VoiceInput />}
       {type === 'text' && <TextAnswer />}
     </>
   );
