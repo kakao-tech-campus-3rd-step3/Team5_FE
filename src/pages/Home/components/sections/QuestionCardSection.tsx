@@ -1,22 +1,21 @@
 import styled from '@emotion/styled';
-import type { AnswerStateType } from '../Home';
+import type { AnswerStateType } from '../../Home';
 
 interface QuestionCardSectionProps {
-  isStarted: AnswerStateType;
+  answerState: AnswerStateType;
 }
 
-const QuestionCardSection = ({ isStarted }: QuestionCardSectionProps) => {
+const QuestionCardSection = ({ answerState }: QuestionCardSectionProps) => {
   return (
     <section>
-      <QuestionCard isStarted={isStarted === 'answering'}>
+      <QuestionCard isStarted={answerState === 'answering'}>
         <GlassBackground>
-          {isStarted
-            ? 'Cookie와 Local Storage의 차이점이 무엇인가요?'
-            : '오늘의 질문을 확인하세요!'}
+          {answerState === 'before-answer'
+            ? '오늘의 질문을 확인하세요!'
+            : 'Cookie와 Local Storage의 차이점이 무엇인가요?'}
         </GlassBackground>
       </QuestionCard>
     </section>
-
   );
 };
 

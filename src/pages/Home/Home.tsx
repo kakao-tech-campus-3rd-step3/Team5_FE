@@ -2,9 +2,9 @@ import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { ROUTE_PATH } from '../../routes/routePath';
 import { useNavigate } from 'react-router-dom';
-import QuestionCardSection from './components/QuestionCardSection';
-import BeforeAnswerSection from './components/BeforeAnswerSection';
-import AnsweringSection from './components/AnsweringSection';
+import QuestionCardSection from './components/sections/QuestionCardSection';
+import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
+import AnsweringSection from './components/sections/AnsweringSection';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
@@ -16,21 +16,10 @@ interface User {
 
 const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
-  // TODO: 삭제 예정
-  // const [isAnswerStarted, setIsAnswerStarted] = useState(false);
-  // const [isAnswered, setIsAnswered] = useState(false);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
-  // TODO: 로컬스토리지 활용 코드 (추후 반영 예정)
-  // const [isAnswered, setIsAnswered] = useState(() => {
-  //   const saved = localStorage.getItem('isAnswered');
-  //   return saved === 'true';
-  // });
-  // useEffect(() => {
-  //   localStorage.setItem('isAnswered', String(isAnswered));
-  // }, [isAnswered]);
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<User | null>(null); 
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -56,7 +45,7 @@ const HomePage = () => {
     navigate(ROUTE_PATH.FEEDBACK);
   };
 
-  const handleAnswerState = () => {
+  const handleAnswering = () => {
     setAnswerState('answering');
   };
 
@@ -64,7 +53,8 @@ const HomePage = () => {
     return (
       <Wrapper>
         <span>DailyQ 모의 면접</span>
-        <QuestionCardSection isStarted={answerState} />
+        <QuestionCardSection answerState={answerState} />
+        {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
       </Wrapper>
     );
@@ -74,18 +64,18 @@ const HomePage = () => {
       <span>DailyQ 모의 면접</span>
       {/* TOOD: 추후 위치 이동 */}
       {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'}
-      <QuestionCardSection isStarted={answerState} />
+      <QuestionCardSection answerState={answerState} />
 
       {answerState === 'before-answer' ? (
         <BeforeAnswerSection
           type={answerType}
           onAnswerType={handleAnswerType}
-          onAnswerState={handleAnswerState}
+          onAnswering={handleAnswering}
         />
       ) : (
         <AnsweringSection
           type={answerType}
-          isStarted={answerState}
+          answerState={answerState}
           onAnswerDone={handleAnswerDone}
         />
       )}
