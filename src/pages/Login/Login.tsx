@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from '@emotion/styled';
 import Logo from '../../components/Branding/Logo';
 import Tagline from '../../components/Branding/Tagline';

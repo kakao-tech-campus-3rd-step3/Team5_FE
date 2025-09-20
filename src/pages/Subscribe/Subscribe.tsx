@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from '@emotion/styled';
 import GNB from '../../components/GNB/GNB';
 import PricingCard from './components/PricingCard';
