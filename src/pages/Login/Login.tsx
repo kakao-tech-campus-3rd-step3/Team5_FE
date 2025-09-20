@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
-import Logo from '../../components/Branding/Logo';
-import Tagline from '../../components/Branding/Tagline';
+import Logo from '../../shared/ui/Logo';
+import Tagline from '../../shared/components/Branding/Tagline';
 
 const LoginPage = () => {
   const handleKakaoLogin = () => {
