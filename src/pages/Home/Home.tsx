@@ -30,7 +30,7 @@ const HomePage = () => {
   // }, [isAnswered]);
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<User | null>(null); 
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -65,6 +65,7 @@ const HomePage = () => {
       <Wrapper>
         <span>DailyQ 모의 면접</span>
         <QuestionCardSection isStarted={answerState} />
+        {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
       </Wrapper>
     );

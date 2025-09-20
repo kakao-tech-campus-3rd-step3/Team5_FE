@@ -11,12 +11,12 @@ interface BeforeAnswerSectionProps {
 
 const BeforeAnswerSection = ({ type, onAnswerType, onAnswerState }: BeforeAnswerSectionProps) => {
   return (
-    <>
+    <section>
       <AnswerTypeSelector type={type} onAnswerType={onAnswerType} />
       <AnswerButton type="button" onClick={onAnswerState} disabled={!type}>
         답변하기
       </AnswerButton>
-    </>
+    </section>
   );
 };
 
