@@ -16,18 +16,7 @@ interface User {
 
 const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
-  // TODO: 삭제 예정
-  // const [isAnswerStarted, setIsAnswerStarted] = useState(false);
-  // const [isAnswered, setIsAnswered] = useState(false);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
-  // TODO: 로컬스토리지 활용 코드 (추후 반영 예정)
-  // const [isAnswered, setIsAnswered] = useState(() => {
-  //   const saved = localStorage.getItem('isAnswered');
-  //   return saved === 'true';
-  // });
-  // useEffect(() => {
-  //   localStorage.setItem('isAnswered', String(isAnswered));
-  // }, [isAnswered]);
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User | null>(null);
@@ -56,7 +45,7 @@ const HomePage = () => {
     navigate(ROUTE_PATH.FEEDBACK);
   };
 
-  const handleAnswerState = () => {
+  const handleAnswering = () => {
     setAnswerState('answering');
   };
 
@@ -81,7 +70,7 @@ const HomePage = () => {
         <BeforeAnswerSection
           type={answerType}
           onAnswerType={handleAnswerType}
-          onAnswerState={handleAnswerState}
+          onAnswering={handleAnswering}
         />
       ) : (
         <AnsweringSection

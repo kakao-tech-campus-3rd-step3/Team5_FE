@@ -6,14 +6,14 @@ import type { AnswerType } from '../../Home';
 interface BeforeAnswerSectionProps {
   type: AnswerType;
   onAnswerType: (type: AnswerType) => void;
-  onAnswerState: () => void;
+  onAnswering: () => void;
 }
 
-const BeforeAnswerSection = ({ type, onAnswerType, onAnswerState }: BeforeAnswerSectionProps) => {
+const BeforeAnswerSection = ({ type, onAnswerType, onAnswering }: BeforeAnswerSectionProps) => {
   return (
     <section>
       <AnswerTypeSelector type={type} onAnswerType={onAnswerType} />
-      <AnswerButton type="button" onClick={onAnswerState} disabled={!type}>
+      <AnswerButton type="button" onClick={onAnswering} disabled={!type}>
         답변하기
       </AnswerButton>
     </section>
