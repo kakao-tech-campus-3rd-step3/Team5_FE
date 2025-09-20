@@ -3,14 +3,14 @@ import type { AnswerStateType, AnswerType } from '../../Home';
 import AnswerSection from '../AnswerInput';
 interface AnsweringSectionProps {
   type: AnswerType;
-  isStarted: AnswerStateType;
+  answerState: AnswerStateType;
   onAnswerDone: () => void;
 }
 
-const AnsweringSection = ({ type, isStarted, onAnswerDone }: AnsweringSectionProps) => {
+const AnsweringSection = ({ type, answerState, onAnswerDone }: AnsweringSectionProps) => {
   return (
     <section>
-      <AnswerSection type={type} isActive={isStarted === 'answering'} onAnswerDone={onAnswerDone} />
+      <AnswerSection type={type} isActive={answerState === 'answering'} onAnswerDone={onAnswerDone} />
       <AnswerButton type="button" onClick={onAnswerDone} disabled={!type}>
         답변 완료
       </AnswerButton>

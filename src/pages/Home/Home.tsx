@@ -53,7 +53,7 @@ const HomePage = () => {
     return (
       <Wrapper>
         <span>DailyQ 모의 면접</span>
-        <QuestionCardSection isStarted={answerState} />
+        <QuestionCardSection answerState={answerState} />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
       </Wrapper>
@@ -64,7 +64,7 @@ const HomePage = () => {
       <span>DailyQ 모의 면접</span>
       {/* TOOD: 추후 위치 이동 */}
       {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'}
-      <QuestionCardSection isStarted={answerState} />
+      <QuestionCardSection answerState={answerState} />
 
       {answerState === 'before-answer' ? (
         <BeforeAnswerSection
@@ -75,7 +75,7 @@ const HomePage = () => {
       ) : (
         <AnsweringSection
           type={answerType}
-          isStarted={answerState}
+          answerState={answerState}
           onAnswerDone={handleAnswerDone}
         />
       )}
