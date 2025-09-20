@@ -1,5 +1,5 @@
 import type { AnswerType } from '../Home';
-import TextAnswer from './TextAnswer';
+import TextAnswer from './TextInput';
 import Timer from './Timer';
 import VoiceInput from './VoiceInput';
 

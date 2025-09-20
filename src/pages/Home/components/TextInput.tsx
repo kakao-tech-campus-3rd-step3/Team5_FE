@@ -1,4 +1,4 @@
-const TextAnswer = () => {
+const TextInput = () => {
   return (
     <div>
       <h2>텍스트로 답변 입력</h2>
@@ -7,4 +7,4 @@ const TextAnswer = () => {
   );
 };
 
-export default TextAnswer;
+export default TextInput;
