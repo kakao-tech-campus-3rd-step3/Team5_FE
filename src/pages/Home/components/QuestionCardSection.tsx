@@ -10,13 +10,12 @@ const QuestionCardSection = ({ isStarted }: QuestionCardSectionProps) => {
     <section>
       <QuestionCard isStarted={isStarted === 'answering'}>
         <GlassBackground>
-          {isStarted
-            ? 'Cookie와 Local Storage의 차이점이 무엇인가요?'
-            : '오늘의 질문을 확인하세요!'}
+          {isStarted === 'before-answer'
+            ? '오늘의 질문을 확인하세요!'
+            : 'Cookie와 Local Storage의 차이점이 무엇인가요?'}
         </GlassBackground>
       </QuestionCard>
     </section>
-
   );
 };
 
