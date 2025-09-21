@@ -58,8 +58,7 @@ export const radius = {
 };
 
 export const zIndex = {
-  navigation: 100,
-  footer: 100,
-  modal: 200,
-  dropdown: 300,
+  zIndex100: 100,
+  zIndex200: 200,
+  zIndex300: 300,
 };
