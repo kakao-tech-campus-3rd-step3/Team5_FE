@@ -1,3 +1,4 @@
+import { radius, zIndex } from './../../styles/tokens';
 import '@emotion/react';
 import type { theme } from '../styles/theme';
 
@@ -7,5 +8,7 @@ declare module '@emotion/react' {
     colors: typeof theme.colors;
     typography: typeof theme.typography;
     spacing: typeof theme.spacing;
+    radius: typeof theme.radius;
+    zIndex: typeof theme.zIndex;
   }
 }
