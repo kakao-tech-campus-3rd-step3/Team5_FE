@@ -1,4 +1,6 @@
 import styled from '@emotion/styled';
+import SharedButton from '../../shared/ui/SharedButton';
+import { useNavigate } from 'react-router-dom';
 
 const questionData = {
   text: 'Q. Cookie와 Local Storage의 차이점이 무엇인가요?',
@@ -39,6 +41,12 @@ const improvementPointsData = {
 };
 
 const FeedbackPage = () => {
+  const navigator = useNavigate();
+
+  const handleArchiveClick = () => {
+  navigator('/archive');
+}
+
   return (
     <Wrapper>
       <SectionContainer>
@@ -93,6 +101,12 @@ const FeedbackPage = () => {
           </CardList>
         </CardWrapper>
       </SectionContainer>
+      <SharedButton 
+        type="button"
+        onClick={handleArchiveClick}
+        disabled={false}>
+        아카이브로 이동 
+      </SharedButton>
     </Wrapper>
   );
 };
