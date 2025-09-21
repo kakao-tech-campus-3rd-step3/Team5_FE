@@ -1,6 +1,8 @@
 import styled from '@emotion/styled';
 import SharedButton from '../../shared/ui/SharedButton';
 import { useNavigate } from 'react-router-dom';
+import { ROUTE_PATH } from '../../routes/routePath';
+import { useState } from 'react';
 
 const questionData = {
   text: 'Q. Cookie와 Local Storage의 차이점이 무엇인가요?',
@@ -46,10 +48,11 @@ const improvementPointsData = {
 };
 
 const FeedbackPage = () => {
-  const navigator = useNavigate();
+  const navigate = useNavigate();
+  const [memoContent, setMemoContent] = useState('');
 
   const handleArchiveClick = () => {
-  navigator('/archive');
+  navigate(ROUTE_PATH.ARCHIVE);
 }
 
   return (
@@ -110,9 +113,11 @@ const FeedbackPage = () => {
       <SectionContainer>
         <Title>메모</Title>
         <CardWrapper>
-          {memo.content.map((paragraph, index) => (
-            <CardParagraph key={index}>{paragraph}</CardParagraph>
-          ))}
+          <MemoTextArea
+            value={memoContent}
+            onChange={(e) => setMemoContent(e.target.value)}
+            placeholder="메모를 작성해주세요."
+          />
         </CardWrapper>
       </SectionContainer>
 
@@ -214,6 +219,21 @@ const TopicTitle = styled.h4`
   font-size: 1rem;
   color: #333;
   margin-bottom: 8px;
+`;
+
+const MemoTextArea = styled.textarea`
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #595959;
+  background-color: rgba(255, 255, 255, 0.6);
+
+  &:focus {
+    outline: none;
+    border-color: #333;
+  }
 `;
 
 export default FeedbackPage;
