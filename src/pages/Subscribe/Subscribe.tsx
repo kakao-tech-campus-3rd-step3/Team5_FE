@@ -1,6 +1,5 @@
-import React from 'react';
 import styled from '@emotion/styled';
-import GNB from '../../components/GNB/GNB';
+import GNB from '../../shared/components/Navigation/Navigation';
 import PricingCard from './components/PricingCard';
 import BenefitsCard from './components/BenefitsCard';
 
