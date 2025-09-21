@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+// import styled from '@emotion/styled';
 import AnswerTypeSelector from '../AnswerTypeSelector';
 import AnswerButton from '../../../../shared/ui/SharedButton';
 import type { AnswerType } from '../../Home';
