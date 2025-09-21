@@ -11,6 +11,11 @@ const answerData = {
   content: ['내용'],
 };
 
+const memo = {
+  title: '메모',
+  content: ['내용'],
+};
+
 interface TopicGroupData {
   topic: string;
   points: string[];
@@ -101,6 +106,16 @@ const FeedbackPage = () => {
           </CardList>
         </CardWrapper>
       </SectionContainer>
+
+      <SectionContainer>
+        <Title>메모</Title>
+        <CardWrapper>
+          {memo.content.map((paragraph, index) => (
+            <CardParagraph key={index}>{paragraph}</CardParagraph>
+          ))}
+        </CardWrapper>
+      </SectionContainer>
+
       <SharedButton 
         type="button"
         onClick={handleArchiveClick}
