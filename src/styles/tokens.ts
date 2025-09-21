@@ -33,28 +33,28 @@ export const typography = {
 
 export const space = {
   /** 4px */
-  xxs: '0.25rem',
+  space4: '0.25rem',
   /** 8px */
-  xs: '0.5rem',
+  space8: '0.5rem',
   /** 12px */
-  sm: '0.75rem',
+  space12: '0.75rem',
   /** 16px */
-  md: '1rem',
+  space16: '1rem',
   /** 24px */
-  lg: '1.5rem',
+  space24: '1.5rem',
   /** 32px */
-  xl: '2rem',
+  space32: '2rem',
 };
 
 export const radius = {
   /** 4px */
-  sm: '0.25rem',
+  radius4: '0.25rem',
   /** 8px */
-  md: '0.5rem',
+  radius8: '0.5rem',
   /** 16px */
-  lg: '1rem',
+  radius16: '1rem',
   /** 원 또는 타원을 만들 때 사용 */
-  full: '9999px',
+  radiusFull: '9999px',
 };
 
 export const zIndex = {
