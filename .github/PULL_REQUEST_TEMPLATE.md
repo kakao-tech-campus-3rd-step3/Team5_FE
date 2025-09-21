@@ -2,28 +2,13 @@
 
 -
 
-### ✅ 작업 상세 내용 (Detailed tasks)
-
-- [ ] task
-
 ### #️⃣ 관련 이슈 (Related Issues)
 
 Close #
 
-### 📸 스크린샷 (Screenshots)
-
-- (선택사항)
-
 ### 📢 리뷰어에게 전달할 말 (Words for Reviewer)
 
 -
-
-### ✔️ 자기 점검 체크리스트 (Self-Checklist)
-
-- [ ] PR 제목은 Conventional Commit 규칙을 따랐나요?
-- [ ] label을 올바르게 설정했나요?
-- [ ] 관련 이슈를 연결했나요?
-- [ ] 빌드에 성공했나요?
 
 ---
 
