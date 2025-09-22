@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { ROUTE_PATH } from '../../routes/routePath';
 import { useNavigate } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
@@ -36,8 +36,8 @@ const HomePage = () => {
     fetchUserData();
   }, []);
 
-  const handleAnswerType = (type: AnswerType) => {
-    setAnswerType(type);
+  const handleAnswerTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setAnswerType(e.target.value as AnswerType);
   };
 
   const handleAnswerDone = () => {
@@ -61,7 +61,7 @@ const HomePage = () => {
 
   return (
     <Wrapper>
-      <span>DailyQ 모의 면접</span>
+      <h1>DailyQ 모의 면접</h1>
       {/* TOOD: 추후 위치 이동 */}
       {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'}
       <QuestionCardSection answerState={answerState} />
@@ -69,7 +69,7 @@ const HomePage = () => {
       {answerState === 'before-answer' ? (
         <BeforeAnswerSection
           type={answerType}
-          onAnswerType={handleAnswerType}
+          onAnswerTypeChange={handleAnswerTypeChange}
           onAnswering={handleAnswering}
         />
       ) : (
