@@ -1,4 +1,4 @@
-import { colors, radius, space, typography, zIndex } from './tokens';
+import { blurs, colors, radius, space, typography, zIndex } from './tokens';
 
 export const theme = {
   colors,
@@ -6,4 +6,5 @@ export const theme = {
   space,
   radius,
   zIndex,
+  blurs
 };

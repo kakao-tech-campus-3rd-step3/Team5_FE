@@ -10,5 +10,6 @@ declare module '@emotion/react' {
     space: typeof theme.space;
     radius: typeof theme.radius;
     zIndex: typeof theme.zIndex;
+    blurs: typeof theme.blurs;
   }
 }

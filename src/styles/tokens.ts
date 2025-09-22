@@ -1,7 +1,7 @@
 // TODO:  secondary, background 색상 미정
 export const colors = {
   primary: 'coral',
-  secondary: '#F2F0FD',
+  secondary: '#ff6d6d',
   white: '#FFFFFF',
   black: '#000000',
   text: '#333333',
@@ -61,4 +61,13 @@ export const zIndex = {
   zIndex100: 100,
   zIndex200: 200,
   zIndex300: 300,
+};
+
+export const blurs = {
+  /** 약한 블러 (4px) */
+  sm: 'blur(4px)',
+  /** 중간 블러 (8px) */
+  md: 'blur(8px)',
+  /** 강한 블러 (12px) */
+  lg: 'blur(12px)',
 };
