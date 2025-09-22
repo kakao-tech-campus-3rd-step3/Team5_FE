@@ -4,10 +4,16 @@ import { BrowserRouter } from 'react-router-dom';
 import AppRouter from './routes/AppRouter';
 import { GlobalStyle } from './styles';
 import { useState } from 'react';
+import PluginInstallPage from './pages/PluginInstall/PluginInstall';
 import LoginPage from './pages/Login/Login';
 
 function App() {
+  const [isInstalled, setIsInstalled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleInstall = () => {
+    setIsInstalled(true);
+  };
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -16,7 +22,9 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle>
-        {!isLoggedIn ? (
+        {!isInstalled ? (
+          <PluginInstallPage onInstall={handleInstall} />
+        ) : !isLoggedIn ? (
           <LoginPage onLogin={handleLogin} />
         ) : (
           <BrowserRouter>
