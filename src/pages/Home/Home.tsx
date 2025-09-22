@@ -61,7 +61,7 @@ const HomePage = () => {
 
   return (
     <Wrapper>
-      <span>DailyQ 모의 면접</span>
+      <h1>DailyQ 모의 면접</h1>
       {/* TOOD: 추후 위치 이동 */}
       {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'}
       <QuestionCardSection answerState={answerState} />
