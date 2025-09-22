@@ -15,6 +15,7 @@ const ArchivePage = () => {
     <Wrapper>
       <SectionFirst ref={sectionFirstRef}>
         <Description />
+        <Pinned>Pinned</Pinned>
         <ButtonWrapper>
           <ScrollButton type="button" onClick={handleDownClick}>
             down
@@ -45,7 +46,8 @@ export default ArchivePage;
 
 const Wrapper = styled.div`
   overflow: hidden;
-  height: 100vh;
+  max-height: 100vh;
+  height: 100%;
 `;
 
 const SectionFirst = styled.section`
@@ -68,12 +70,12 @@ const SectionSecond = styled.section`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #ff6d6d;
+  background-color: ${({ theme }) => theme.colors.secondary};
 `;
 
 const ButtonWrapper = styled.div`
   position: absolute;
-  bottom: 120px;
+  bottom: 110px;
   left: 50%;
   transform: translate(-50%, -50%);
 `;
@@ -93,4 +95,19 @@ const LottieWrapper = styled.div`
   width: 120px;
   height: 120px;
   pointer-events: none;
+`;
+
+const Pinned = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 28px;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 0 ${({ theme }) => theme.space.space24};
+  border-radius: ${({ theme }) => theme.radius.radiusFull};
+  backdrop-filter: ${({ theme }) => theme.blurs.sm};
+  font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.space.space64};
 `;
