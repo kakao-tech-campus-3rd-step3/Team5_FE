@@ -106,7 +106,7 @@ const Pinned = styled.div`
   background: rgba(255, 255, 255, 0.4);
   padding: 0 ${({ theme }) => theme.space.space24};
   border-radius: ${({ theme }) => theme.radius.radiusFull};
-  backdrop-filter: ${({ theme }) => theme.blurs.sm};
+  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
   font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   margin-bottom: ${({ theme }) => theme.space.space64};

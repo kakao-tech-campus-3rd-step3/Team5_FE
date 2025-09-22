@@ -75,9 +75,9 @@ export const zIndex = {
 
 export const blurs = {
   /** 약한 블러 (4px) */
-  sm: 'blur(4px)',
+  blur4: 'blur(4px)',
   /** 중간 블러 (8px) */
-  md: 'blur(8px)',
+  blur8: 'blur(8px)',
   /** 강한 블러 (12px) */
-  lg: 'blur(12px)',
+  blur12: 'blur(12px)',
 };
