@@ -4,6 +4,7 @@ import { ROUTE_PATH } from '../../../routes/routePath';
 import { Home, Archive, Star, Users, PlusCircle } from 'lucide-react';
 
 const Navigation = () => {
+  // TODO: 아이콘은 추후에 적절한 걸로 교체 예정
   return (
     <Wrapper>
       <NavContainer>
