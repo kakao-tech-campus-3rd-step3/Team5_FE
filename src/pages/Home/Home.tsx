@@ -6,6 +6,7 @@ import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
 import z from 'zod';
+import api from '../../api/axiosInstance';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
@@ -29,10 +30,8 @@ const HomePage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const baseURL = import.meta.env.VITE_API_BASE_URL;
-        const response = await fetch(`${baseURL}/users/1`);
-        const data = await response.json();
-        const validatedData = UserSchema.parse(data);
+        const response = await api.get('/users/1');
+        const validatedData = UserSchema.parse(response.data);
 
         setUser(validatedData.user);
       } catch (error) {
