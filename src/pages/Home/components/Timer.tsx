@@ -1,20 +1,18 @@
 import styled from '@emotion/styled';
 import useTimer from '../hooks/useTimer';
+import formatTimeToMMSS from '../utils/formatTimeToMMSS';
 
 interface TimerProps {
   isActive: boolean;
   onAnswerDone: () => void;
 }
 
-const Timer = ({ isActive, onAnswerDone }: TimerProps) => {
-  const userDefinedTime = 10;
-  const { min, sec } = useTimer({ userDefinedTime, isActive, onAnswerDone });
+const userDefinedTime = 10;
 
-  return (
-    <Wrapper>
-      {String(min).padStart(2, '0')}:{String(sec).padStart(2, '0')}
-    </Wrapper>
-  );
+const Timer = ({ isActive, onAnswerDone }: TimerProps) => {
+  const { remainingSeconds } = useTimer({ userDefinedTime, isActive, onAnswerDone });
+
+  return <Wrapper>{formatTimeToMMSS(remainingSeconds)}</Wrapper>;
 };
 
 export default Timer;
