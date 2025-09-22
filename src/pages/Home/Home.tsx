@@ -24,7 +24,8 @@ const HomePage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('http://localhost:3001/users/1');
+        const baseURL = import.meta.env.VITE_API_BASE_URL;
+        const response = await fetch(`${baseURL}/users/1`);
         const data = await response.json();
 
         setUser(data.user);
