@@ -44,6 +44,14 @@ export const space = {
   space24: '1.5rem',
   /** 32px */
   space32: '2rem',
+  /** 40px */
+  space40: '2.5rem',
+  /** 48px */
+  space48: '3rem',
+  /** 56px */
+  space56: '3.5rem',
+  /** 64px */
+  space64: '4rem',
 };
 
 export const radius = {
@@ -53,6 +61,8 @@ export const radius = {
   radius8: '0.5rem',
   /** 16px */
   radius16: '1rem',
+  /** 24px */
+  radius24: '1.5rem',
   /** 원 또는 타원을 만들 때 사용 */
   radiusFull: '9999px',
 };
