@@ -6,8 +6,9 @@ interface TimerProps {
   onAnswerDone: () => void;
 }
 
+const userDefinedTime = 10;
+
 const Timer = ({ isActive, onAnswerDone }: TimerProps) => {
-  const userDefinedTime = 10;
   const { min, sec } = useTimer({ userDefinedTime, isActive, onAnswerDone });
 
   return (
