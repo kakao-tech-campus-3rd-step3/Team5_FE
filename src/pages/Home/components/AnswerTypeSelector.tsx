@@ -1,32 +1,41 @@
 import styled from '@emotion/styled';
 import { Keyboard, Mic } from 'lucide-react';
 import type { AnswerType } from '../Home';
+import type { ChangeEvent } from 'react';
 
 interface AnswerTypeSelectorProps {
   type: AnswerType;
-  onAnswerType: (type: AnswerType) => void;
+  onAnswerTypeChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const AnswerTypeSelector = ({ type, onAnswerType }: AnswerTypeSelectorProps) => {
+const AnswerTypeSelector = ({ type, onAnswerTypeChange }: AnswerTypeSelectorProps) => {
   return (
     <>
-      <span>답변 방식을 선택해주세요.</span>
+      <h2>답변 방식을 선택해주세요.</h2>
       <Wrapper>
-        <AnswerTypeButton
-          type="button"
-          isSelected={type === 'voice'}
-          onClick={() => onAnswerType('voice')}
-        >
+        <AnswerTypeLabel htmlFor="voice-option" isSelected={type === 'voice'}>
+          <HiddenRadioInput
+            type="radio"
+            id="voice-option"
+            name="answerType"
+            value="voice"
+            checked={type === 'voice'}
+            onChange={onAnswerTypeChange}
+          />
           <Mic size={40} />
-        </AnswerTypeButton>
+        </AnswerTypeLabel>
 
-        <AnswerTypeButton
-          type="button"
-          isSelected={type === 'text'}
-          onClick={() => onAnswerType('text')}
-        >
+        <AnswerTypeLabel isSelected={type === 'text'}>
+          <HiddenRadioInput
+            type="radio"
+            id="text-option"
+            name="answerType"
+            value="text"
+            checked={type === 'text'}
+            onChange={onAnswerTypeChange}
+          />
           <Keyboard size={40} />
-        </AnswerTypeButton>
+        </AnswerTypeLabel>
       </Wrapper>
     </>
   );
@@ -40,7 +49,7 @@ const Wrapper = styled.div`
   gap: 1rem;
 `;
 
-const AnswerTypeButton = styled.button<{ isSelected: boolean }>`
+const AnswerTypeLabel = styled.label<{ isSelected: boolean }>`
   padding: 1.5rem;
   border-radius: 14px;
   border-width: 2px;
@@ -63,4 +72,12 @@ const AnswerTypeButton = styled.button<{ isSelected: boolean }>`
     color: ${(props) => (props.isSelected ? '#22d3ee' : '#9ca3af')};
     transition: color 0.3s ease-in-out;
   }
+`;
+
+const HiddenRadioInput = styled.input`
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  cursor: pointer;
 `;

@@ -2,17 +2,18 @@
 import AnswerTypeSelector from '../AnswerTypeSelector';
 import AnswerButton from '../../../../shared/ui/SharedButton';
 import type { AnswerType } from '../../Home';
+import type { ChangeEvent } from 'react';
 
 interface BeforeAnswerSectionProps {
   type: AnswerType;
-  onAnswerType: (type: AnswerType) => void;
+  onAnswerTypeChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAnswering: () => void;
 }
 
-const BeforeAnswerSection = ({ type, onAnswerType, onAnswering }: BeforeAnswerSectionProps) => {
+const BeforeAnswerSection = ({ type, onAnswerTypeChange, onAnswering }: BeforeAnswerSectionProps) => {
   return (
     <section>
-      <AnswerTypeSelector type={type} onAnswerType={onAnswerType} />
+      <AnswerTypeSelector type={type} onAnswerTypeChange={onAnswerTypeChange} />
       <AnswerButton type="button" onClick={onAnswering} disabled={!type}>
         답변하기
       </AnswerButton>
