@@ -4,7 +4,7 @@ import PinnedQuestionList from './components/PinnedQuestionList';
 import QuestionList from './components/QuestionList';
 import useSectionScroll from './hooks/useSectionScroll';
 import Lottie from 'lottie-react';
-import clickAnimation from './assets/lottie/clickIcon.json';
+import clickAnimation from '../../assets/lottie/clickIcon.json';
 
 const ArchivePage = () => {
   const {
