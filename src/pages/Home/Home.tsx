@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { ROUTE_PATH } from '../../routes/routePath';
 import { useNavigate } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
@@ -36,8 +36,8 @@ const HomePage = () => {
     fetchUserData();
   }, []);
 
-  const handleAnswerType = (type: AnswerType) => {
-    setAnswerType(type);
+  const handleAnswerTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setAnswerType(e.target.value as AnswerType);
   };
 
   const handleAnswerDone = () => {
@@ -69,7 +69,7 @@ const HomePage = () => {
       {answerState === 'before-answer' ? (
         <BeforeAnswerSection
           type={answerType}
-          onAnswerType={handleAnswerType}
+          onAnswerTypeChange={handleAnswerTypeChange}
           onAnswering={handleAnswering}
         />
       ) : (
