@@ -45,12 +45,11 @@ export default ArchivePage;
 
 const Wrapper = styled.div`
   overflow: hidden;
-  height: 100%;
+  height: 100vh;
 `;
 
 const SectionFirst = styled.section`
   position: relative;
-  overflow: hidden;
   height: 100vh;
   scroll-snap-align: start;
 
