@@ -5,14 +5,19 @@ import { useNavigate } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
+import z from 'zod';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
 
-interface User {
-  user_id: number;
-  name: string;
-}
+const UserSchema = z.object({
+  user: z.object({
+    user_id: z.number(),
+    name: z.string(),
+  }),
+});
+
+type User = z.infer<typeof UserSchema>['user'];
 
 const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
@@ -27,8 +32,9 @@ const HomePage = () => {
         const baseURL = import.meta.env.VITE_API_BASE_URL;
         const response = await fetch(`${baseURL}/users/1`);
         const data = await response.json();
+        const validatedData = UserSchema.parse(data);
 
-        setUser(data.user);
+        setUser(validatedData.user);
       } catch (error) {
         console.error('유저 데이터를 불러오는 데 실패했습니다:', error);
       }
