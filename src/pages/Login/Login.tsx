@@ -1,16 +1,23 @@
 import styled from '@emotion/styled';
+import { useEffect } from 'react';
 import Logo from '../../shared/ui/Logo';
 import Tagline from '../../shared/components/Branding/Tagline';
+import { initializeKakao, loginWithKakao } from '../../config/kakao';
 
 interface LoginPageProps {
   onLogin: () => void;
 }
 
 const LoginPage = ({ onLogin }: LoginPageProps) => {
+  useEffect(() => {
+    // 카카오 SDK 초기화
+    initializeKakao();
+  }, []);
+
   const handleKakaoLogin = () => {
-    // TODO: 카카오 로그인 로직 구현
-    console.log('카카오 로그인');
-    onLogin(); // AppRouter로 이동
+    // TODO: 나중에 실제 카카오 로그인 구현
+    console.log('카카오 로그인 (개발용)');
+    onLogin(); // 바로 AppRouter로 이동
   };
 
   const handleGoogleLogin = () => {
