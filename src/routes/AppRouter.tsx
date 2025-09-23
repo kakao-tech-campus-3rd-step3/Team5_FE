@@ -14,7 +14,7 @@ import ProtectedRoute from './ProtectedRoute';
 const AppRouter = () => {
   // TODO: isAuthenticated 추후 state 관리
   const isAuthenticated = false;
-
+  // TODO: isAuthenticated == false 일 경우 로그인 페이지, 익스텐션 설치 페이지 등으로 이동
   return (
     <Routes>
       <Route element={<ProtectedRoute isAuth={isAuthenticated} />}>
@@ -27,12 +27,12 @@ const AppRouter = () => {
         </Route>
       </Route>
 
-      {/* TODO: isAuthenticated == false 일 경우 로그인 페이지, 익스텐션 설치 페이지 등으로 이동 */}
       <Route element={<AuthLayout />}>
         {/* TODO: LOGINPAGE 등 네비, 푸터 없이 콘텐츠만 보여줘야 하는 레이아웃 추가 */}
         <Route path={ROUTE_PATH.LOGIN} element={<LoginPage />} />
-        <Route path={ROUTE_PATH.NOTFOUND} element={<NotFound />} />
       </Route>
+
+      <Route path={ROUTE_PATH.NOTFOUND} element={<NotFound />} />
     </Routes>
   );
 };
