@@ -13,7 +13,7 @@ import ProtectedRoute from './ProtectedRoute';
 
 const AppRouter = () => {
   // TODO: isAuthenticated 추후 state 관리
-  const isAuthenticated = false;
+  const isAuthenticated = true;
   // TODO: isAuthenticated == false 일 경우 로그인 페이지, 익스텐션 설치 페이지 등으로 이동
   return (
     <Routes>
