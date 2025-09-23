@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
-import z from 'zod';
+import { z } from 'zod';
 import api from '../../api/axiosInstance';
 
 export type AnswerType = 'voice' | 'text' | null;
