@@ -1,5 +1,4 @@
 import styled from '@emotion/styled';
-import GNB from '../../shared/components/Navigation/Navigation';
 import PricingCard from './components/PricingCard';
 import BenefitsCard from './components/BenefitsCard';
 
@@ -27,8 +26,6 @@ const SubscribePage = () => {
       <BenefitsCard title="Premium 혜택" benefits={benefits} price={monthlyPrice} />
 
       <SubscribeButton type="button">구독하기</SubscribeButton>
-
-      <GNB />
     </Wrapper>
   );
 };
