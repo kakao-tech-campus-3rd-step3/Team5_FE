@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { theme } from '../../styles/theme';
 import PricingCard from './components/PricingCard';
 import BenefitsCard from './components/BenefitsCard';
 
@@ -34,8 +35,8 @@ export default SubscribePage;
 
 const Wrapper = styled.div`
   min-height: 100vh;
-  // background: linear-gradient(180deg, #f5f5dc 0%, #f0e68c 100%);
-  padding: 20px;
+  background: ${theme.colors.backgroundGradient};
+  padding: ${theme.space.space24};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,37 +44,41 @@ const Wrapper = styled.div`
 
 const HeaderSection = styled.div`
   text-align: center;
-  margin-bottom: 30px;
-  margin-top: 40px;
+  margin-bottom: ${theme.space.space40};
+  margin-top: ${theme.space.space48};
 `;
 
 const MainTitle = styled.h1`
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
+  font-size: ${theme.typography.fontSizes.h2};
+  font-weight: ${theme.typography.fontWeights.bold};
+  color: ${theme.colors.text};
   line-height: 1.4;
   margin: 0;
 `;
 
 const SubscribeButton = styled.button`
-  background-color: #333333;
-  color: white;
+  background-color: ${theme.colors.text};
+  color: ${theme.colors.white};
   border: none;
-  border-radius: 12px;
-  padding: 16px 32px;
-  font-size: 18px;
-  font-weight: 700;
+  border-radius: ${theme.radius.radius16};
+  padding: ${theme.space.space16} ${theme.space.space32};
+  font-size: ${theme.typography.fontSizes.body};
+  font-weight: ${theme.typography.fontWeights.bold};
   width: 100%;
   max-width: 320px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  margin-bottom: 80px;
+  transition: all 0.2s ease;
+  margin-bottom: ${theme.space.space64};
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   &:hover {
-    background-color: #444444;
+    background-color: ${theme.colors.primary};
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   }
 
   &:active {
-    background-color: #222222;
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 `;
