@@ -1,7 +1,7 @@
 // TODO:  secondary, background 색상 미정
 export const colors = {
   primary: 'coral',
-  secondary: '#F2F0FD',
+  secondary: '#ff6d6d',
   white: '#FFFFFF',
   black: '#000000',
   text: '#333333',
@@ -44,6 +44,14 @@ export const space = {
   space24: '1.5rem',
   /** 32px */
   space32: '2rem',
+  /** 40px */
+  space40: '2.5rem',
+  /** 48px */
+  space48: '3rem',
+  /** 56px */
+  space56: '3.5rem',
+  /** 64px */
+  space64: '4rem',
 };
 
 export const radius = {
@@ -53,6 +61,8 @@ export const radius = {
   radius8: '0.5rem',
   /** 16px */
   radius16: '1rem',
+  /** 24px */
+  radius24: '1.5rem',
   /** 원 또는 타원을 만들 때 사용 */
   radiusFull: '9999px',
 };
@@ -61,4 +71,13 @@ export const zIndex = {
   zIndex100: 100,
   zIndex200: 200,
   zIndex300: 300,
+};
+
+export const blurs = {
+  /** 약한 블러 (4px) */
+  blur4: 'blur(4px)',
+  /** 중간 블러 (8px) */
+  blur8: 'blur(8px)',
+  /** 강한 블러 (12px) */
+  blur12: 'blur(12px)',
 };

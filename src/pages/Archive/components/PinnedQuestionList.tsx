@@ -28,10 +28,10 @@ const PinnedItemWrapper = styled.div`
 
 const PinnedItem = styled.div`
   position: absolute;
-  width: 140px;
+  width: 130px;
   height: 230px;
-  background: rgba(255, 99, 71, 1);
-  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.secondary};
+  border-radius: ${({ theme }) => theme.radius.radiusFull};
 
   display: flex;
   justify-content: center;
@@ -39,6 +39,7 @@ const PinnedItem = styled.div`
 `;
 
 const ItemText = styled.div`
-  font-weight: 700;
+  font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   transform: rotate(90deg);
 `;

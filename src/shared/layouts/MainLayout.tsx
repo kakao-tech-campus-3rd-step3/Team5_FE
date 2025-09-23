@@ -20,6 +20,5 @@ const MainLayout = () => {
 export default MainLayout;
 
 const Wrapper = styled.div`
-  min-height: 100vh; 
-  padding-bottom: 80px;
+  height: 100%;
 `;

@@ -7,8 +7,9 @@ declare module '@emotion/react' {
   export interface Theme {
     colors: typeof theme.colors;
     typography: typeof theme.typography;
-    spacing: typeof theme.spacing;
+    space: typeof theme.space;
     radius: typeof theme.radius;
     zIndex: typeof theme.zIndex;
+    blurs: typeof theme.blurs;
   }
 }

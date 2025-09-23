@@ -14,5 +14,5 @@ const AuthLayout = () => {
 export default AuthLayout;
 
 const Wrapper = styled.div`
-  height: 100vh;
+  height: 100%;
 `;
