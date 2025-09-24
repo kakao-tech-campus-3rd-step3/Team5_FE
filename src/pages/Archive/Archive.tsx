@@ -5,12 +5,30 @@ import QuestionList from './components/QuestionList';
 import useSectionScroll from './hooks/useSectionScroll';
 import Lottie from 'lottie-react';
 import clickAnimation from '../../assets/lottie/clickIcon.json';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const ArchivePage = () => {
   const {
     refs: { sectionFirstRef, sectionSecondRef },
     handlers: { handleDownClick, handleUpClick },
   } = useSectionScroll();
+
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get('https://be.dailyq.my/api/answers?userId=1');
+
+        setData(res.data);
+      } catch (error) {
+        console.error('유저 데이터를 불러오는 데 실패했습니다:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <Wrapper>
       <SectionFirst ref={sectionFirstRef}>
@@ -24,11 +42,11 @@ const ArchivePage = () => {
             <Lottie animationData={clickAnimation} loop autoplay />
           </LottieWrapper>
         </ButtonWrapper>
-        <PinnedQuestionList />
+        <PinnedQuestionList data={data}/>
       </SectionFirst>
 
       <SectionSecond ref={sectionSecondRef}>
-        <QuestionList />
+        <QuestionList data={data} />
         <ButtonWrapper>
           <ScrollButton type="button" onClick={handleUpClick}>
             Up

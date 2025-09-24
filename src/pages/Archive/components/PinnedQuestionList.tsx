@@ -1,19 +1,21 @@
 import styled from '@emotion/styled';
 import usePolygonAnimation from '../hooks/usePolygonAnimation';
-import { pinnedDatas } from '../datas/pinnedDatas';
 
-const PinnedQuestionList = () => {
+const PinnedQuestionList = ({ data }: any) => {
   const { pinnedItemWrapperRef, pinnedItemRefs } = usePolygonAnimation();
+  const items = data?.items?.filter((q: any) => q.starred);
+  console.log(items);
+  if (!items) return;
   return (
     <PinnedItemWrapper ref={pinnedItemWrapperRef}>
-      {pinnedDatas.map((data, i) => (
+      {items.map((data: any, i: any) => (
         <PinnedItem
-          key={data.id}
+          key={data.answerId}
           ref={(pinnedItemRef: HTMLDivElement) => {
             pinnedItemRefs.current[i] = pinnedItemRef;
           }}
         >
-          <ItemText>{data.question}</ItemText>
+          <ItemText>{data.questionText}</ItemText>
         </PinnedItem>
       ))}
     </PinnedItemWrapper>

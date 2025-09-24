@@ -7,6 +7,8 @@ import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
 import z from 'zod';
 import api from '../../api/axiosInstance';
+import Logo from '../../shared/ui/Logo';
+import axios from 'axios';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
@@ -58,7 +60,9 @@ const HomePage = () => {
   if (answerState === 'answered')
     return (
       <Wrapper>
-        <span>DailyQ 모의 면접</span>
+        <LogoWrapper>
+          <Logo size="medium" color="#333" />
+        </LogoWrapper>
         <QuestionCardSection answerState={answerState} />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
@@ -67,9 +71,12 @@ const HomePage = () => {
 
   return (
     <Wrapper>
-      <h1>DailyQ 모의 면접</h1>
-      {/* TOOD: 추후 위치 이동 */}
-      {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'}
+      <LogoWrapper>
+        <Logo size="medium" color="#333" />
+      </LogoWrapper>
+
+      {user ? <Text>안녕하세요, {user.name}!</Text> : <Text>오늘의 질문을 확인하세요!</Text>}
+
       <QuestionCardSection answerState={answerState} />
 
       {answerState === 'before-answer' ? (
@@ -97,4 +104,16 @@ const Wrapper = styled.div`
   align-items: center;
   justify-content: center;
   height: 100%;
+  overflow: auto;
+  margin-bottom: ${({ theme }) => theme.space.space64};
+`;
+
+const LogoWrapper = styled.h1`
+  margin-bottom: ${({ theme }) => theme.space.space16};
+`;
+
+const Text = styled.h2`
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.space.space16};
 `;
