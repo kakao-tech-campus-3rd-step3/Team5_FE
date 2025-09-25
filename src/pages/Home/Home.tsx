@@ -1,46 +1,20 @@
 import styled from '@emotion/styled';
-import { useEffect, useState, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { ROUTE_PATH } from '../../routes/routePath';
 import { useNavigate } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
-import z from 'zod';
-import api from '../../api/axiosInstance';
+import Logo from '../../shared/ui/Logo';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
-
-const UserSchema = z.object({
-  user: z.object({
-    user_id: z.number(),
-    name: z.string(),
-  }),
-});
-
-type User = z.infer<typeof UserSchema>['user'];
 
 const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
-
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await api.get('/users/1');
-        const validatedData = UserSchema.parse(response.data);
-
-        setUser(validatedData.user);
-      } catch (error) {
-        console.error('유저 데이터를 불러오는 데 실패했습니다:', error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+  // TODO: const { user } = UseUser();
 
   const handleAnswerTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAnswerType(e.target.value as AnswerType);
@@ -58,7 +32,9 @@ const HomePage = () => {
   if (answerState === 'answered')
     return (
       <Wrapper>
-        <span>DailyQ 모의 면접</span>
+        <LogoWrapper>
+          <Logo size="medium" color="#333" />
+        </LogoWrapper>
         <QuestionCardSection answerState={answerState} />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
@@ -67,9 +43,12 @@ const HomePage = () => {
 
   return (
     <Wrapper>
-      <h1>DailyQ 모의 면접</h1>
-      {/* TOOD: 추후 위치 이동 */}
-      {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'}
+      <LogoWrapper>
+        <Logo size="medium" color="#333" />
+      </LogoWrapper>
+
+      {/* TODO: {user ? <Text>안녕하세요, {user.name}!</Text> : <Text>오늘의 질문을 확인하세요!</Text>} */}
+
       <QuestionCardSection answerState={answerState} />
 
       {answerState === 'before-answer' ? (
@@ -97,4 +76,10 @@ const Wrapper = styled.div`
   align-items: center;
   justify-content: center;
   height: 100%;
+  overflow: auto;
+  margin-bottom: ${({ theme }) => theme.space.space64};
+`;
+
+const LogoWrapper = styled.div`
+  margin-bottom: ${({ theme }) => theme.space.space16};
 `;

@@ -1,4 +1,4 @@
-// import styled from '@emotion/styled';
+import styled from '@emotion/styled';
 import AnswerTypeSelector from '../AnswerTypeSelector';
 import AnswerButton from '../../../../shared/ui/SharedButton';
 import type { AnswerType } from '../../Home';
@@ -10,15 +10,34 @@ interface BeforeAnswerSectionProps {
   onAnswering: () => void;
 }
 
-const BeforeAnswerSection = ({ type, onAnswerTypeChange, onAnswering }: BeforeAnswerSectionProps) => {
+const BeforeAnswerSection = ({
+  type,
+  onAnswerTypeChange,
+  onAnswering,
+}: BeforeAnswerSectionProps) => {
   return (
     <section>
-      <AnswerTypeSelector type={type} onAnswerTypeChange={onAnswerTypeChange} />
-      <AnswerButton type="button" onClick={onAnswering} disabled={!type}>
-        답변하기
-      </AnswerButton>
+      <Wrapper>
+        <Text>답변 방식을 선택해주세요.</Text>
+        <AnswerTypeSelector type={type} onAnswerTypeChange={onAnswerTypeChange} />
+        <AnswerButton type="button" onClick={onAnswering} disabled={!type}>
+          답변하기
+        </AnswerButton>
+      </Wrapper>
     </section>
   );
 };
 
 export default BeforeAnswerSection;
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const Text = styled.h2`
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  margin-bottom: ${({ theme }) => theme.space.space16};
+`;
