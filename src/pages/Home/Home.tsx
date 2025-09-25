@@ -9,6 +9,7 @@ import z from 'zod';
 import api from '../../api/axiosInstance';
 import Logo from '../../shared/ui/Logo';
 import axios from 'axios';
+import useQuestion from './hooks/useQuestion';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';

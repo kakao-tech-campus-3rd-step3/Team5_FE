@@ -4,7 +4,6 @@ import usePolygonAnimation from '../hooks/usePolygonAnimation';
 const PinnedQuestionList = ({ data }: any) => {
   const { pinnedItemWrapperRef, pinnedItemRefs } = usePolygonAnimation();
   const items = data?.items?.filter((q: any) => q.starred);
-  console.log(items);
   if (!items) return;
   return (
     <PinnedItemWrapper ref={pinnedItemWrapperRef}>
