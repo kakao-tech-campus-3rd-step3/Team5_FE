@@ -1,12 +1,12 @@
-import axios from 'axios';
 import { useEffect, useState } from 'react';
+import apiClient, { API_BASE_URL } from '../../../api/apiClient';
 
 const useAnswer = () => {
   const [data, setData] = useState(null);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get('https://be.dailyq.my/api/answers?userId=1');
+        const res = await apiClient(`${API_BASE_URL}/api/answers?userId=1`);
 
         setData(res.data);
       } catch (error) {

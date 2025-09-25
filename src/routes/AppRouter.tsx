@@ -9,6 +9,7 @@ import RivalPage from '../pages/Rival/Rival';
 import NotFound from '../pages/NotFound/NotFound';
 import MainLayout from '../shared/layouts/MainLayout';
 import AuthLayout from '../shared/layouts/AuthLayout';
+// import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
 
 const AppRouter = () => {
   return (
@@ -20,6 +21,7 @@ const AppRouter = () => {
         <Route path={ROUTE_PATH.SUBSCRIBE} element={<SubscribePage />} />
         <Route path={ROUTE_PATH.NOTFOUND} element={<NotFound />} />
         <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} />
+        {/* <Route path={ROUTE_PATH.FEEDBACKDETAIL} element={<FeedbackDetailPage />} /> */}
         <Route path={ROUTE_PATH.RIVAL} element={<RivalPage />} />
       </Route>
 
