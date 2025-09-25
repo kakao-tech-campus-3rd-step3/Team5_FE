@@ -13,10 +13,10 @@ const answerData = {
   content: ['내용'],
 };
 
-const memo = {
-  title: '메모',
-  content: ['내용'],
-};
+// const memo = {
+//   title: '메모',
+//   content: ['내용'],
+// };
 
 interface TopicGroupData {
   topic: string;
@@ -52,8 +52,8 @@ const FeedbackPage = () => {
   const [memoContent, setMemoContent] = useState('');
 
   const handleArchiveClick = () => {
-  navigate(ROUTE_PATH.ARCHIVE);
-}
+    navigate(ROUTE_PATH.ARCHIVE);
+  };
 
   return (
     <Wrapper>
@@ -121,11 +121,8 @@ const FeedbackPage = () => {
         </CardWrapper>
       </SectionContainer>
 
-      <SharedButton 
-        type="button"
-        onClick={handleArchiveClick}
-        disabled={false}>
-        아카이브로 이동 
+      <SharedButton type="button" onClick={handleArchiveClick} disabled={false}>
+        아카이브로 이동
       </SharedButton>
     </Wrapper>
   );
