@@ -10,12 +10,15 @@ interface PricingCardProps {
 }
 
 const PricingCard = (props: PricingCardProps) => {
-  const { highlighted = false } = props;
+  const { title, description, price, highlighted = false } = props;
+
   return (
     <Card $highlighted={highlighted}>
-      <CardTitle>{props.title}</CardTitle>
-      <CardDescription>{props.description}</CardDescription>
-      <CardPrice>매달 ₩{formatCurrency(props.price)}</CardPrice>
+      <CardContent>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+        <CardPrice>매달 ₩{formatCurrency(price)}</CardPrice>
+      </CardContent>
     </Card>
   );
 };
@@ -62,6 +65,11 @@ const Card = styled.div<{ $highlighted: boolean }>`
   }
 `;
 
+const CardContent = styled.div`
+  position: relative;
+  z-index: 1;
+`;
+
 const CardTitle = styled.h2`
   font-size: ${theme.typography.fontSizes.h3};
   font-weight: ${theme.typography.fontWeights.bold};
@@ -84,3 +92,4 @@ const CardPrice = styled.div`
   color: ${theme.colors.white};
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
+
