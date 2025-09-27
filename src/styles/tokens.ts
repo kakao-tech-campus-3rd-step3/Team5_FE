@@ -52,6 +52,8 @@ export const space = {
   space56: '3.5rem',
   /** 64px */
   space64: '4rem',
+  /** 128px */
+  space128: '8rem',
 };
 
 export const radius = {
