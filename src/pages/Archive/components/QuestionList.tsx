@@ -1,14 +1,18 @@
 import styled from '@emotion/styled';
-import { questionDatas } from '../datas/questionDatas';
 
-const QuestionList = () => {
+const QuestionList = ({ data }: any) => {
+  // console.log(data);
+  const items = data?.items;
+  // console.log(items);
+
+  if (!items || items.length === 0) return;
   return (
     <Wrapper>
       <ListItemWrapper>
         <ol>
-          {questionDatas.map((data, index) => (
-            <ListItem key={data.id}>
-              {index + 1}. {data.question}
+          {items.map((q: any, index: any) => (
+            <ListItem key={q.answerId}>
+              {index + 1}. {q.questionText}
             </ListItem>
           ))}
         </ol>

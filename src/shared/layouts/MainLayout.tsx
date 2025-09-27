@@ -5,11 +5,9 @@ import Navigation from '../components/Navigation/Navigation';
 const MainLayout = () => {
   return (
     <>
-      <main>
-        <Wrapper>
-          <Outlet />
-        </Wrapper>
-      </main>
+      <Wrapper>
+        <Outlet />
+      </Wrapper>
       <Navigation />
     </>
   );
@@ -17,6 +15,6 @@ const MainLayout = () => {
 
 export default MainLayout;
 
-const Wrapper = styled.div`
+const Wrapper = styled.main`
   height: 100%;
 `;

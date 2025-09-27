@@ -5,12 +5,15 @@ import QuestionList from './components/QuestionList';
 import useSectionScroll from './hooks/useSectionScroll';
 import Lottie from 'lottie-react';
 import clickAnimation from '../../assets/lottie/clickIcon.json';
+import useAnswer from './hooks/useAnswer';
 
 const ArchivePage = () => {
   const {
     refs: { sectionFirstRef, sectionSecondRef },
     handlers: { handleDownClick, handleUpClick },
   } = useSectionScroll();
+  const { data } = useAnswer();
+
   return (
     <Wrapper>
       <SectionFirst ref={sectionFirstRef}>
@@ -24,11 +27,11 @@ const ArchivePage = () => {
             <Lottie animationData={clickAnimation} loop autoplay />
           </LottieWrapper>
         </ButtonWrapper>
-        <PinnedQuestionList />
+        <PinnedQuestionList data={data} />
       </SectionFirst>
 
       <SectionSecond ref={sectionSecondRef}>
-        <QuestionList />
+        <QuestionList data={data} />
         <ButtonWrapper>
           <ScrollButton type="button" onClick={handleUpClick}>
             Up
