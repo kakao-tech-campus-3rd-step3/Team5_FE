@@ -28,7 +28,7 @@ const AppRouter = () => {
       </Route>
       <Route element={<ModalLayout />}>
         <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} />
-        <Route path={ROUTE_PATH.FEEDBACKDETAIL} element={<FeedbackDetailPage />} />
+        <Route path={ROUTE_PATH.FEEDBACK_DETAIL} element={<FeedbackDetailPage />} />
       </Route>
     </Routes>
   );
