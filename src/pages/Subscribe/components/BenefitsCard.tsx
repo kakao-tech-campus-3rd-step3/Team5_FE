@@ -1,6 +1,5 @@
-import React from 'react';
 import styled from '@emotion/styled';
-import { formatCurrency } from '../../../utils/currency';
+import { formatCurrency } from '../../../shared/utils/currency';
 
 interface BenefitsCardProps {
   title: string;
@@ -8,16 +7,16 @@ interface BenefitsCardProps {
   price: number;
 }
 
-const BenefitsCard: React.FC<BenefitsCardProps> = ({ title, benefits, price }) => {
+const BenefitsCard = (props: BenefitsCardProps) => {
   return (
     <Card>
-      <CardTitle>{title}</CardTitle>
+      <CardTitle>{props.title}</CardTitle>
       <BenefitsList>
-        {benefits.map((benefit, index) => (
+        {props.benefits.map((benefit, index) => (
           <BenefitItem key={index}>{benefit}</BenefitItem>
         ))}
       </BenefitsList>
-      <CardPrice>매달 ₩{formatCurrency(price)}</CardPrice>
+      <CardPrice>매달 ₩{formatCurrency(props.price)}</CardPrice>
     </Card>
   );
 };

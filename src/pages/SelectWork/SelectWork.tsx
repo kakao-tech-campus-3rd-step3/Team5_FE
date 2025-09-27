@@ -7,8 +7,8 @@ const workOptions = [
   { id: 'consulting', label: '방송송', color: '#ffffff' },
 ];
 
-const SelectWorkPage: React.FC = () => {
-  const [selectedWork, setSelectedWork] = useState<string>('it');
+const SelectWorkPage = () => {
+  const [selectedWork, setSelectedWork] = useState('it');
 
   const handleWorkSelect = (workId: string) => {
     setSelectedWork(workId);
@@ -16,11 +16,11 @@ const SelectWorkPage: React.FC = () => {
 
   const handleNext = () => {
     console.log('선택된 직업:', selectedWork);
-    // 다음 페이지로 이동 로직
+    // TODO: 다음 페이지로 이동 로직 구현
   };
 
   return (
-    <Container>
+    <Wrapper>
       <ContentSection>
         <Title>하루면접이 처음이신가요?</Title>
         <Subtitle>
@@ -33,6 +33,7 @@ const SelectWorkPage: React.FC = () => {
           {workOptions.map((option) => (
             <OptionButton
               key={option.id}
+              type="button"
               $isSelected={selectedWork === option.id}
               $color={option.color}
               onClick={() => handleWorkSelect(option.id)}
@@ -43,14 +44,16 @@ const SelectWorkPage: React.FC = () => {
         </OptionsCard>
       </ContentSection>
 
-      <NextButton onClick={handleNext}>다음</NextButton>
-    </Container>
+      <NextButton type="button" onClick={handleNext}>
+        다음
+      </NextButton>
+    </Wrapper>
   );
 };
 
 export default SelectWorkPage;
 
-const Container = styled.div`
+const Wrapper = styled.div`
   min-height: 100vh;
   background: linear-gradient(180deg, #f5f5dc 0%, #f4c2c2 100%);
   display: flex;

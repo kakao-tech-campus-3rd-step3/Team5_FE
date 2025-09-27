@@ -1,4 +1,4 @@
-// TODO: 예시 입니다. 추후 논의 후 수정하기
+// TODO: 디자인 토큰 정의 - 디자이너와 협의 후 최종 색상/타이포그래피 확정
 const colorScale = {
   gray00: '#ffffff',
   gray100: '#f7f8f9',

@@ -1,6 +1,5 @@
-import React from 'react';
 import styled from '@emotion/styled';
-import { formatCurrency } from '../../../utils/currency';
+import { formatCurrency } from '../../../shared/utils/currency';
 
 interface PricingCardProps {
   title: string;
@@ -9,17 +8,13 @@ interface PricingCardProps {
   highlighted?: boolean;
 }
 
-const PricingCard: React.FC<PricingCardProps> = ({
-  title,
-  description,
-  price,
-  highlighted = false,
-}) => {
+const PricingCard = (props: PricingCardProps) => {
+  const { highlighted = false } = props;
   return (
     <Card $highlighted={highlighted}>
-      <CardTitle>{title}</CardTitle>
-      <CardDescription>{description}</CardDescription>
-      <CardPrice>매달 ₩{formatCurrency(price)}</CardPrice>
+      <CardTitle>{props.title}</CardTitle>
+      <CardDescription>{props.description}</CardDescription>
+      <CardPrice>매달 ₩{formatCurrency(props.price)}</CardPrice>
     </Card>
   );
 };

@@ -40,7 +40,7 @@ const improvementPointsData = {
 
 const FeedbackPage = () => {
   return (
-    <PageLayout>
+    <Wrapper>
       <SectionContainer>
         <Title>오늘의 질문</Title>
         <QuestionCard>
@@ -93,12 +93,11 @@ const FeedbackPage = () => {
           </CardList>
         </CardWrapper>
       </SectionContainer>
-    </PageLayout>
+    </Wrapper>
   );
 };
 
 const SectionContainer = styled.section`
-  background-color: #ffffff;
   padding: 40px 20px;
   display: flex;
   flex-direction: column;
@@ -106,7 +105,7 @@ const SectionContainer = styled.section`
   width: 100%;
 `;
 
-const PageLayout = styled.div`
+const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -121,7 +120,7 @@ const Title = styled.h2`
 `;
 
 const QuestionCard = styled.div`
-  background-color: #fffaf0;
+  background-color: rgba(255, 255, 255, 0.6);
   border-radius: 16px;
   padding: 25px 30px;
   max-width: 600px;
@@ -136,7 +135,7 @@ const QuestionText = styled.p`
 `;
 
 const CardWrapper = styled.div`
-  background-color: #fffaf0;
+  background-color: rgba(255, 255, 255, 0.6);
   border-radius: 24px;
   padding: 32px;
   max-width: 600px;

@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from '@emotion/styled';
 
 interface LogoProps {
@@ -6,7 +5,8 @@ interface LogoProps {
   color?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ size = 'medium', color = '#333' }) => {
+const Logo = (props: LogoProps) => {
+  const { size = 'medium', color = '#333' } = props;
   return (
     <LogoText $size={size} $color={color}>
       DailyQ

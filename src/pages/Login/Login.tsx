@@ -1,44 +1,43 @@
-import React from 'react';
 import styled from '@emotion/styled';
-import Logo from '../../components/Branding/Logo';
-import Tagline from '../../components/Branding/Tagline';
+import Logo from '../../shared/ui/Logo';
+import Tagline from '../../shared/components/Branding/Tagline';
 
-const LoginPage: React.FC = () => {
+const LoginPage = () => {
   const handleKakaoLogin = () => {
-    // 카카오 로그인 로직 구현
+    // TODO: 카카오 로그인 로직 구현
     console.log('카카오 로그인');
   };
 
   const handleGoogleLogin = () => {
-    // 구글 로그인 로직 구현
+    // TODO: 구글 로그인 로직 구현
     console.log('구글 로그인');
   };
 
   return (
-    <Container>
+    <Wrapper>
       <BrandingSection>
         <Logo size="large" color="#333" />
         <Tagline size="medium" color="#666" />
       </BrandingSection>
 
       <LoginButtonSection>
-        <KakaoLoginButton onClick={handleKakaoLogin}>
+        <KakaoLoginButton type="button" onClick={handleKakaoLogin}>
           <KakaoIcon>💬</KakaoIcon>
           Login with Kakao
         </KakaoLoginButton>
 
-        <GoogleLoginButton onClick={handleGoogleLogin}>
+        <GoogleLoginButton type="button" onClick={handleGoogleLogin}>
           <GoogleIcon>G</GoogleIcon>
           Sign in with Google
         </GoogleLoginButton>
       </LoginButtonSection>
-    </Container>
+    </Wrapper>
   );
 };
 
 export default LoginPage;
 
-const Container = styled.div`
+const Wrapper = styled.div`
   min-height: 100vh;
   background: linear-gradient(180deg, #f5f5dc 0%, #f4c2c2 100%);
   display: flex;

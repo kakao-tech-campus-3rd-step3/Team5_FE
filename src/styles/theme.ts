@@ -1,5 +1,5 @@
 import { colors, spacing, typography } from './tokens';
-// TODO: 예시 입니다. 추후 논의 후 수정하기
+// TODO: 테마 객체 구조 - tokens.ts와 연동하여 최종 테마 구조 확정
 export const theme = {
   colors,
   typography,
