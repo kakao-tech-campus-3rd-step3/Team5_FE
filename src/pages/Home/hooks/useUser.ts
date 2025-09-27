@@ -1,34 +1,31 @@
-// TODO: 유저 데이터 불러오기 훅
-// import axios from 'axios';
-// import { useEffect, useState } from 'react';
-// import z from 'zod';
+import { useEffect, useState } from 'react';
+import apiClient, { API_BASE_URL } from '../../../api/apiClient';
 
+// TODO: 주석 제거하기
 // const UserSchema = z.object({
 //   user: z.object({
 //     user_id: z.number(),
 //     name: z.string(),
 //   }),
 // });
-
 // type User = z.infer<typeof UserSchema>['user'];
-// const UseUser = () => {
-//   const [user, setUser] = useState<User | null>(null);
-//   useEffect(() => {
-//     const fetchUserData = async () => {
-//       try {
-//         const response = await axios.get('https://be.dailyq.my/api/user?userId=1');
-//         const validatedData = UserSchema.parse(response.data);
 
-//         setUser(validatedData.user);
-//       } catch (error) {
-//         console.error('유저 데이터를 불러오는 데 실패했습니다:', error);
-//       }
-//     };
+const UseUser = (id?: string) => {
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await apiClient(`${API_BASE_URL}/api/user?userId=${id}`);
+        setUser(response.data);
+      } catch (error) {
+        console.error('유저 데이터를 불러오는 데 실패했습니다:', error);
+      }
+    };
 
-//     fetchUserData();
-//   }, []);
+    fetchUserData();
+  }, []);
 
-//   return { user };
-// };
+  return { user };
+};
 
-// export default UseUser;
+export default UseUser;

@@ -1,11 +1,12 @@
 import styled from '@emotion/styled';
 import { useState, type ChangeEvent } from 'react';
 import { ROUTE_PATH } from '../../routes/routePath';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
 import Logo from '../../shared/ui/Logo';
+import useUser from './hooks/useUser';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
@@ -14,7 +15,10 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
-  // TODO: const { user } = UseUser();
+  const { id } = useParams();
+  const { user } = useUser(id);
+  // TODO: 추후 콘솔 삭제
+  console.log(user);
 
   const handleAnswerTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAnswerType(e.target.value as AnswerType);
