@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { useState, type ChangeEvent } from 'react';
 import { ROUTE_PATH } from '../../routes/routePath';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
@@ -15,8 +15,8 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
-  const { id } = useParams();
-  const { user } = useUser(id);
+  // const { id } = useParams();
+  const { user } = useUser();
   // TODO: 추후 콘솔 삭제
   console.log(user);
 
