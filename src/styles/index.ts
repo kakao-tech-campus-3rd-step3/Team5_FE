@@ -4,4 +4,5 @@ import './global.css';
 
 export const GlobalStyle = styled.div`
   background: ${({ theme }) => theme.colors.backgroundGradient};
+  height: 100%;
 `;

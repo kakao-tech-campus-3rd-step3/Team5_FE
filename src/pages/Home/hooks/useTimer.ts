@@ -37,10 +37,7 @@ const useTimer = ({ userDefinedTime: initialSeconds, isActive, onAnswerDone }: u
     };
   }, [isActive]);
 
-  const min = Math.floor(remainingSeconds / 60);
-  const sec = remainingSeconds % 60;
-
-  return { min, sec };
+  return { remainingSeconds };
 };
 
 export default useTimer;

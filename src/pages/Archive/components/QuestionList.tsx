@@ -1,44 +1,53 @@
 import styled from '@emotion/styled';
-import { questionDatas } from '../datas/questionDatas';
 
-const QuestionList = () => {
+const QuestionList = ({ data }: any) => {
+  // console.log(data);
+  const items = data?.items;
+  // console.log(items);
+
+  if (!items || items.length === 0) return;
   return (
-    <GlassBackground>
+    <Wrapper>
       <ListItemWrapper>
         <ol>
-          {questionDatas.map((data, index) => (
-            <ListItem key={data.id}>
-              {index + 1}. {data.question}
+          {items.map((q: any, index: any) => (
+            <ListItem key={q.answerId}>
+              {index + 1}. {q.questionText}
             </ListItem>
           ))}
         </ol>
       </ListItemWrapper>
-    </GlassBackground>
+    </Wrapper>
   );
 };
 
 export default QuestionList;
 
-const ListItem = styled.li`
-  font-size: 1.2rem;
-  font-weight: 700;
-  padding-bottom: 10px;
-`;
+const Wrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: ${({ theme }) => theme.space.space16};
 
-const GlassBackground = styled.div`
   background-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(24px);
-  border-radius: 1.5rem;
+  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
+  border-radius: ${({ theme }) => theme.radius.radius24};
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 
-  width: 50%;
-  height: 70%;
-
-  display: flex;
+  width: 90%;
+  max-width: 900px;
+  max-height: 70%;
+  margin-bottom: ${({ theme }) => theme.space.space32};
 `;
 
 const ListItemWrapper = styled.div`
-  max-width: 80%;
-  margin: auto;
+  width: 100%;
+  height: 100%;
+`;
+
+const ListItem = styled.li`
+  font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  margin: ${({ theme }) => theme.space.space12};
 `;
