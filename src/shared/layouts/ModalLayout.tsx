@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
-import { Outlet } from 'react-router-dom';
 import Navigation from '../components/Navigation/Navigation';
+import { Outlet } from 'react-router-dom';
 
-const MainLayout = () => {
+const ModalLayout = () => {
   return (
     <>
       <Wrapper>
@@ -13,9 +13,10 @@ const MainLayout = () => {
   );
 };
 
-export default MainLayout;
+export default ModalLayout;
 
 const Wrapper = styled.main`
+  height: auto;
   background: ${({ theme }) => theme.colors.backgroundGradient};
-  height: 100%;
+  padding-bottom: ${({ theme }) => theme.space.space128};
 `;

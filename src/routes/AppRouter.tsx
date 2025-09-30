@@ -9,6 +9,8 @@ import RivalPage from '../pages/Rival/Rival';
 import NotFound from '../pages/NotFound/NotFound';
 import MainLayout from '../shared/layouts/MainLayout';
 import AuthLayout from '../shared/layouts/AuthLayout';
+import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
+import ModalLayout from '../shared/layouts/ModalLayout';
 import ProtectedRoute from './ProtectedRoute';
 
 const AppRouter = () => {
@@ -30,6 +32,11 @@ const AppRouter = () => {
       <Route element={<AuthLayout />}>
         {/* TODO: LOGINPAGE 등 네비, 푸터 없이 콘텐츠만 보여줘야 하는 레이아웃 추가 */}
         <Route path={ROUTE_PATH.LOGIN} element={<LoginPage />} />
+      </Route>
+
+      <Route element={<ModalLayout />}>
+        <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} />
+        <Route path={ROUTE_PATH.FEEDBACK_DETAIL} element={<FeedbackDetailPage />} />
       </Route>
 
       <Route path={ROUTE_PATH.NOTFOUND} element={<NotFound />} />

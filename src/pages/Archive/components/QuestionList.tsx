@@ -1,9 +1,15 @@
 import styled from '@emotion/styled';
+import { ROUTE_PATH } from '../../../routes/routePath';
+import { useNavigate } from 'react-router-dom';
 
 const QuestionList = ({ data }: any) => {
-  // console.log(data);
   const items = data?.items;
-  // console.log(items);
+  const navigate = useNavigate();
+
+  const handleItemClick = () => {
+    // TODO: id 값에 따라 동적라우팅 구현
+    navigate(ROUTE_PATH.FEEDBACK_DETAIL);
+  };
 
   if (!items || items.length === 0) return;
   return (
@@ -11,7 +17,7 @@ const QuestionList = ({ data }: any) => {
       <ListItemWrapper>
         <ol>
           {items.map((q: any, index: any) => (
-            <ListItem key={q.answerId}>
+            <ListItem key={q.answerId} onClick={handleItemClick}>
               {index + 1}. {q.questionText}
             </ListItem>
           ))}
