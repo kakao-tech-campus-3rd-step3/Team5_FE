@@ -5,9 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
-import z from 'zod';
-import { postAnswer, getFeedback } from '../../api/feedback';
-import apiClient from '../../api/apiClient';
+import Logo from '../../shared/ui/Logo';
+import useUser from './hooks/useUser';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
@@ -25,23 +24,10 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
-
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await apiClient.get('/users/1');
-        const validatedData = UserSchema.parse(response.data);
-
-        setUser(validatedData.user);
-      } catch (error) {
-        console.error('유저 데이터를 불러오는 데 실패했습니다:', error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+  // const { id } = useParams();
+  const { user } = useUser();
+  // TODO: 추후 콘솔 삭제
+  console.log(user);
 
   const handleAnswerTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAnswerType(e.target.value as AnswerType);
