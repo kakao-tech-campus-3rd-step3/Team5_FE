@@ -3,7 +3,7 @@ export const ROUTE_PATH = {
   HOME: '/',
   ARCHIVE: '/archive/:id',
   FEEDBACK: '/feedback',
-  FEEDBACK_DETAIL: '/feedbackDetail',
+  FEEDBACK_DETAIL: '/feedbackDetail:id',
   SUBSCRIBE: '/subscribe',
   LOGIN: '/login',
   RIVAL: '/rival',
