@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import apiClient, { API_BASE_URL } from '../../../api/apiClient';
+import apiClient from '../../../api/apiClient';
 
 // TODO: 주석 제거하기
 // const UserSchema = z.object({
@@ -15,7 +15,7 @@ const UseUser = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await apiClient(`${API_BASE_URL}/api/user?userId=1`);
+        const response = await apiClient(`/api/user`, { params: { user_id: 1 } });
         setUser(response.data);
       } catch (error) {
         console.error('유저 데이터를 불러오는 데 실패했습니다:', error);

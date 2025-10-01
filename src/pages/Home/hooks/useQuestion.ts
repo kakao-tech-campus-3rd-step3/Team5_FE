@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import apiClient, { API_BASE_URL } from '../../../api/apiClient';
+import apiClient from '../../../api/apiClient';
 
 const useQuestion = () => {
   const [question, setQuestion] = useState<any>(null);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await apiClient(`${API_BASE_URL}/api/questions/random?user_id=1`);
+        const response = await apiClient(`/api/questions/random`, { params: { user_id: 1 } });
         setQuestion(response.data);
         // 스트릭 모드 적용 시 랜덤 질문이 두번 불려오는 문제 해결하기
         // console.log(response.data);

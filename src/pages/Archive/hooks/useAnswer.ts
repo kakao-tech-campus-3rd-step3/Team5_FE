@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import apiClient, { API_BASE_URL } from '../../../api/apiClient';
+import apiClient from '../../../api/apiClient';
 
 const useAnswer = () => {
   const [data, setData] = useState(null);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await apiClient(`${API_BASE_URL}/api/answers?userId=1`);
+        const res = await apiClient(`/api/answers`, { params: { user_id: 1 } });
 
         setData(res.data);
       } catch (error) {
