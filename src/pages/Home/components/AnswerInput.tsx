@@ -13,7 +13,7 @@ interface AnswerInputProps {
 }
 
 const AnswerInput = ({ type, isActive, onAnswerDone, value, onChange }: AnswerInputProps) => {
-  if (!isActive) return;
+  if (!isActive) return null;
   return (
     <>
       <Timer isActive={isActive} onAnswerDone={onAnswerDone} />

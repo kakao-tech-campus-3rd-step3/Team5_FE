@@ -11,7 +11,7 @@ const QuestionList = ({ data }: any) => {
     navigate(ROUTE_PATH.FEEDBACK_DETAIL);
   };
 
-  if (!items || items.length === 0) return;
+  if (!items || items.length === 0) return null;
   return (
     <Wrapper>
       <ListItemWrapper>

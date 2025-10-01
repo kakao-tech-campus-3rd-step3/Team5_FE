@@ -13,7 +13,7 @@ const PinnedQuestionList = ({ data }: any) => {
     navigate(ROUTE_PATH.FEEDBACK_DETAIL);
   };
 
-  if (!items) return;
+  if (!items) return null;
   return (
     <PinnedItemWrapper ref={pinnedItemWrapperRef}>
       {items.map((data: any, i: any) => (
