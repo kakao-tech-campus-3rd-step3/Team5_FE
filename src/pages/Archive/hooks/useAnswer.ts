@@ -6,7 +6,7 @@ const useAnswer = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await apiClient(`/api/answers`, { params: { user_id: 1 } });
+        const res = await apiClient(`/api/answers`, { params: { userId: 1 } });
 
         setData(res.data);
       } catch (error) {
