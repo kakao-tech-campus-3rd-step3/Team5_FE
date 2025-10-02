@@ -10,12 +10,12 @@ import apiClient, { API_BASE_URL } from '../../../api/apiClient';
 // });
 // type User = z.infer<typeof UserSchema>['user'];
 
-const UseUser = (id?: string) => {
+const UseUser = () => {
   const [user, setUser] = useState(null);
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await apiClient(`${API_BASE_URL}/api/user?userId=${id}`);
+        const response = await apiClient(`${API_BASE_URL}/api/user?userId=1`);
         setUser(response.data);
       } catch (error) {
         console.error('유저 데이터를 불러오는 데 실패했습니다:', error);
