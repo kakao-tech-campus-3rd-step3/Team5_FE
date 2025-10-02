@@ -23,7 +23,7 @@ const AnswerTypeSelector = ({ type, onAnswerTypeChange }: AnswerTypeSelectorProp
         <Mic size={40} />
       </AnswerTypeLabel>
 
-      <AnswerTypeLabel isSelected={type === 'text'}>
+      <AnswerTypeLabel htmlFor="text-option" isSelected={type === 'text'}>
         <HiddenRadioInput
           type="radio"
           id="text-option"
