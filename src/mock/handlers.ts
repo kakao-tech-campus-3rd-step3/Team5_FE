@@ -1,9 +1,9 @@
 import { http, HttpResponse } from 'msw';
-import { API_BASE_URL } from '../api/apiClient';
+// import { API_BASE_URL } from '../api/apiClient';
 
 export const handlers = [
   // Home(질문) 페이지 questions 가져오기
-  http.get(`${API_BASE_URL}/api/questions/random`, ({ request }) => {
+  http.get('*/api/questions/random', ({ request }) => {
     const url = new URL(request.url);
     const userId = url.searchParams.get('user_id');
     if (userId === '1') {
@@ -17,7 +17,7 @@ export const handlers = [
     }
   }),
   // Home(질문) 페이지 users 가져오기
-  http.get(`${API_BASE_URL}/api/user`, ({ request }) => {
+  http.get('*/api/user', ({ request }) => {
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
     if (userId === '1') {
@@ -56,7 +56,7 @@ export const handlers = [
     }
   }),
   // Archive 질문(피드백) 가져오기
-  http.get(`${API_BASE_URL}/api/answers`, ({ request }) => {
+  http.get('*/api/answers', ({ request }) => {
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
     if (userId === '1') {
