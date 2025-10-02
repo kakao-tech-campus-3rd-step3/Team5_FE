@@ -7,12 +7,31 @@ import Lottie from 'lottie-react';
 import clickAnimation from '../../assets/lottie/clickIcon.json';
 import useAnswer from './hooks/useAnswer';
 
+export interface AnswerItem {
+  answerId: number;
+  questionId?: number;
+  question_id?: number;
+  questionText: string;
+  question_type: string;
+  flow_phase: string | null;
+  level: number;
+  starred: boolean;
+  createdAt?: string;
+  answered_time?: string;
+}
+
+export interface AnswersApiResponse {
+  items: AnswerItem[];
+  hasNext: boolean;
+}
+
 const ArchivePage = () => {
   const {
     refs: { sectionFirstRef, sectionSecondRef },
     handlers: { handleDownClick, handleUpClick },
   } = useSectionScroll();
   const { data } = useAnswer();
+  console.log(data);
 
   return (
     <Wrapper>

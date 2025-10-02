@@ -175,18 +175,18 @@ const CardListItem = styled.li`
   }
 `;
 
-const TopicGroup = styled.div`
-  &:not(:last-child) {
-    margin-bottom: 24px;
-  }
-`;
+// const TopicGroup = styled.div`
+//   &:not(:last-child) {
+//     margin-bottom: 24px;
+//   }
+// `;
 
-const TopicTitle = styled.h4`
-  font-weight: 600;
-  font-size: 1rem;
-  color: #333;
-  margin-bottom: 8px;
-`;
+// const TopicTitle = styled.h4`
+//   font-weight: 600;
+//   font-size: 1rem;
+//   color: #333;
+//   margin-bottom: 8px;
+// `;
 
 const MemoTextArea = styled.textarea`
   width: 100%;
