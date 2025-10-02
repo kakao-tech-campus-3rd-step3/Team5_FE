@@ -10,6 +10,8 @@ interface QuestionCardSectionProps {
 const QuestionCardSection = ({ answerState }: QuestionCardSectionProps) => {
   const { question } = useQuestion();
 
+  if (!question) return null;
+
   return (
     <section>
       <QuestionCard isStarted={answerState === 'answering'}>

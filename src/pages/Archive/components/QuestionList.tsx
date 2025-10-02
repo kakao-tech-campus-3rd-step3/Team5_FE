@@ -1,8 +1,13 @@
 import styled from '@emotion/styled';
 import { ROUTE_PATH } from '../../../routes/routePath';
 import { useNavigate } from 'react-router-dom';
+import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
-const QuestionList = ({ data }: any) => {
+interface QuestionListProps {
+  data: AnswersApiResponse | undefined;
+}
+
+const QuestionList = ({ data }: QuestionListProps) => {
   const items = data?.items;
   const navigate = useNavigate();
 
@@ -16,7 +21,7 @@ const QuestionList = ({ data }: any) => {
     <Wrapper>
       <ListItemWrapper>
         <ol>
-          {items.map((q: any, index: any) => (
+          {items.map((q: AnswerItem, index: number) => (
             <ListItem key={q.answerId} onClick={handleItemClick}>
               {index + 1}. {q.questionText}
             </ListItem>

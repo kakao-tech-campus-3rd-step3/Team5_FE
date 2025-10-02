@@ -1,8 +1,16 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../../../api/apiClient';
 
+export interface Question {
+  questionId: number;
+  questionType: string;
+  flowPhase: string;
+  questionText: string;
+  jobId: number;
+}
+
 const useQuestion = () => {
-  const [question, setQuestion] = useState<any>(null);
+  const [question, setQuestion] = useState<Question>();
   useEffect(() => {
     const fetchData = async () => {
       try {
