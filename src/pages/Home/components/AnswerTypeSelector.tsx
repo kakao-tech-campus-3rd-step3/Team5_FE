@@ -1,34 +1,40 @@
 import styled from '@emotion/styled';
 import { Keyboard, Mic } from 'lucide-react';
 import type { AnswerType } from '../Home';
+import type { ChangeEvent } from 'react';
 
 interface AnswerTypeSelectorProps {
   type: AnswerType;
-  onAnswerType: (type: AnswerType) => void;
+  onAnswerTypeChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const AnswerTypeSelector = ({ type, onAnswerType }: AnswerTypeSelectorProps) => {
+const AnswerTypeSelector = ({ type, onAnswerTypeChange }: AnswerTypeSelectorProps) => {
   return (
-    <>
-      <span>답변 방식을 선택해주세요.</span>
-      <Wrapper>
-        <AnswerTypeButton
-          type="button"
-          isSelected={type === 'voice'}
-          onClick={() => onAnswerType('voice')}
-        >
-          <Mic size={40} />
-        </AnswerTypeButton>
+    <Wrapper>
+      <AnswerTypeLabel htmlFor="voice-option" isSelected={type === 'voice'}>
+        <HiddenRadioInput
+          type="radio"
+          id="voice-option"
+          name="answerType"
+          value="voice"
+          checked={type === 'voice'}
+          onChange={onAnswerTypeChange}
+        />
+        <Mic size={40} />
+      </AnswerTypeLabel>
 
-        <AnswerTypeButton
-          type="button"
-          isSelected={type === 'text'}
-          onClick={() => onAnswerType('text')}
-        >
-          <Keyboard size={40} />
-        </AnswerTypeButton>
-      </Wrapper>
-    </>
+      <AnswerTypeLabel isSelected={type === 'text'}>
+        <HiddenRadioInput
+          type="radio"
+          id="text-option"
+          name="answerType"
+          value="text"
+          checked={type === 'text'}
+          onChange={onAnswerTypeChange}
+        />
+        <Keyboard size={40} />
+      </AnswerTypeLabel>
+    </Wrapper>
   );
 };
 
@@ -36,14 +42,16 @@ export default AnswerTypeSelector;
 
 const Wrapper = styled.div`
   display: grid;
+  width: 300px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+
+  margin-bottom: ${({ theme }) => theme.space.space24};
 `;
 
-const AnswerTypeButton = styled.button<{ isSelected: boolean }>`
-  padding: 1.5rem;
-  border-radius: 14px;
-  border-width: 2px;
+const AnswerTypeLabel = styled.label<{ isSelected: boolean }>`
+  padding: ${({ theme }) => theme.space.space12};
+  border-radius: ${({ theme }) => theme.space.space12};
   transition: all 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
@@ -51,16 +59,25 @@ const AnswerTypeButton = styled.button<{ isSelected: boolean }>`
   justify-content: center;
   cursor: pointer;
 
-  background-color: ${(props) =>
-    props.isSelected ? 'rgba(6, 182, 212, 0.2)' : 'rgba(55, 65, 81, 0.5)'};
-  border-color: ${(props) => (props.isSelected ? '#06b6d4' : '#4b5563')};
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: ${({ theme }) => theme.blurs.blur8};
+  border-radius: ${({ theme }) => theme.radius.radius24};
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 
-  &:hover {
-    border-color: ${(props) => (props.isSelected ? '#06b6d4' : '#6b7280')};
-  }
+  background-color: ${(props) =>
+    props.isSelected ? 'rgba(236, 236, 236, 0.1)' : 'rgba(255, 255, 255, 0.3)'};
 
   svg {
-    color: ${(props) => (props.isSelected ? '#22d3ee' : '#9ca3af')};
+    color: ${({ isSelected, theme }) => (isSelected ? theme.colors.secondary : '#b18f8fff')};
     transition: color 0.3s ease-in-out;
   }
+`;
+
+const HiddenRadioInput = styled.input`
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  cursor: pointer;
 `;

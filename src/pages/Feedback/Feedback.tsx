@@ -1,4 +1,8 @@
 import styled from '@emotion/styled';
+import SharedButton from '../../shared/ui/SharedButton';
+import { useNavigate } from 'react-router-dom';
+import { ROUTE_PATH } from '../../routes/routePath';
+import { useState } from 'react';
 
 const questionData = {
   text: 'Q. Cookie와 Local Storage의 차이점이 무엇인가요?',
@@ -8,6 +12,11 @@ const answerData = {
   title: '나의 답변',
   content: ['내용'],
 };
+
+// const memo = {
+//   title: '메모',
+//   content: ['내용'],
+// };
 
 interface TopicGroupData {
   topic: string;
@@ -39,6 +48,13 @@ const improvementPointsData = {
 };
 
 const FeedbackPage = () => {
+  const navigate = useNavigate();
+  const [memoContent, setMemoContent] = useState('');
+
+  const handleArchiveClick = () => {
+    navigate(ROUTE_PATH.ARCHIVE);
+  };
+
   return (
     <Wrapper>
       <SectionContainer>
@@ -93,6 +109,21 @@ const FeedbackPage = () => {
           </CardList>
         </CardWrapper>
       </SectionContainer>
+
+      <SectionContainer>
+        <Title>메모</Title>
+        <CardWrapper>
+          <MemoTextArea
+            value={memoContent}
+            onChange={(e) => setMemoContent(e.target.value)}
+            placeholder="메모를 작성해주세요."
+          />
+        </CardWrapper>
+      </SectionContainer>
+
+      <SharedButton type="button" onClick={handleArchiveClick} disabled={false}>
+        아카이브로 이동
+      </SharedButton>
     </Wrapper>
   );
 };
@@ -185,6 +216,21 @@ const TopicTitle = styled.h4`
   font-size: 1rem;
   color: #333;
   margin-bottom: 8px;
+`;
+
+const MemoTextArea = styled.textarea`
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #595959;
+  background-color: rgba(255, 255, 255, 0.6);
+
+  &:focus {
+    outline: none;
+    border-color: #333;
+  }
 `;
 
 export default FeedbackPage;
