@@ -14,7 +14,6 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
-  // const { id } = useParams();
   const { data: user } = useFetch('/api/user', { params: { userId: 1 } });
   // TODO: 추후 콘솔 삭제
   console.log(user);
@@ -45,8 +44,7 @@ const HomePage = () => {
   return (
     <Wrapper>
       <h1>DailyQ 모의 면접</h1>
-      {/* TOOD: 추후 위치 이동 */}
-      {/* {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'} */}
+      {/* TODO: {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'} */}
       <QuestionCardSection answerState={answerState} />
 
       {answerState === 'before-answer' ? (

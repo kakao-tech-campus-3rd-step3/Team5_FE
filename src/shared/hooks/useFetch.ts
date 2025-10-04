@@ -3,7 +3,6 @@ import apiClient from '../../api/apiClient';
 
 const useFetch = <T>(url: string, options: any = {}) => {
   const [data, setData] = useState<T | null>(null);
-  // options 객체를 의존성 배열에 그냥 넣으면 컴포넌트가 리렌더링될 때마다 새로운 객체로 인식되어 무한 루프에 빠질 수 있습니다. 이를 방지하기 위해 객체를 문자열로 변환한 값을 의존성 배열에 추가하는 것이 일반적인 해결책입니다.
   const optionsString = JSON.stringify(options);
 
   useEffect(() => {

@@ -16,7 +16,6 @@ interface Question {
 }
 
 const QuestionCardSection = ({ answerState }: QuestionCardSectionProps) => {
-  // const { question } = useQuestion();
   const { data: question } = useFetch<Question>('/api/questions/random', {
     params: { user_id: 1 },
   });
