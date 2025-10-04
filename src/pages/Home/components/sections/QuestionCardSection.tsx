@@ -1,14 +1,25 @@
 import styled from '@emotion/styled';
 import type { AnswerStateType } from '../../Home';
-import useQuestion from '../../hooks/useQuestion';
 import GlassBackground from '../../../../shared/components/GlassBackground/GlassBackground';
+import useFetch from '../../../../shared/hooks/useFetch';
 
 interface QuestionCardSectionProps {
   answerState: AnswerStateType;
 }
 
+interface Question {
+  questionId: number;
+  questionType: string;
+  flowPhase: string;
+  questionText: string;
+  jobId: number;
+}
+
 const QuestionCardSection = ({ answerState }: QuestionCardSectionProps) => {
-  const { question } = useQuestion();
+  // const { question } = useQuestion();
+  const { data: question } = useFetch<Question>('/api/questions/random', {
+    params: { user_id: 1 },
+  });
 
   if (!question) return null;
 

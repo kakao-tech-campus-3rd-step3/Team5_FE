@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
 interface QuestionListProps {
-  data: AnswersApiResponse | undefined;
+  data: AnswersApiResponse | null;
 }
 
 const QuestionList = ({ data }: QuestionListProps) => {
