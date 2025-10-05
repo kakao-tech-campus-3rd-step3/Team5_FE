@@ -117,5 +117,19 @@ export const handlers = [
       });
     }
   }),
+  // 답변 제출 API
+  http.post('*/api/answers', async ({ request }) => {
+    const body = await request.json();
+    console.log('POST /api/answers 요청 데이터:', body);
+    
+    return HttpResponse.json({
+      answerId: Math.floor(Math.random() * 1000) + 100,
+      questionId: body.questionId,
+      answerText: body.answerText,
+      answerType: body.answerType,
+      createdAt: new Date().toISOString(),
+      status: 'submitted'
+    }, { status: 201 });
+  }),
   // TODO: 본인이 사용 할 핸들러를 자유롭게 추가합니다.
 ];
