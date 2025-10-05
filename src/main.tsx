@@ -1,15 +1,20 @@
-// Side effect imports (스타일, 글로벌 설정 등)
 import './styles';
-
-// Third-party libraries
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-
-// Local components
 import App from './App.tsx';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+// MSW 클라이언트 초기화
+async function enableMocking() {
+  if (import.meta.env.VITE_ENABLE_MSW === 'true') {
+    const { client } = await import('./mock/client');
+    return client.start({});
+  }
+}
+
+enableMocking().then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+});

@@ -1,8 +1,9 @@
 import styled from '@emotion/styled';
 import SharedButton from '../../shared/ui/SharedButton';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTE_PATH } from '../../routes/routePath';
 import { useState } from 'react';
+import type { GetFeedbackData } from '../../api/feedback';
 
 const questionData = {
   text: 'Q. Cookie와 Local Storage의 차이점이 무엇인가요?',
@@ -13,53 +14,27 @@ const answerData = {
   content: ['내용'],
 };
 
-const memo = {
-  title: '메모',
-  content: ['내용'],
-};
-
-interface TopicGroupData {
-  topic: string;
-  points: string[];
-}
-
-const goodPointsData = {
-  title: '좋은 점',
-  content: [
-    {
-      topic: '주제1',
-      points: ['내용', '내용'],
-    },
-    {
-      topic: '주제2',
-      points: ['내용', '내용'],
-    },
-  ],
-};
-
-const improvementPointsData = {
-  title: '개선할 수 있는 점',
-  content: [
-    {
-      topic: '주제1',
-      points: ['내용', '내용'],
-    },
-  ],
-};
+// const memo = {
+//   title: '메모',
+//   content: ['내용'],
+// };
 
 const FeedbackPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [memoContent, setMemoContent] = useState('');
+  const feedbackResult = location.state as GetFeedbackData | undefined;
 
   const handleArchiveClick = () => {
-  navigate(ROUTE_PATH.ARCHIVE);
-}
+    navigate(ROUTE_PATH.ARCHIVE);
+  };
 
   return (
     <Wrapper>
       <SectionContainer>
         <Title>오늘의 질문</Title>
         <QuestionCard>
+          {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결 */}
           <QuestionText>{questionData.text}</QuestionText>
         </QuestionCard>
       </SectionContainer>
@@ -67,6 +42,7 @@ const FeedbackPage = () => {
       <SectionContainer>
         <Title>나의 답변</Title>
         <CardWrapper>
+          {/* TODO: API 응답에 사용자 답변 텍스트가 포함되어 있는지 확인 후 연결 */}
           {answerData.content.map((paragraph, index) => (
             <CardParagraph key={index}>{paragraph}</CardParagraph>
           ))}
@@ -77,34 +53,28 @@ const FeedbackPage = () => {
         <Title>AI 피드백</Title>
 
         <CardWrapper>
-          <CardTitle>{goodPointsData.title}</CardTitle>
+          <CardTitle>종합 평가</CardTitle>
+          <CardParagraph>{feedbackResult?.overallEvaluation}</CardParagraph>
+        </CardWrapper>
+      </SectionContainer>
+
+      <SectionContainer>
+        <CardWrapper>
+          <CardTitle>좋은 점</CardTitle>
           <CardList>
-            {goodPointsData.content.map((group: TopicGroupData, index: number) => (
-              <TopicGroup key={index}>
-                <TopicTitle>{group.topic}</TopicTitle>
-                <CardList>
-                  {group.points.map((point: string, pointIndex: number) => (
-                    <CardListItem key={pointIndex}>{point}</CardListItem>
-                  ))}
-                </CardList>
-              </TopicGroup>
+            {feedbackResult?.positivePoints.map((point, index) => (
+              <CardListItem key={index}>{point}</CardListItem>
             ))}
           </CardList>
         </CardWrapper>
       </SectionContainer>
+
       <SectionContainer>
         <CardWrapper>
-          <CardTitle>{improvementPointsData.title}</CardTitle>
+          <CardTitle>개선할 수 있는 점</CardTitle>
           <CardList>
-            {improvementPointsData.content.map((group: TopicGroupData, index: number) => (
-              <TopicGroup key={index}>
-                <TopicTitle>{group.topic}</TopicTitle>
-                <CardList>
-                  {group.points.map((point: string, pointIndex: number) => (
-                    <CardListItem key={pointIndex}>{point}</CardListItem>
-                  ))}
-                </CardList>
-              </TopicGroup>
+            {feedbackResult?.pointsForImprovement.map((point, index) => (
+              <CardListItem key={index}>{point}</CardListItem>
             ))}
           </CardList>
         </CardWrapper>
@@ -121,11 +91,8 @@ const FeedbackPage = () => {
         </CardWrapper>
       </SectionContainer>
 
-      <SharedButton 
-        type="button"
-        onClick={handleArchiveClick}
-        disabled={false}>
-        아카이브로 이동 
+      <SharedButton type="button" onClick={handleArchiveClick} disabled={false}>
+        아카이브로 이동
       </SharedButton>
     </Wrapper>
   );
@@ -208,18 +175,18 @@ const CardListItem = styled.li`
   }
 `;
 
-const TopicGroup = styled.div`
-  &:not(:last-child) {
-    margin-bottom: 24px;
-  }
-`;
+// const TopicGroup = styled.div`
+//   &:not(:last-child) {
+//     margin-bottom: 24px;
+//   }
+// `;
 
-const TopicTitle = styled.h4`
-  font-weight: 600;
-  font-size: 1rem;
-  color: #333;
-  margin-bottom: 8px;
-`;
+// const TopicTitle = styled.h4`
+//   font-weight: 600;
+//   font-size: 1rem;
+//   color: #333;
+//   margin-bottom: 8px;
+// `;
 
 const MemoTextArea = styled.textarea`
   width: 100%;

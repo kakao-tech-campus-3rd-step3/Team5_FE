@@ -1,19 +1,35 @@
 import styled from '@emotion/styled';
 import usePolygonAnimation from '../hooks/usePolygonAnimation';
-import { pinnedDatas } from '../datas/pinnedDatas';
+import { useNavigate } from 'react-router-dom';
+import { ROUTE_PATH } from '../../../routes/routePath';
+import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
-const PinnedQuestionList = () => {
+interface PinnedQuestionListProps {
+  data: AnswersApiResponse | null;
+}
+
+const PinnedQuestionList = ({ data }: PinnedQuestionListProps) => {
+  const navigate = useNavigate();
   const { pinnedItemWrapperRef, pinnedItemRefs } = usePolygonAnimation();
+  const items = data?.items?.filter((q: AnswerItem) => q.starred);
+
+  const handleItemClick = () => {
+    // TODO: id 값에 따라 동적라우팅 구현
+    navigate(ROUTE_PATH.FEEDBACK_DETAIL);
+  };
+
+  if (!items) return null;
   return (
     <PinnedItemWrapper ref={pinnedItemWrapperRef}>
-      {pinnedDatas.map((data, i) => (
+      {items.map((data: AnswerItem, i: number) => (
         <PinnedItem
-          key={data.id}
+          key={data.answerId}
           ref={(pinnedItemRef: HTMLDivElement) => {
             pinnedItemRefs.current[i] = pinnedItemRef;
           }}
+          onClick={handleItemClick}
         >
-          <ItemText>{data.question}</ItemText>
+          <ItemText>{data.questionText}</ItemText>
         </PinnedItem>
       ))}
     </PinnedItemWrapper>

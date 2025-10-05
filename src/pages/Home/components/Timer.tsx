@@ -7,7 +7,10 @@ interface TimerProps {
   onAnswerDone: () => void;
 }
 
-const userDefinedTime = 10;
+/**
+ * 사용자가 설정 할 수 있는 답변 제한 시간 (단위: seconds)
+ */
+const userDefinedTime = 120;
 
 const Timer = ({ isActive, onAnswerDone }: TimerProps) => {
   const { remainingSeconds } = useTimer({ userDefinedTime, isActive, onAnswerDone });
@@ -17,4 +20,14 @@ const Timer = ({ isActive, onAnswerDone }: TimerProps) => {
 
 export default Timer;
 
-const Wrapper = styled.div``;
+const Wrapper = styled.div`
+  display: inline-block;
+  padding: ${({ theme }) => theme.space.space16};
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  font-size: ${({ theme }) => theme.typography.fontSizes.h2};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  border-radius: ${({ theme }) => theme.radius.radius16};
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 1px;
+`;
