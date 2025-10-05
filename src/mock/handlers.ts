@@ -120,15 +120,17 @@ export const handlers = [
   // 답변 제출 API
   http.post('*/api/answers', async ({ request }) => {
     const body = await request.json();
-    console.log('POST /api/answers 요청 데이터:', body);
-    
-    return HttpResponse.json({
-      answerId: Math.floor(Math.random() * 1000) + 100,
+    console.log('✅ [백엔드] 답변 제출 성공 - POST /api/answers');
+    console.log('📝 요청 데이터:', {
       questionId: body.questionId,
       answerText: body.answerText,
-      answerType: body.answerType,
-      createdAt: new Date().toISOString(),
-      status: 'submitted'
+      audioUrl: body.audioUrl || '없음'
+    });
+    
+    return HttpResponse.json({
+      answerId: 9007199254740991,
+      answerText: body.answerText,
+      feedbackId: 9007199254740991
     }, { status: 201 });
   }),
   // TODO: 본인이 사용 할 핸들러를 자유롭게 추가합니다.

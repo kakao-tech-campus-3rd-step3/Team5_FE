@@ -10,14 +10,15 @@ interface AnswerInputProps {
   onAnswerDone: () => void;
   value: string;
   onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onAudioUrlChange?: (url: string) => void;
 }
 
-const AnswerInput = ({ type, isActive, onAnswerDone, value, onChange }: AnswerInputProps) => {
+const AnswerInput = ({ type, isActive, onAnswerDone, value, onChange, onAudioUrlChange }: AnswerInputProps) => {
   if (!isActive) return null;
   return (
     <>
       <Timer isActive={isActive} onAnswerDone={onAnswerDone} />
-      {type === 'voice' && <VoiceInput />}
+      {type === 'voice' && <VoiceInput onAudioUrlChange={onAudioUrlChange} />}
       {type === 'text' && <TextInput value={value} onChange={onChange} />}
     </>
   );
