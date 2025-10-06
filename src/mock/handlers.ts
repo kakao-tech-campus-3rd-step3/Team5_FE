@@ -117,5 +117,18 @@ export const handlers = [
       });
     }
   }),
+
+  // Archive 질문(피드백) 상세 페이지
+  http.get('*/api/answers', ({ request }) => {
+    const url = new URL(request.url);
+    const answerId = url.searchParams.get('answerId');
+    if (answerId) {
+      return HttpResponse.json({
+        memo: 'string',
+        starred: true,
+        level: 1073741824,
+      });
+    }
+  }),
   // TODO: 본인이 사용 할 핸들러를 자유롭게 추가합니다.
 ];
