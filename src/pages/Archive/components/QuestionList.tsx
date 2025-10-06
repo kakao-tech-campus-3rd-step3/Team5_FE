@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { ROUTE_PATH } from '../../../routes/routePath';
-import { useNavigate } from 'react-router-dom';
+import { generatePath, useNavigate } from 'react-router-dom';
 import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
 interface QuestionListProps {
@@ -11,9 +11,8 @@ const QuestionList = ({ data }: QuestionListProps) => {
   const items = data?.items;
   const navigate = useNavigate();
 
-  const handleItemClick = () => {
-    // TODO: id 값에 따라 동적라우팅 구현
-    navigate(ROUTE_PATH.FEEDBACK_DETAIL);
+  const handleItemClick = (id: number) => {
+    navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
   };
 
   if (!items || items.length === 0) return null;
@@ -22,7 +21,7 @@ const QuestionList = ({ data }: QuestionListProps) => {
       <ListItemWrapper>
         <ol>
           {items.map((q: AnswerItem, index: number) => (
-            <ListItem key={q.answerId} onClick={handleItemClick}>
+            <ListItem key={q.answerId} onClick={() => handleItemClick(q.answerId)}>
               {index + 1}. {q.questionText}
             </ListItem>
           ))}

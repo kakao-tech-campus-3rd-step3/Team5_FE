@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import usePolygonAnimation from '../hooks/usePolygonAnimation';
-import { useNavigate } from 'react-router-dom';
+import { generatePath, useNavigate } from 'react-router-dom';
 import { ROUTE_PATH } from '../../../routes/routePath';
 import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
@@ -13,9 +13,8 @@ const PinnedQuestionList = ({ data }: PinnedQuestionListProps) => {
   const { pinnedItemWrapperRef, pinnedItemRefs } = usePolygonAnimation();
   const items = data?.items?.filter((q: AnswerItem) => q.starred);
 
-  const handleItemClick = () => {
-    // TODO: id 값에 따라 동적라우팅 구현
-    navigate(ROUTE_PATH.FEEDBACK_DETAIL);
+  const handleItemClick = (id: number) => {
+    navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
   };
 
   if (!items) return null;
@@ -27,7 +26,7 @@ const PinnedQuestionList = ({ data }: PinnedQuestionListProps) => {
           ref={(pinnedItemRef: HTMLDivElement) => {
             pinnedItemRefs.current[i] = pinnedItemRef;
           }}
-          onClick={handleItemClick}
+          onClick={() => handleItemClick(data.answerId)}
         >
           <ItemText>{data.questionText}</ItemText>
         </PinnedItem>
