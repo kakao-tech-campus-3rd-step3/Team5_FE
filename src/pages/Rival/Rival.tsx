@@ -73,19 +73,19 @@ const RivalPage = () => {
               active={activeTab === 'following'} 
               onClick={() => setActiveTab('following')}
             >
-              팔로잉 ({followingList.length})
+              팔로잉 ({followingList?.length || 0})
             </TabButton>
             <TabButton 
               active={activeTab === 'follower'} 
               onClick={() => setActiveTab('follower')}
             >
-              팔로워 ({followerList.length})
+              팔로워 ({followerList?.length || 0})
             </TabButton>
           </TabContainer>
 
           <UserListCard>
             {activeTab === 'following' ? (
-              followingList.length > 0 ? (
+              followingList && followingList.length > 0 ? (
                 followingList.map((user) => (
                   <UserItem key={user.userId}>
                     <UserIcon>👤</UserIcon>
@@ -99,7 +99,7 @@ const RivalPage = () => {
                 <EmptyText>팔로잉한 사용자가 없습니다.</EmptyText>
               )
             ) : (
-              followerList.length > 0 ? (
+              followerList && followerList.length > 0 ? (
                 followerList.map((user) => (
                   <UserItem key={user.userId}>
                     <UserIcon>👤</UserIcon>
