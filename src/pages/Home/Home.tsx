@@ -14,7 +14,7 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
-  const { data: user } = useFetch('/api/user', { params: { userId: 1 } });
+  const { data: user } = useFetch('/api/user');
   // TODO: 추후 콘솔 삭제
   console.log(user);
 
