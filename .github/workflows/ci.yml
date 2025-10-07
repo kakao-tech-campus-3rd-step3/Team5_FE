@@ -6,11 +6,13 @@ on:
       - main
       - develop
       - release
+      - refactor
   pull_request:
     branches:
       - main
       - develop
       - release
+      - refactor
 
 jobs:
   build:
