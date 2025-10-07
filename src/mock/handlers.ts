@@ -119,7 +119,7 @@ export const handlers = [
   }),
   // 답변 제출 API
   http.post('*/api/answers', async ({ request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as any;
     console.log('✅ [백엔드] 답변 제출 성공 - POST /api/answers');
     console.log('📝 요청 데이터:', {
       questionId: body.questionId,
@@ -132,6 +132,70 @@ export const handlers = [
       answerText: body.answerText,
       feedbackId: 9007199254740991
     }, { status: 201 });
+  }),
+  // Rival 검색 API
+  http.get('*/api/rivals/search', ({ request }) => {
+    const url = new URL(request.url);
+    const email = url.searchParams.get('email');
+    
+    if (email === 'test@example.com') {
+      return HttpResponse.json({
+        userId: 12345,
+        email: 'test@example.com',
+        name: '테스트 유저'
+      });
+    }
+    
+    return HttpResponse.json({ message: '사용자를 찾을 수 없습니다.' }, { status: 404 });
+  }),
+  // Rival 프로필 조회 API
+  http.get('*/api/rivals/:userId/profile', ({ params }) => {
+    const { userId } = params;
+    
+    return HttpResponse.json({
+      userId: Number(userId),
+      email: 'test@example.com',
+      name: '테스트 유저',
+      intro: '안녕하세요! 열심히 공부하는 개발자입니다.',
+      dailyQDays: 15,
+      answeredQuestions: 28
+    });
+  }),
+  // 팔로잉 목록 조회 API
+  http.get('*/api/rivals/following', ({ request }) => {
+    const url = new URL(request.url);
+    const lastId = url.searchParams.get('lastId');
+    const limit = Number(url.searchParams.get('limit')) || 10;
+    
+    const mockItems = Array.from({ length: limit }, (_, i) => ({
+      userId: (lastId ? Number(lastId) : 0) + i + 1,
+      name: `팔로잉 유저 ${i + 1}`,
+      email: `following${i + 1}@example.com`
+    }));
+    
+    return HttpResponse.json({
+      items: mockItems,
+      nextCursor: mockItems[mockItems.length - 1].userId,
+      hasNext: true
+    });
+  }),
+  // 팔로워 목록 조회 API
+  http.get('*/api/rivals/followed', ({ request }) => {
+    const url = new URL(request.url);
+    const lastId = url.searchParams.get('lastId');
+    const limit = Number(url.searchParams.get('limit')) || 10;
+    
+    const mockItems = Array.from({ length: limit }, (_, i) => ({
+      userId: (lastId ? Number(lastId) : 0) + i + 1,
+      name: `팔로워 유저 ${i + 1}`,
+      email: `follower${i + 1}@example.com`
+    }));
+    
+    return HttpResponse.json({
+      items: mockItems,
+      nextCursor: mockItems[mockItems.length - 1].userId,
+      hasNext: true
+    });
   }),
   // TODO: 본인이 사용 할 핸들러를 자유롭게 추가합니다.
 ];
