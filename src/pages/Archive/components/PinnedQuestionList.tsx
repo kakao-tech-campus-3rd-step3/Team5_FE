@@ -5,7 +5,7 @@ import { ROUTE_PATH } from '../../../routes/routePath';
 import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
 interface PinnedQuestionListProps {
-  data: AnswersApiResponse | undefined;
+  data: AnswersApiResponse | null;
 }
 
 const PinnedQuestionList = ({ data }: PinnedQuestionListProps) => {
