@@ -197,5 +197,12 @@ export const handlers = [
       hasNext: true
     });
   }),
+  // 라이벌 삭제 (언팔로우) API
+  http.delete('*/api/rivals/:targetUserId', ({ params }) => {
+    const { targetUserId } = params;
+    console.log(`✅ [백엔드] 라이벌 삭제 성공 - DELETE /api/rivals/${targetUserId}`);
+    
+    return new HttpResponse(null, { status: 200 });
+  }),
   // TODO: 본인이 사용 할 핸들러를 자유롭게 추가합니다.
 ];

@@ -60,3 +60,8 @@ export const getFollowerList = async (lastId?: number, limit: number = 10): Prom
   });
   return response.data;
 };
+
+// 라이벌 삭제 (언팔로우)
+export const deleteRival = async (targetUserId: number): Promise<void> => {
+  await apiClient.delete(`/api/rivals/${targetUserId}`);
+};
