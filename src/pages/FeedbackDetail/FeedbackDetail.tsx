@@ -3,12 +3,33 @@ import SharedButton from '../../shared/ui/SharedButton';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import useFetch from '../../shared/hooks/useFetch';
-// import type { GetFeedbackData } from '../../api/feedback';
 
-export interface FeedbackDetail {
-  memo: string;
-  starred: boolean;
+export interface FeedbackContent {
+  overallEvaluation: string;
+  positivePoints: string[];
+  pointsForImprovement: string[];
+}
+
+export interface Feedback {
+  status: string;
+  content: FeedbackContent;
+  updatedAt: string;
+}
+
+export interface Question {
+  questionId: number;
+  questionType: string;
+  questionText: string;
+}
+
+export interface FeedbackDetailItem {
+  answerId: number;
+  question: Question;
+  answerText: string;
   level: number;
+  starred: boolean;
+  createdAt: string;
+  feedback: Feedback;
 }
 
 const FeedbackDetailPage = () => {
@@ -20,26 +41,26 @@ const FeedbackDetailPage = () => {
   const { id } = useParams();
   console.log(id);
 
-  const { data } = useFetch('/api/answers', { params: { answerId: id } });
-  console.log(data);
+  const { data } = useFetch<FeedbackDetailItem>('/api/answers', {
+    params: { answerId: id },
+  });
+  if (!data) return null;
+  const { question, feedback } = data;
 
   return (
     <Wrapper>
       <SectionContainer>
         <Title>오늘의 질문</Title>
         <QuestionCard>
-          {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결 */}
-          {/* <QuestionText>{questionData.text}</QuestionText> */}
+          <QuestionText>{question?.questionText}</QuestionText>
+          <QuestionText>{question?.questionType}</QuestionText>
         </QuestionCard>
       </SectionContainer>
 
       <SectionContainer>
         <Title>나의 답변</Title>
         <CardWrapper>
-          {/* TODO: API 응답에 사용자 답변 텍스트가 포함되어 있는지 확인 후 연결 */}
-          {/* {answerData.content.map((paragraph, index) => (
-            <CardParagraph key={index}>{paragraph}</CardParagraph>
-          ))} */}
+          <CardParagraph>{data.answerText}</CardParagraph>
         </CardWrapper>
       </SectionContainer>
 
@@ -48,7 +69,7 @@ const FeedbackDetailPage = () => {
 
         <CardWrapper>
           <CardTitle>종합 평가</CardTitle>
-          {/* <CardParagraph>{feedbackResult?.overallEvaluation}</CardParagraph> */}
+          <CardParagraph>{feedback?.content.overallEvaluation}</CardParagraph>
         </CardWrapper>
       </SectionContainer>
 
@@ -56,9 +77,9 @@ const FeedbackDetailPage = () => {
         <CardWrapper>
           <CardTitle>좋은 점</CardTitle>
           <CardList>
-            {/* {feedbackResult?.positivePoints.map((point, index) => (
+            {feedback?.content.positivePoints.map((point, index) => (
               <CardListItem key={index}>{point}</CardListItem>
-            ))} */}
+            ))}
           </CardList>
         </CardWrapper>
       </SectionContainer>
@@ -67,9 +88,9 @@ const FeedbackDetailPage = () => {
         <CardWrapper>
           <CardTitle>개선할 수 있는 점</CardTitle>
           <CardList>
-            {/* {feedbackResult?.pointsForImprovement.map((point, index) => (
+            {feedback?.content.pointsForImprovement.map((point, index) => (
               <CardListItem key={index}>{point}</CardListItem>
-            ))} */}
+            ))}
           </CardList>
         </CardWrapper>
       </SectionContainer>
@@ -126,10 +147,10 @@ const QuestionCard = styled.div`
   text-align: center;
 `;
 
-// const QuestionText = styled.p`
-//   font-size: 1rem;
-//   color: #454545;
-// `;
+const QuestionText = styled.p`
+  font-size: 1rem;
+  color: #454545;
+`;
 
 const CardWrapper = styled.div`
   background-color: rgba(255, 255, 255, 0.6);
@@ -140,14 +161,14 @@ const CardWrapper = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 `;
 
-// const CardParagraph = styled.p`
-//   font-size: 1rem;
-//   color: #595959;
-//   line-height: 1.8;
-//   &:not(:last-child) {
-//     margin-bottom: 1.5em;
-//   }
-// `;
+const CardParagraph = styled.p`
+  font-size: 1rem;
+  color: #595959;
+  line-height: 1.8;
+  &:not(:last-child) {
+    margin-bottom: 1.5em;
+  }
+`;
 
 const CardTitle = styled.h3`
   font-size: 1.125rem;
@@ -162,14 +183,14 @@ const CardList = styled.ul`
   padding-left: 8px;
 `;
 
-// const CardListItem = styled.li`
-//   font-size: 1rem;
-//   color: #595959;
-//   line-height: 1.8;
-//   &:not(:last-child) {
-//     margin-bottom: 1em;
-//   }
-// `;
+const CardListItem = styled.li`
+  font-size: 1rem;
+  color: #595959;
+  line-height: 1.8;
+  &:not(:last-child) {
+    margin-bottom: 1em;
+  }
+`;
 
 // const TopicGroup = styled.div`
 //   &:not(:last-child) {

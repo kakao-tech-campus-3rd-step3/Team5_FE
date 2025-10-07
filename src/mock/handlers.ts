@@ -124,9 +124,25 @@ export const handlers = [
     const answerId = url.searchParams.get('answerId');
     if (answerId) {
       return HttpResponse.json({
-        memo: 'string',
-        starred: true,
+        answerId: 9007199254740991,
+        question: {
+          questionId: 9007199254740991,
+          questionType: 'TECH',
+          questionText: 'string',
+        },
+        answerText: 'string',
         level: 1073741824,
+        starred: true,
+        createdAt: '2025-10-07T11:35:06.685Z',
+        feedback: {
+          status: 'PENDING',
+          content: {
+            overallEvaluation: 'string',
+            positivePoints: ['string'],
+            pointsForImprovement: ['string'],
+          },
+          updatedAt: '2025-10-07T11:35:06.685Z',
+        },
       });
     }
   }),
