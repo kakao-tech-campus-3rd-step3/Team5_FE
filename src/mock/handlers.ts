@@ -197,6 +197,19 @@ export const handlers = [
       hasNext: true
     });
   }),
+  // 라이벌 추가 (팔로우) API
+  http.post('*/api/rivals/:targetUserId', ({ params }) => {
+    const { targetUserId } = params;
+    console.log(`✅ [백엔드] 라이벌 추가 성공 - POST /api/rivals/${targetUserId}`);
+    
+    return HttpResponse.json({
+      rivalId: Math.floor(Math.random() * 1000000),
+      senderId: 1,
+      senderName: '나',
+      receiverId: Number(targetUserId),
+      receiverName: '테스트 유저'
+    }, { status: 201 });
+  }),
   // 라이벌 삭제 (언팔로우) API
   http.delete('*/api/rivals/:targetUserId', ({ params }) => {
     const { targetUserId } = params;

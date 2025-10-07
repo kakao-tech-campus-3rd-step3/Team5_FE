@@ -61,6 +61,21 @@ export const getFollowerList = async (lastId?: number, limit: number = 10): Prom
   return response.data;
 };
 
+// 라이벌 추가 응답 타입
+export interface AddRivalResponse {
+  rivalId: number;
+  senderId: number;
+  senderName: string;
+  receiverId: number;
+  receiverName: string;
+}
+
+// 라이벌 추가 (팔로우)
+export const addRival = async (targetUserId: number): Promise<AddRivalResponse> => {
+  const response = await apiClient.post<AddRivalResponse>(`/api/rivals/${targetUserId}`);
+  return response.data;
+};
+
 // 라이벌 삭제 (언팔로우)
 export const deleteRival = async (targetUserId: number): Promise<void> => {
   await apiClient.delete(`/api/rivals/${targetUserId}`);
