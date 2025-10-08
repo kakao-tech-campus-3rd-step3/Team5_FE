@@ -3,15 +3,14 @@ import usePolygonAnimation from '../hooks/usePolygonAnimation';
 import { generatePath, useNavigate } from 'react-router-dom';
 import { ROUTE_PATH } from '../../../routes/routePath';
 import type { AnswerItem, AnswersApiResponse } from '../Archive';
+import useFetch from '../../../shared/hooks/useFetch';
 
-interface PinnedQuestionListProps {
-  data: AnswersApiResponse | null;
-}
-
-const PinnedQuestionList = ({ data }: PinnedQuestionListProps) => {
+const PinnedQuestionList = () => {
   const navigate = useNavigate();
   const { pinnedItemWrapperRef, pinnedItemRefs } = usePolygonAnimation();
-  const items = data?.items?.filter((q: AnswerItem) => q.starred);
+  const { data } = useFetch<AnswersApiResponse>('/api/answers', { params: { starred: true } });
+
+  const items = data?.items;
 
   const handleItemClick = (id: number) => {
     navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));

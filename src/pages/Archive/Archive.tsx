@@ -5,7 +5,6 @@ import QuestionList from './components/QuestionList';
 import useSectionScroll from './hooks/useSectionScroll';
 import Lottie from 'lottie-react';
 import clickAnimation from '../../assets/lottie/clickIcon.json';
-import useFetch from '../../shared/hooks/useFetch';
 
 export interface AnswerItem {
   answerId: number;
@@ -30,8 +29,6 @@ const ArchivePage = () => {
     refs: { sectionFirstRef, sectionSecondRef },
     handlers: { handleDownClick, handleUpClick },
   } = useSectionScroll();
-  const { data } = useFetch<AnswersApiResponse>('/api/answers', { params: { userId: 1 } });
-  console.log(data);
 
   return (
     <Wrapper>
@@ -46,11 +43,11 @@ const ArchivePage = () => {
             <Lottie animationData={clickAnimation} loop autoplay />
           </LottieWrapper>
         </ButtonWrapper>
-        <PinnedQuestionList data={data} />
+        <PinnedQuestionList />
       </SectionFirst>
 
       <SectionSecond ref={sectionSecondRef}>
-        <QuestionList data={data} />
+        <QuestionList />
         <ButtonWrapper>
           <ScrollButton type="button" onClick={handleUpClick}>
             Up
