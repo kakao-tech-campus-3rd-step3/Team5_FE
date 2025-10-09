@@ -18,11 +18,34 @@ const answerData = {
 const FeedbackPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [memoContent, setMemoContent] = useState('');
-  const feedbackResult = location.state as GetFeedbackData | undefined;
+  // const [memoContent, setMemoContent] = useState('');
+  // const feedbackResult = location.state as GetFeedbackData | undefined;
+  const { result: feedbackResult, answerId } = (location.state || {}) as {
+    result?: GetFeedbackData;
+    answerId?: number;
+  };
+
+  const [memoContent, setMemoContent] = useState(() => {
+    if (!answerId) return '';
+    return localStorage.getItem(`memo_${answerId}`) || '';
+  });
 
   const handleArchiveClick = () => {
     navigate(ROUTE_PATH.ARCHIVE);
+  };
+
+  const handleSaveMemo = () => {
+    if (!answerId) {
+      alert('메모를 저장하기 위한 답변 ID가 없습니다.');
+      return;
+    }
+    try {
+      localStorage.setItem(`memo_${answerId}`, memoContent);
+      alert('메모가 브라우저에 저장되었습니다!');
+    } catch (error) {
+      console.error('메모 저장 실패:', error);
+      alert('메모 저장에 실패했습니다.');
+    }
   };
 
   return (
@@ -31,7 +54,6 @@ const FeedbackPage = () => {
           {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결*/} 
           <QuestionText>{questionData.text}</QuestionText>
       </SectionContainer>
-
 
       <SectionContainer>
         <Title>나의 답변</Title>
@@ -49,7 +71,7 @@ const FeedbackPage = () => {
           <CardTitle>종합 평가</CardTitle>
           <CardParagraph>{feedbackResult?.overallEvaluation}</CardParagraph>
         </Card>
-        
+
         <Card>
           <CardTitle>좋은 점</CardTitle>
           <CardList>
@@ -77,6 +99,9 @@ const FeedbackPage = () => {
             onChange={(e) => setMemoContent(e.target.value)}
             placeholder="메모를 작성해주세요."
           />
+          <SharedButton type="button" onClick={handleSaveMemo} disabled={false}>
+              메모 저장
+          </SharedButton>
         </Card>
       </SectionContainer>
 
@@ -93,8 +118,6 @@ const SectionContainer = styled.section`
   align-items: center;
   width: 100%;
 `;
-
-
 
 const Wrapper = styled.div`
   display: flex;
