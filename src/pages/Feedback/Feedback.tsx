@@ -127,21 +127,21 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: rgb(0, 0, 0);
-  margin-bottom: 24px;
+  font-size: ${({ theme }) => theme.typography.fontSizes.h2};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.black};
+  margin-bottom: ${({ theme }) => theme.space.space24};
 `;
 
 const QuestionText = styled.h1`
-  padding: 40px 30px;
+  padding: ${({ theme }) => theme.space.space40} ${({ theme }) => theme.space.space32};
   font-size: ${({ theme }) => theme.typography.fontSizes.h1};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
 `;
 
 const CardParagraph = styled.p`
-  font-size: 1rem;
-  color: #595959;
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
+  color: ${({ theme }) => theme.colors.textSecondary};
   line-height: 1.8;
   &:not(:last-child) {
     margin-bottom: 1.5em;
@@ -149,38 +149,38 @@ const CardParagraph = styled.p`
 `;
 
 const CardTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 20px;
+  font-size: ${({ theme }) => theme.typography.fontSizes.h3}; 
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.text}; 
+  margin-bottom: ${({ theme }) => theme.space.space20};
   text-align: center;
 `;
 
 const CardList = styled.ul`
   list-style-position: outside;
-  padding-left: 8px;
+  padding-left: ${({ theme }) => theme.space.space20};
 `;
 
 const CardListItem = styled.li`
-  font-size: 1rem;
-  color: #595959;
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
+  color: ${({ theme }) => theme.colors.textSecondary};
   line-height: 1.8;
   &:not(:last-child) {
-    margin-bottom: 1em;
+    margin-bottom: ${({ theme }) => theme.space.space16};
   }
 `;
 
 const MemoTextArea = styled.textarea`
   width: 90%;
   min-height: 120px;
-  padding: 16px;
-  border-radius: 8px;
-  font-size: 1rem;
-  color: #595959;
+  padding: ${({ theme }) => theme.space.space16};
+  border-radius: ${({ theme }) => theme.radius.radius8}; 
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
+  color: ${({ theme }) => theme.colors.textSecondary};
 
   &:focus {
     outline: none;
-    border-color: #333;
+    border-color: ${({ theme }) => theme.colors.text};
   }
 `;
 
