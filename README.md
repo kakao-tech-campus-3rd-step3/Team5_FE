@@ -2,6 +2,10 @@
 
 협업을 위한 React + TypeScript + Vite 프로젝트입니다.
 
+## 🚀 배포 링크
+
+https://www.dailyq.my/
+
 ## 🚀 시작하기
 
 ### 필수 요구사항
