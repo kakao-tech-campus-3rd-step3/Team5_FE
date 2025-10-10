@@ -1,6 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
 import { ROUTE_PATH } from './routePath';
-import LoginPage from '../pages/Login/Login';
 import ArchivePage from '../pages/Archive/Archive';
 import FeedbackPage from '../pages/Feedback/Feedback';
 import SubscribePage from '../pages/Subscribe/Subscribe';
