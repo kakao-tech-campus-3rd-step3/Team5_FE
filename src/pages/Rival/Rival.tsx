@@ -1,16 +1,34 @@
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { searchRival, getRivalProfile, getFollowingList, getFollowerList } from '../../api/rivals';
 import type { RivalProfileResponse, RivalUserItem } from '../../api/rivals';
 
 const RivalPage = () => {
   const [searchEmail, setSearchEmail] = useState('');
   const [profile, setProfile] = useState<RivalProfileResponse | null>(null);
+  const [myFollowingList, setMyFollowingList] = useState<RivalUserItem[]>([]);
   const [followingList, setFollowingList] = useState<RivalUserItem[]>([]);
   const [followerList, setFollowerList] = useState<RivalUserItem[]>([]);
   const [activeTab, setActiveTab] = useState<'following' | 'follower'>('following');
   const [isLoading, setIsLoading] = useState(false);
+
+  // 페이지 로드 시 내 팔로잉 목록 불러오기
+  useEffect(() => {
+    const loadMyFollowing = async () => {
+      try {
+        console.log('🔍 팔로잉 목록 로드 시작...');
+        const following = await getFollowingList(undefined, 20);
+        console.log('📦 받아온 팔로잉 데이터:', following);
+        console.log('📦 following.items:', following.items);
+        setMyFollowingList(following.items);
+        console.log('✅ 팔로잉 목록 상태 업데이트 완료');
+      } catch (error) {
+        console.error('❌ 팔로잉 목록 로드 실패:', error);
+      }
+    };
+    loadMyFollowing();
+  }, []);
 
   const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchEmail.trim()) {
@@ -20,7 +38,7 @@ const RivalPage = () => {
         const profileData = await getRivalProfile(searchResult.userId);
         setProfile(profileData);
         
-        // 팔로잉/팔로워 목록 로드
+        // 검색한 사용자의 팔로잉/팔로워 목록 로드
         const following = await getFollowingList(undefined, 10);
         const follower = await getFollowerList(undefined, 10);
         setFollowingList(following.items);
@@ -42,6 +60,24 @@ const RivalPage = () => {
         onChange={(e) => setSearchEmail(e.target.value)}
         onKeyDown={handleSearch}
       />
+
+      {/* 내 팔로잉 목록 */}
+      <SectionTitle>내 친구 목록 ({myFollowingList?.length || 0}명)</SectionTitle>
+      <MyFollowingGrid>
+        {myFollowingList && myFollowingList.length > 0 ? (
+          myFollowingList.map((user) => (
+            <FriendCard key={user.userId}>
+              <FriendIcon>👤</FriendIcon>
+              <FriendInfo>
+                <FriendName>{user.name}</FriendName>
+                <FriendEmail>{user.email}</FriendEmail>
+              </FriendInfo>
+            </FriendCard>
+          ))
+        ) : (
+          <EmptyText>아직 친구가 없습니다. 이메일로 검색해서 친구를 추가해보세요!</EmptyText>
+        )}
+      </MyFollowingGrid>
 
       {isLoading && <LoadingText>검색 중...</LoadingText>}
 
@@ -119,9 +155,6 @@ const RivalPage = () => {
         </>
       )}
 
-      {!profile && !isLoading && (
-        <EmptyText>이메일을 입력하고 Enter를 눌러 검색하세요. (예: test@example.com)</EmptyText>
-      )}
     </Wrapper>
   );
 };
@@ -148,6 +181,70 @@ const SearchBar = styled.input`
   &::placeholder {
     color: hsl(0, 0%, 0%);
   }
+`;
+
+const SectionTitle = styled.h2`
+  width: 100%;
+  max-width: 400px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+  margin: 8px 0;
+  text-align: center;
+`;
+
+const MyFollowingGrid = styled.div`
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 auto 24px auto;
+`;
+
+const FriendCard = styled.div`
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const FriendIcon = styled.div`
+  font-size: 32px;
+`;
+
+const FriendInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  flex: 1;
+`;
+
+const FriendName = styled.p`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+`;
+
+const FriendEmail = styled.p`
+  font-size: 0.75rem;
+  color: #777;
+  word-break: break-all;
 `;
 
 const cardBaseStyles = css`

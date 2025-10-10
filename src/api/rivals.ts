@@ -47,9 +47,11 @@ export const getRivalProfile = async (userId: number): Promise<RivalProfileRespo
 
 // 팔로잉 목록 조회
 export const getFollowingList = async (lastId?: number, limit: number = 10): Promise<RivalListResponse> => {
+  console.log('🔍 getFollowingList 호출:', { lastId, limit });
   const response = await apiClient.get<RivalListResponse>('/api/rivals/following', {
     params: { lastId, limit }
   });
+  console.log('📡 API 응답:', response);
   return response.data;
 };
 
