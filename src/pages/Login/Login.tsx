@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import { useEffect } from 'react';
 import Logo from '../../shared/ui/Logo';
 import Tagline from '../../shared/components/Branding/Tagline';
-import { initializeKakao, loginWithKakao } from '../../config/kakao';
+import { initializeKakao } from '../../config/kakao';
 
 interface LoginPageProps {
   onLogin: () => void;

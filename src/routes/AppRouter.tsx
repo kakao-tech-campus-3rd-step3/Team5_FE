@@ -31,7 +31,7 @@ const AppRouter = () => {
 
       <Route element={<AuthLayout />}>
         {/* TODO: LOGINPAGE 등 네비, 푸터 없이 콘텐츠만 보여줘야 하는 레이아웃 추가 */}
-        <Route path={ROUTE_PATH.LOGIN} element={<LoginPage />} />
+        <Route path={ROUTE_PATH.LOGIN} element={<LoginPage onLogin={() => {}} />} />
       </Route>
 
       <Route element={<ModalLayout />}>
