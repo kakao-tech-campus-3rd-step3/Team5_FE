@@ -5,7 +5,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const TEMP_TOKEN = import.meta.env.VITE_TEMP_AUTH_TOKEN;
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_BASE_URL || undefined, // MSW가 작동하도록 baseURL을 undefined로 설정
 });
 
 apiClient.interceptors.request.use(
