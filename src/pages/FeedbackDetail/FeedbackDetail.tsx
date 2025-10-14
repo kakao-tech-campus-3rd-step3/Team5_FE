@@ -19,13 +19,19 @@ const FeedbackDetailPage = () => {
 
       <SectionContainer>
         <Title>나의 답변</Title>
-        <Card>dfsdsfsfsdfsdfsdfsd</Card>
+        <Card>
+          <GlassBackground>dfsdsfsfsdfsdfsdfsd</GlassBackground>
+        </Card>
       </SectionContainer>
 
       <SectionContainer>
         <Title>AI 피드백</Title>
-        <Card>dfsdsfsfsdfsdfsdfsd</Card>
-        <Card>dfsdsfsfsdfsdfsdfsd</Card>
+        <Card>
+          <GlassBackground>dfsdsfsfsdfsdfsdfsd</GlassBackground>
+        </Card>
+        <Card>
+          <GlassBackground>dfsdsfsfsdfsdfsdfsd</GlassBackground>
+        </Card>
       </SectionContainer>
 
       <SectionContainer>
