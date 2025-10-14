@@ -119,7 +119,12 @@ export const handlers = [
   }),
   // 답변 제출 API
   http.post('*/api/answers', async ({ request }) => {
-    const body = (await request.json()) as any;
+    const body = await request.json() as {
+      questionId: number;
+      answerText: string;
+      audioUrl?: string;
+    };
+    
     console.log('✅ [백엔드] 답변 제출 성공 - POST /api/answers');
     console.log('📝 요청 데이터:', {
       questionId: body.questionId,
