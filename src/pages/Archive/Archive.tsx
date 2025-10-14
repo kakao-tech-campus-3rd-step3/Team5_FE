@@ -30,7 +30,7 @@ const ArchivePage = () => {
     refs: { sectionFirstRef, sectionSecondRef },
     handlers: { handleDownClick, handleUpClick },
   } = useSectionScroll();
-  const { data } = useFetch<AnswersApiResponse>('/api/answers', { params: { userId: 1 } });
+  const { data } = useFetch<AnswersApiResponse>('/api/answers');
   console.log(data);
 
   return (
