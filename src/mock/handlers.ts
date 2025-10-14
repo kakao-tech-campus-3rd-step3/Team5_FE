@@ -69,7 +69,7 @@ export const handlers = [
             question_type: 'TECH',
             flow_phase: null,
             level: 4,
-            starred: 1,
+            starred: true,
             createdAt: '2025-09-27T10:00:00Z',
           },
           {
@@ -79,7 +79,7 @@ export const handlers = [
             question_type: 'TECH',
             flow_phase: null,
             level: 4,
-            starred: 0,
+            starred: false,
             createdAt: '2025-09-26T14:30:00Z',
           },
           {
@@ -89,7 +89,7 @@ export const handlers = [
             question_type: 'TECH',
             flow_phase: null,
             level: 4,
-            starred: 1,
+            starred: true,
             answered_time: '2025-09-05T07:30:00Z',
           },
           {
@@ -99,7 +99,7 @@ export const handlers = [
             question_type: 'TECH',
             flow_phase: null,
             level: 4,
-            starred: 1,
+            starred: true,
             answered_time: '2025-09-05T07:30:00Z',
           },
           {
@@ -109,7 +109,7 @@ export const handlers = [
             question_type: 'TECH',
             flow_phase: null,
             level: 4,
-            starred: 1,
+            starred: true,
             answered_time: '2025-09-05T07:30:00Z',
           },
         ],
