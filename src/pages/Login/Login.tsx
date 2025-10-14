@@ -78,31 +78,6 @@ const LoginButtonSection = styled.div`
   max-width: 320px;
 `;
 
-const BaseLoginButton = styled.button`
-  width: 100%;
-  padding: 16px 24px;
-  border-radius: 12px;
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-`;
-
 const BaseLoginLink = styled.a`
   width: 100%;
   padding: 16px 24px;
