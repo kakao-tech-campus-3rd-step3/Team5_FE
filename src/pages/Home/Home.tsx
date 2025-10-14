@@ -16,21 +16,7 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
-  const { data: user } = useFetch('/api/user', { params: { userId: 1 } });
-  const { data: question } = useFetch('/api/questions/random', { params: { user_id: 1 } });
-  
-  const { execute: submitAnswerPost, loading: isSubmitting } = usePost({
-    onSuccess: (data) => {
-      console.log('답변 제출 성공:', data);
-      setAnswerState('answered');
-      navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
-    },
-    onError: (error) => {
-      console.error('답변 제출 실패:', error);
-      alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
-    }
-  });
-  
+  const { data: user } = useFetch('/api/user');
   // TODO: 추후 콘솔 삭제
   console.log('user:', user);
   console.log('question:', question);

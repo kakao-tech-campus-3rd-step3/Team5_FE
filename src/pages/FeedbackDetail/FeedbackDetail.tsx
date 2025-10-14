@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import SharedButton from '../../shared/ui/SharedButton';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import Card from './components/Card';
+import GlassBackground from '../../shared/components/GlassBackground/GlassBackground';
 
 const FeedbackDetailPage = () => {
   const navigate = useNavigate();
@@ -19,23 +19,31 @@ const FeedbackDetailPage = () => {
 
       <SectionContainer>
         <Title>나의 답변</Title>
-        <Card>dfsdsfsfsdfsdfsdfsd</Card>
+        <Card>
+          <GlassBackground>dfsdsfsfsdfsdfsdfsd</GlassBackground>
+        </Card>
       </SectionContainer>
 
       <SectionContainer>
         <Title>AI 피드백</Title>
-        <Card>dfsdsfsfsdfsdfsdfsd</Card>
-        <Card>dfsdsfsfsdfsdfsdfsd</Card>
+        <Card>
+          <GlassBackground>dfsdsfsfsdfsdfsdfsd</GlassBackground>
+        </Card>
+        <Card>
+          <GlassBackground>dfsdsfsfsdfsdfsdfsd</GlassBackground>
+        </Card>
       </SectionContainer>
 
       <SectionContainer>
         <Title>메모</Title>
         <Card>
-          <MemoTextArea
-            value={memoContent}
-            onChange={(e) => setMemoContent(e.target.value)}
-            placeholder="메모를 작성해주세요."
-          />
+          <GlassBackground>
+            <MemoTextArea
+              value={memoContent}
+              onChange={(e) => setMemoContent(e.target.value)}
+              placeholder="메모를 작성해주세요."
+            />
+          </GlassBackground>
         </Card>
       </SectionContainer>
 
@@ -78,4 +86,12 @@ const MemoTextArea = styled.textarea`
   width: 90%;
   height: 90%;
   padding: ${({ theme }) => theme.space.space16};
+`;
+
+const Card = styled.div`
+  min-width: 700px;
+  width: 80%;
+  height: 100px;
+  min-height: 150px;
+  margin-bottom: ${({ theme }) => theme.space.space32};
 `;
