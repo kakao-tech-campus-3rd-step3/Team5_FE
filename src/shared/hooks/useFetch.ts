@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../../api/apiClient';
+import type { AxiosRequestConfig } from 'axios';
 
-const useFetch = <T>(url: string) => {
+const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
   const [data, setData] = useState<T | null>(null);
+  const optionsString = JSON.stringify(options);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -15,7 +17,7 @@ const useFetch = <T>(url: string) => {
       }
     };
     fetchData();
-  }, [url]);
+  }, [url, optionsString]);
   return { data };
 };
 
