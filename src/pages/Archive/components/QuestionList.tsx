@@ -5,8 +5,29 @@ import type { AnswerItem, AnswersApiResponse } from '../Archive';
 import { useEffect, useState } from 'react';
 import useFetch from '../../../shared/hooks/useFetch';
 
-type FilterType = 'ALL' | 'PINNED' | 'LEVEL' | 'OCCUPATION' | 'TYPE';
+// type FilterType = 'ALL' | 'PINNED' | 'LEVEL' | 'OCCUPATION' | 'TYPE';
 type RankType = '1' | '2' | '3' | '4' | '5';
+
+const filters = [
+  { id: 'ALL', label: '전체' },
+  { id: 'starred', label: '즐겨찾기' },
+  { id: 'level', label: '난이도' },
+  { id: 'OCCUPATION', label: '직군별' },
+  { id: 'questionType', label: '질문 타입' },
+];
+
+const levels = [
+  { id: '1', label: '1' },
+  { id: '2', label: '2' },
+  { id: '3', label: '3' },
+  { id: '4', label: '4' },
+  { id: '5', label: '5' },
+];
+
+const questionTypes = [
+  { id: 'PERSONALITY', label: '인성' },
+  { id: 'TECH', label: '기술' },
+];
 
 const QuestionList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,88 +49,96 @@ const QuestionList = () => {
     navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
   };
 
-  const [selectedFilter, setSelectedFilter] = useState<FilterType>('ALL');
-  const [selectedRank, setSelectedRank] = useState<RankType>('3');
+  const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
+  const [selectedLevel, setSelectedLevel] = useState<string>();
+  const [selectedType, setSelectedType] = useState<string>();
 
-  const handleFilterChange = (filter: FilterType, rank?: RankType) => {
-    setSelectedFilter(filter);
-    if (rank) {
-      setSelectedRank(rank);
+  const [isLevelSelected, setIsLevelSelected] = useState(false);
+  const [isTypeSelected, setIsTypeSelected] = useState(false);
+
+  const handleFilterChange = (filterId: string) => {
+    setSelectedFilter(filterId);
+    if (filterId !== 'level' || 'questionType') {
+      setIsLevelSelected(false);
+      setIsTypeSelected(false);
+    }
+
+    let newSearchParams = {};
+
+    switch (filterId) {
+      case 'starred':
+        newSearchParams = { [filterId]: 'true' };
+        break;
+      case 'level':
+        setIsLevelSelected(true);
+        break;
+      case 'OCCUPATION':
+        break;
+      case 'questionType':
+        setIsTypeSelected(true);
+        break;
+      case 'ALL':
+      default:
+        newSearchParams = {};
+        break;
+    }
+    if (filterId !== 'level' || 'questionType') {
+      setSearchParams(newSearchParams, { replace: true });
     }
   };
 
-  useEffect(() => {
-    switch (selectedFilter) {
-      case 'ALL':
-        setSearchParams({});
-        break;
-      case 'PINNED':
-        setSearchParams({ starred: 'true' });
-        break;
-      case 'LEVEL':
-        setSearchParams({ level: `${selectedRank}` });
-        break;
-      default:
-        break;
-    }
-  }, [selectedFilter, selectedRank]);
+  const handleLevelClick = (levelId: string) => {
+    setSelectedLevel(levelId);
+    setSearchParams({ level: levelId }, { replace: true });
+  };
+
+  const handleTypeClick = (typeId: string) => {
+    setSelectedType(typeId);
+    setSearchParams({ questionType: typeId }, { replace: true });
+  };
 
   if (!items || items.length === 0) return null;
   return (
     <Wrapper>
       <FilterWrapper>
-        <FilterButton selected={selectedFilter === 'ALL'} onClick={() => handleFilterChange('ALL')}>
-          전체
-        </FilterButton>
-        <FilterButton
-          selected={selectedFilter === 'PINNED'}
-          onClick={() => handleFilterChange('PINNED')}
-        >
-          즐겨찾기
-        </FilterButton>
-        <FilterButton
-          selected={selectedFilter === 'LEVEL'}
-          onClick={() => handleFilterChange('LEVEL', selectedRank)}
-        >
-          난이도
-        </FilterButton>
-        <FilterButton
-          selected={selectedFilter === 'OCCUPATION'}
-          onClick={() => handleFilterChange('OCCUPATION')}
-        >
-          직군별
-        </FilterButton>
-        <FilterButton
-          selected={selectedFilter === 'TYPE'}
-          onClick={() => handleFilterChange('TYPE')}
-        >
-          퀘스천 타입
-        </FilterButton>
+        {filters.map((filter) => (
+          <FilterButton
+            key={filter.id}
+            selected={selectedFilter === filter.id}
+            onClick={() => handleFilterChange(filter.id)}
+          >
+            {filter.label}
+          </FilterButton>
+        ))}
       </FilterWrapper>
 
-      <FilterWrapper>
-        <FilterButton selected={selectedRank === '1'} onClick={() => setSelectedRank('1')}>
-          1
-        </FilterButton>
-        <FilterButton selected={selectedRank === '2'} onClick={() => setSelectedRank('2')}>
-          2
-        </FilterButton>
-        <FilterButton selected={selectedRank === '3'} onClick={() => setSelectedRank('3')}>
-          3
-        </FilterButton>
-        <FilterButton selected={selectedRank === '4'} onClick={() => setSelectedRank('4')}>
-          4
-        </FilterButton>
-        <FilterButton selected={selectedRank === '5'} onClick={() => setSelectedRank('5')}>
-          5
-        </FilterButton>
-      </FilterWrapper>
+      {isLevelSelected && (
+        <FilterWrapper>
+          {levels.map((level) => (
+            <FilterButton
+              key={level.id}
+              selected={selectedLevel === level.id}
+              onClick={() => handleLevelClick(level.id)}
+            >
+              {level.label}
+            </FilterButton>
+          ))}
+        </FilterWrapper>
+      )}
 
-      <FilterWrapper>
-        <FilterButton selected={selectedFilter === 'TYPE'}>기술</FilterButton>
-        <FilterButton selected={selectedFilter === 'TYPE'}>인성</FilterButton>
-        <FilterButton selected={selectedFilter === 'TYPE'}>컬쳐핏</FilterButton>
-      </FilterWrapper>
+      {isTypeSelected && (
+        <FilterWrapper>
+          {questionTypes.map((type) => (
+            <FilterButton
+              key={type.id}
+              selected={selectedType === type.id}
+              onClick={() => handleTypeClick(type.id)}
+            >
+              {type.label}
+            </FilterButton>
+          ))}
+        </FilterWrapper>
+      )}
 
       <ListItemWrapper>
         <ol>
