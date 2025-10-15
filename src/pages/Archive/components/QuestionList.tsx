@@ -5,16 +5,12 @@ import type { AnswerItem, AnswersApiResponse } from '../Archive';
 import { useEffect, useState } from 'react';
 import useFetch from '../../../shared/hooks/useFetch';
 
-// type FilterType = 'ALL' | 'PINNED' | 'LEVEL' | 'OCCUPATION' | 'TYPE';
-type RankType = '1' | '2' | '3' | '4' | '5';
-
 const filters = [
   { id: 'ALL', label: '전체' },
-  { id: 'starred', label: '즐겨찾기' },
   { id: 'level', label: '난이도' },
   { id: 'OCCUPATION', label: '직군별' },
   { id: 'questionType', label: '질문 타입' },
-];
+] as const;
 
 const levels = [
   { id: '1', label: '1' },
@@ -22,53 +18,51 @@ const levels = [
   { id: '3', label: '3' },
   { id: '4', label: '4' },
   { id: '5', label: '5' },
-];
+] as const;
 
 const questionTypes = [
   { id: 'PERSONALITY', label: '인성' },
+  { id: 'MOTIVATION', label: '동기' },
   { id: 'TECH', label: '기술' },
-];
+] as const;
 
 const QuestionList = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [params, setParams] = useState(Object.fromEntries(searchParams.entries()));
 
-  useEffect(() => {
-    const newParams = Object.fromEntries(searchParams.entries());
-    console.log('URL 변경 감지! 새로운 요청 파라미터:', newParams);
-
-    setParams(newParams);
-  }, [searchParams]);
-  const { data } = useFetch<AnswersApiResponse>('/api/answers', { params });
-  const items = data?.items;
-  console.log(items);
-
-  const navigate = useNavigate();
-
-  const handleItemClick = (id: number) => {
-    navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
-  };
-
+  const [selectedDefault, setSelectedDefault] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
   const [selectedLevel, setSelectedLevel] = useState<string>();
   const [selectedType, setSelectedType] = useState<string>();
 
   const [isLevelSelected, setIsLevelSelected] = useState(false);
   const [isTypeSelected, setIsTypeSelected] = useState(false);
+  const [isStarredSelected, setIsStarredSelected] = useState(false);
+
+  useEffect(() => {
+    const newParams = Object.fromEntries(searchParams.entries());
+    console.log('요청 파라미터:', newParams);
+
+    setParams(newParams);
+  }, [searchParams]);
+
+  const { data } = useFetch<AnswersApiResponse>('/api/answers', { params });
+  const items = data?.items;
+  console.log(items);
+
+  const handleItemClick = (id: number) => {
+    navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
+  };
 
   const handleFilterChange = (filterId: string) => {
     setSelectedFilter(filterId);
-    if (filterId !== 'level' || 'questionType') {
-      setIsLevelSelected(false);
-      setIsTypeSelected(false);
-    }
 
-    let newSearchParams = {};
+    setIsLevelSelected(false);
+    setIsTypeSelected(false);
+    setSelectedDefault(false);
 
     switch (filterId) {
-      case 'starred':
-        newSearchParams = { [filterId]: 'true' };
-        break;
       case 'level':
         setIsLevelSelected(true);
         break;
@@ -78,12 +72,22 @@ const QuestionList = () => {
         setIsTypeSelected(true);
         break;
       case 'ALL':
+        setSearchParams({}, { replace: true });
+        setSelectedDefault(true);
+        setIsStarredSelected(false);
+        break;
       default:
-        newSearchParams = {};
         break;
     }
-    if (filterId !== 'level' || 'questionType') {
-      setSearchParams(newSearchParams, { replace: true });
+  };
+
+  const handleStarredClick = () => {
+    const nextIsStarredSelected = !isStarredSelected;
+    setIsStarredSelected(nextIsStarredSelected);
+    if (nextIsStarredSelected) {
+      setSearchParams({ starred: String(nextIsStarredSelected) }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
     }
   };
 
@@ -97,6 +101,7 @@ const QuestionList = () => {
     setSearchParams({ questionType: typeId }, { replace: true });
   };
 
+  // TODO: 직군별 & 플로우 별 구현
   if (!items || items.length === 0) return null;
   return (
     <Wrapper>
@@ -111,6 +116,14 @@ const QuestionList = () => {
           </FilterButton>
         ))}
       </FilterWrapper>
+
+      {selectedDefault && (
+        <FilterWrapper>
+          <FilterButton selected={isStarredSelected === true} onClick={handleStarredClick}>
+            즐겨찾기
+          </FilterButton>
+        </FilterWrapper>
+      )}
 
       {isLevelSelected && (
         <FilterWrapper>
@@ -182,7 +195,7 @@ const FilterWrapper = styled.div`
   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 `;
 
-const FilterButton = styled.button<{ selected: boolean | RankType }>`
+const FilterButton = styled.button<{ selected: boolean }>`
   font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   background: ${({ selected }) => (selected ? 'rgba(255, 255, 255, 0.3)' : 'transparent')};
