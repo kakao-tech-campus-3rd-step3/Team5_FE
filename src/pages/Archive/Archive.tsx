@@ -34,7 +34,9 @@ const ArchivePage = () => {
     <Wrapper>
       <SectionFirst ref={sectionFirstRef}>
         <Description />
-        <Pinned>Pinned</Pinned>
+        <PinnedWrapper>
+          <Pinned>즐겨찾기</Pinned>
+        </PinnedWrapper>
         <ButtonWrapper>
           <ScrollButton type="button" onClick={handleDownClick}>
             down
@@ -122,11 +124,25 @@ const Pinned = styled.div`
   align-items: center;
 
   height: 28px;
-  background: rgba(255, 255, 255, 0.4);
-  padding: 0 ${({ theme }) => theme.space.space24};
-  border-radius: ${({ theme }) => theme.radius.radiusFull};
-  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
+  background: rgba(255, 255, 255, 0.2);
+
   font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.space.space64};
+  padding: ${({ theme }) => theme.space.space4} ${({ theme }) => theme.space.space8};
+  border-radius: ${({ theme }) => theme.radius.radius24};
+`;
+
+const PinnedWrapper = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space.space8};
+
+  width: auto;
+  height: auto;
+  padding: ${({ theme }) => theme.space.space8} ${({ theme }) => theme.space.space12};
+
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
+  border-radius: ${({ theme }) => theme.radius.radius24};
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 `;
