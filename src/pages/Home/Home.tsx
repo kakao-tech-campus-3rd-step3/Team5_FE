@@ -6,8 +6,8 @@ import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
 import useFetch from '../../shared/hooks/useFetch';
-import usePost from '../../shared/hooks/usePost';
-import { type SubmitAnswerRequest } from '../../api/answers';
+//import usePost from '../../shared/hooks/usePost';
+//import { type SubmitAnswerRequest } from '../../api/answers';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
