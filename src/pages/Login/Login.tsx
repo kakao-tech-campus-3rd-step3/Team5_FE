@@ -1,31 +1,11 @@
 import styled from '@emotion/styled';
-//import { useEffect } from 'react';
 import Logo from '../../shared/ui/Logo';
 import Tagline from '../../shared/components/Branding/Tagline';
-//import { initializeKakao } from '../../config/kakao';
+import { API_BASE_URL } from '../../api/apiClient';
 
-const KAKAO_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/kakao';
-const GOOGLE_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/google';
-// interface LoginPageProps {
-//   onLogin: () => void;
-// }
+const KAKAO_AUTH_URL = `${API_BASE_URL}/oauth2/authorization/kakao`;
+const GOOGLE_AUTH_URL = `${API_BASE_URL}/oauth2/authorization/google`;
 
-// const LoginPage = ({ onLogin }: LoginPageProps) => {
-//   useEffect(() => {
-//     // 카카오 SDK 초기화
-//     initializeKakao();
-//   }, []);
-
-//   const handleKakaoLogin = () => {
-//     // TODO: 나중에 실제 카카오 로그인 구현
-//     console.log('카카오 로그인 (개발용)');
-//     onLogin(); // 바로 AppRouter로 이동
-//   };
-
-//   const handleGoogleLogin = () => {
-//     // TODO: 구글 로그인 로직 구현
-//     console.log('구글 로그인');
-//   };
 const LoginPage = () => {
   return (
     <Wrapper>

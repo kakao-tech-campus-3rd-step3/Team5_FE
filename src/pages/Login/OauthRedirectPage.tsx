@@ -12,7 +12,7 @@ const OauthRedirectPage = () => {
     if (accessToken) {
       localStorage.setItem('accessToken', accessToken);
 
-      window.history.replaceState({}, '', ROUTE_PATH.HOME);
+      // window.history.replaceState({}, '', ROUTE_PATH.HOME);
       
       navigate(ROUTE_PATH.HOME, { replace: true });
     } else {

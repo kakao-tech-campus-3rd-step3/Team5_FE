@@ -13,8 +13,8 @@ function App() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [selectedJobDetail, setSelectedJobDetail] = useState<string | null>(null);
-  const isAuthenticated = !!localStorage.getItem('accessToken');
-
+ //  const isAuthenticated = !!localStorage.getItem('accessToken');
+  const isAuthenticated = true;
   const handleInstall = () => {
     setIsInstalled(true);
   };
