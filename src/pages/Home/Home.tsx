@@ -28,7 +28,7 @@ const HomePage = () => {
     setAnswerType(e.target.value as AnswerType);
   };
 
-  const handleAnswerDone = async (text: string, audioUrl?: string) => {
+  const handleAnswerDone = async () => {
     // console.log('🔍 답변 제출 시도 - question 상태 확인:');
     // console.log('  - question:', question);
     // console.log('  - question 타입:', typeof question);

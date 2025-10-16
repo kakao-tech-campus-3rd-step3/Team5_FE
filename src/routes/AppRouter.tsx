@@ -11,8 +11,8 @@ import AuthLayout from '../shared/layouts/AuthLayout';
 import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
 import ModalLayout from '../shared/layouts/ModalLayout';
 import ProtectedRoute from './ProtectedRoute';
-import LoginPage from '../pages/Login/Login';
-import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
+//import LoginPage from '../pages/Login/Login';
+//import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
 
 const AppRouter = () => {
   // TODO: isAuthenticated 추후 state 관리
