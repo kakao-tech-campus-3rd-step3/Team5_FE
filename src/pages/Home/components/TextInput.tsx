@@ -1,9 +1,19 @@
 import styled from '@emotion/styled';
+import type { ChangeEvent } from 'react';
 
-const TextInput = () => {
+interface TextInputProps {
+  value: string;
+  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+}
+
+const TextInput = ({ value, onChange }: TextInputProps) => {
   return (
     <Wrapper>
-      <Textarea placeholder="이곳에 답변을 입력하세요..."></Textarea>
+      <Textarea
+        placeholder="이곳에 답변을 입력하세요..."
+        value = {value}
+        onChange = {onChange}
+        ></Textarea>
     </Wrapper>
   );
 };

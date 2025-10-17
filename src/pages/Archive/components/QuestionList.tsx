@@ -1,17 +1,28 @@
 import styled from '@emotion/styled';
+import { ROUTE_PATH } from '../../../routes/routePath';
+import { useNavigate } from 'react-router-dom';
+import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
-const QuestionList = ({ data }: any) => {
-  // console.log(data);
+interface QuestionListProps {
+  data: AnswersApiResponse | null;
+}
+
+const QuestionList = ({ data }: QuestionListProps) => {
   const items = data?.items;
-  // console.log(items);
+  const navigate = useNavigate();
 
-  if (!items || items.length === 0) return;
+  const handleItemClick = () => {
+    // TODO: id 값에 따라 동적라우팅 구현
+    navigate(ROUTE_PATH.FEEDBACK_DETAIL);
+  };
+
+  if (!items || items.length === 0) return null;
   return (
     <Wrapper>
       <ListItemWrapper>
         <ol>
-          {items.map((q: any, index: any) => (
-            <ListItem key={q.answerId}>
+          {items.map((q: AnswerItem, index: number) => (
+            <ListItem key={q.answerId} onClick={handleItemClick}>
               {index + 1}. {q.questionText}
             </ListItem>
           ))}

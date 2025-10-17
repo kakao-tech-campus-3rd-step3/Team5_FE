@@ -1,8 +1,10 @@
 import styled from '@emotion/styled';
 import SharedButton from '../../shared/ui/SharedButton';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTE_PATH } from '../../routes/routePath';
 import { useState } from 'react';
+import type { GetFeedbackData } from '../../api/feedback';
+import Card from './components/Card';
 
 const questionData = {
   text: 'Q. Cookie와 Local Storage의 차이점이 무엇인가요?',
@@ -13,112 +15,94 @@ const answerData = {
   content: ['내용'],
 };
 
-// const memo = {
-//   title: '메모',
-//   content: ['내용'],
-// };
-
-interface TopicGroupData {
-  topic: string;
-  points: string[];
-}
-
-const goodPointsData = {
-  title: '좋은 점',
-  content: [
-    {
-      topic: '주제1',
-      points: ['내용', '내용'],
-    },
-    {
-      topic: '주제2',
-      points: ['내용', '내용'],
-    },
-  ],
-};
-
-const improvementPointsData = {
-  title: '개선할 수 있는 점',
-  content: [
-    {
-      topic: '주제1',
-      points: ['내용', '내용'],
-    },
-  ],
-};
-
 const FeedbackPage = () => {
   const navigate = useNavigate();
-  const [memoContent, setMemoContent] = useState('');
+  const location = useLocation();
+  // const [memoContent, setMemoContent] = useState('');
+  // const feedbackResult = location.state as GetFeedbackData | undefined;
+  const { result: feedbackResult, answerId } = (location.state || {}) as {
+    result?: GetFeedbackData;
+    answerId?: number;
+  };
+
+  const [memoContent, setMemoContent] = useState(() => {
+    if (!answerId) return '';
+    return localStorage.getItem(`memo_${answerId}`) || '';
+  });
 
   const handleArchiveClick = () => {
     navigate(ROUTE_PATH.ARCHIVE);
   };
 
+  const handleSaveMemo = () => {
+    if (!answerId) {
+      alert('메모를 저장하기 위한 답변 ID가 없습니다.');
+      return;
+    }
+    try {
+      localStorage.setItem(`memo_${answerId}`, memoContent);
+      alert('메모가 브라우저에 저장되었습니다!');
+    } catch (error) {
+      console.error('메모 저장 실패:', error);
+      alert('메모 저장에 실패했습니다.');
+    }
+  };
+
   return (
     <Wrapper>
       <SectionContainer>
-        <Title>오늘의 질문</Title>
-        <QuestionCard>
+          {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결*/} 
           <QuestionText>{questionData.text}</QuestionText>
-        </QuestionCard>
       </SectionContainer>
 
       <SectionContainer>
         <Title>나의 답변</Title>
-        <CardWrapper>
+        <Card>
           {answerData.content.map((paragraph, index) => (
             <CardParagraph key={index}>{paragraph}</CardParagraph>
           ))}
-        </CardWrapper>
+        </Card>
       </SectionContainer>
 
       <SectionContainer>
         <Title>AI 피드백</Title>
 
-        <CardWrapper>
-          <CardTitle>{goodPointsData.title}</CardTitle>
+        <Card>
+          <CardTitle>종합 평가</CardTitle>
+          <CardParagraph>{feedbackResult?.overallEvaluation}</CardParagraph>
+        </Card>
+
+        <Card>
+          <CardTitle>좋은 점</CardTitle>
           <CardList>
-            {goodPointsData.content.map((group: TopicGroupData, index: number) => (
-              <TopicGroup key={index}>
-                <TopicTitle>{group.topic}</TopicTitle>
-                <CardList>
-                  {group.points.map((point: string, pointIndex: number) => (
-                    <CardListItem key={pointIndex}>{point}</CardListItem>
-                  ))}
-                </CardList>
-              </TopicGroup>
+            {feedbackResult?.positivePoints.map((point, index) => (
+              <CardListItem key={index}>{point}</CardListItem>
             ))}
           </CardList>
-        </CardWrapper>
-      </SectionContainer>
-      <SectionContainer>
-        <CardWrapper>
-          <CardTitle>{improvementPointsData.title}</CardTitle>
+        </Card>
+
+        <Card>
+          <CardTitle>개선할 수 있는 점</CardTitle>
           <CardList>
-            {improvementPointsData.content.map((group: TopicGroupData, index: number) => (
-              <TopicGroup key={index}>
-                <TopicTitle>{group.topic}</TopicTitle>
-                <CardList>
-                  {group.points.map((point: string, pointIndex: number) => (
-                    <CardListItem key={pointIndex}>{point}</CardListItem>
-                  ))}
-                </CardList>
-              </TopicGroup>
+            {feedbackResult?.pointsForImprovement.map((point, index) => (
+              <CardListItem key={index}>{point}</CardListItem>
             ))}
           </CardList>
-        </CardWrapper>
+        </Card>
       </SectionContainer>
 
       <SectionContainer>
         <Title>메모</Title>
-        <CardWrapper>
+        <Card>
           <MemoTextArea
             value={memoContent}
             onChange={(e) => setMemoContent(e.target.value)}
             placeholder="메모를 작성해주세요."
           />
-        </CardWrapper>
+          <SharedButton type="button" onClick={handleSaveMemo} disabled={false}>
+              메모 저장
+          </SharedButton>
+        </Card>
       </SectionContainer>
 
       <SharedButton type="button" onClick={handleArchiveClick} disabled={false}>
@@ -129,7 +113,6 @@ const FeedbackPage = () => {
 };
 
 const SectionContainer = styled.section`
-  padding: 40px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -144,39 +127,21 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: rgb(0, 0, 0);
-  margin-bottom: 24px;
+  font-size: ${({ theme }) => theme.typography.fontSizes.h2};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.black};
+  margin-bottom: ${({ theme }) => theme.space.space24};
 `;
 
-const QuestionCard = styled.div`
-  background-color: rgba(255, 255, 255, 0.6);
-  border-radius: 16px;
-  padding: 25px 30px;
-  max-width: 600px;
-  width: 100%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  text-align: center;
-`;
-
-const QuestionText = styled.p`
-  font-size: 1rem;
-  color: #454545;
-`;
-
-const CardWrapper = styled.div`
-  background-color: rgba(255, 255, 255, 0.6);
-  border-radius: 24px;
-  padding: 32px;
-  max-width: 600px;
-  width: 100%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+const QuestionText = styled.h1`
+  padding: ${({ theme }) => theme.space.space40} ${({ theme }) => theme.space.space32};
+  font-size: ${({ theme }) => theme.typography.fontSizes.h1};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
 `;
 
 const CardParagraph = styled.p`
-  font-size: 1rem;
-  color: #595959;
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
+  color: ${({ theme }) => theme.colors.textSecondary};
   line-height: 1.8;
   &:not(:last-child) {
     margin-bottom: 1.5em;
@@ -184,52 +149,38 @@ const CardParagraph = styled.p`
 `;
 
 const CardTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 20px;
+  font-size: ${({ theme }) => theme.typography.fontSizes.h3}; 
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.text}; 
+  margin-bottom: ${({ theme }) => theme.space.space20};
   text-align: center;
 `;
 
 const CardList = styled.ul`
-  list-style-position: inside;
-  padding-left: 8px;
+  list-style-position: outside;
+  padding-left: ${({ theme }) => theme.space.space20};
 `;
 
 const CardListItem = styled.li`
-  font-size: 1rem;
-  color: #595959;
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
+  color: ${({ theme }) => theme.colors.textSecondary};
   line-height: 1.8;
   &:not(:last-child) {
-    margin-bottom: 1em;
+    margin-bottom: ${({ theme }) => theme.space.space16};
   }
-`;
-
-const TopicGroup = styled.div`
-  &:not(:last-child) {
-    margin-bottom: 24px;
-  }
-`;
-
-const TopicTitle = styled.h4`
-  font-weight: 600;
-  font-size: 1rem;
-  color: #333;
-  margin-bottom: 8px;
 `;
 
 const MemoTextArea = styled.textarea`
-  width: 100%;
+  width: 90%;
   min-height: 120px;
-  padding: 16px;
-  border-radius: 8px;
-  font-size: 1rem;
-  color: #595959;
-  background-color: rgba(255, 255, 255, 0.6);
+  padding: ${({ theme }) => theme.space.space16};
+  border-radius: ${({ theme }) => theme.radius.radius8}; 
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
+  color: ${({ theme }) => theme.colors.textSecondary};
 
   &:focus {
     outline: none;
-    border-color: #333;
+    border-color: ${({ theme }) => theme.colors.text};
   }
 `;
 

@@ -1,12 +1,26 @@
 import styled from '@emotion/styled';
 import type { AnswerStateType } from '../../Home';
-import useQuestion from '../../hooks/useQuestion';
+import GlassBackground from '../../../../shared/components/GlassBackground/GlassBackground';
+import useFetch from '../../../../shared/hooks/useFetch';
+
 interface QuestionCardSectionProps {
   answerState: AnswerStateType;
 }
 
+interface Question {
+  questionId: number;
+  questionType: string;
+  flowPhase: string;
+  questionText: string;
+  jobId: number;
+}
+
 const QuestionCardSection = ({ answerState }: QuestionCardSectionProps) => {
-  const { question } = useQuestion();
+  const { data: question } = useFetch<Question>('/api/questions/random', {
+    params: { user_id: 1 },
+  });
+
+  if (!question) return null;
 
   return (
     <section>
@@ -27,22 +41,4 @@ const QuestionCard = styled.div<{ isStarted: boolean }>`
   margin-bottom: ${({ theme }) => theme.space.space16};
 
   transition: 0.3s ease-in-out;
-`;
-
-const GlassBackground = styled.div`
-  background-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: ${({ theme }) => theme.blurs.blur8};
-  border-radius: ${({ theme }) => theme.radius.radius24};
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: ${({ theme }) => theme.typography.fontSizes.body};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
 `;

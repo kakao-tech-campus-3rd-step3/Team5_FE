@@ -7,7 +7,10 @@ interface TimerProps {
   onAnswerDone: () => void;
 }
 
-const userDefinedTime = 100;
+/**
+ * 사용자가 설정 할 수 있는 답변 제한 시간 (단위: seconds)
+ */
+const userDefinedTime = 120;
 
 const Timer = ({ isActive, onAnswerDone }: TimerProps) => {
   const { remainingSeconds } = useTimer({ userDefinedTime, isActive, onAnswerDone });

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
-import Logo from '../../shared/ui/Logo';
+import useFetch from '../../shared/hooks/useFetch';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
@@ -14,7 +14,9 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
-  // TODO: const { user } = UseUser();
+  const { data: user } = useFetch('/api/user', { params: { userId: 1 } });
+  // TODO: 추후 콘솔 삭제
+  console.log(user);
 
   const handleAnswerTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAnswerType(e.target.value as AnswerType);
@@ -32,9 +34,7 @@ const HomePage = () => {
   if (answerState === 'answered')
     return (
       <Wrapper>
-        <LogoWrapper>
-          <Logo size="medium" color="#333" />
-        </LogoWrapper>
+        <span>DailyQ 모의 면접</span>
         <QuestionCardSection answerState={answerState} />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
@@ -43,12 +43,8 @@ const HomePage = () => {
 
   return (
     <Wrapper>
-      <LogoWrapper>
-        <Logo size="medium" color="#333" />
-      </LogoWrapper>
-
-      {/* TODO: {user ? <Text>안녕하세요, {user.name}!</Text> : <Text>오늘의 질문을 확인하세요!</Text>} */}
-
+      <h1>DailyQ 모의 면접</h1>
+      {/* TODO: {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'} */}
       <QuestionCardSection answerState={answerState} />
 
       {answerState === 'before-answer' ? (
@@ -76,10 +72,4 @@ const Wrapper = styled.div`
   align-items: center;
   justify-content: center;
   height: 100%;
-  overflow: auto;
-  margin-bottom: ${({ theme }) => theme.space.space64};
-`;
-
-const LogoWrapper = styled.div`
-  margin-bottom: ${({ theme }) => theme.space.space16};
 `;
