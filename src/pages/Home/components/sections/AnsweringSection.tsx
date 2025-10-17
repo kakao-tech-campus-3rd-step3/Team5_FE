@@ -7,23 +7,39 @@ import { useState, type ChangeEvent } from 'react';
 interface AnsweringSectionProps {
   type: AnswerType;
   answerState: AnswerStateType;
-  onAnswerDone: (answerText: string) => void;
+  onAnswerDone: (answerText: string, audioUrl?: string) => void;
+  isSubmitting?: boolean;
 }
 
-const AnsweringSection = ({ type, answerState, onAnswerDone }: AnsweringSectionProps) => {
+const AnsweringSection = ({ type, answerState, onAnswerDone, isSubmitting = false }: AnsweringSectionProps) => {
   const [answerText, setAnswerText] = useState('');
+  const [audioUrl, setAudioUrl] = useState<string>('');
+
+  const handleAnswerDone = () => {
+    if (type === 'voice' && audioUrl) {
+      onAnswerDone(answerText, audioUrl);
+    } else {
+      onAnswerDone(answerText);
+    }
+  };
+
   return (
     <section>
       <Wrapper>
         <AnswerInput
           type={type}
           isActive={answerState === 'answering'}
-          onAnswerDone={() => onAnswerDone(answerText)}
+          onAnswerDone={handleAnswerDone}
           value={answerText}
           onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setAnswerText(e.target.value)}
+          onAudioUrlChange={setAudioUrl}
         />
-        <AnswerButton type="button" onClick={() => onAnswerDone(answerText)} disabled={!type}>
-          답변 완료
+        <AnswerButton 
+          type="button" 
+          onClick={handleAnswerDone} 
+          disabled={!type || isSubmitting}
+        >
+          {isSubmitting ? '제출 중...' : '답변 완료'}
         </AnswerButton>
       </Wrapper>
     </section>
