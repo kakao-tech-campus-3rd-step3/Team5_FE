@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
-import { useState, type ChangeEvent } from 'react';
+import { useState, useEffect, type ChangeEvent } from 'react';
 import { ROUTE_PATH } from '../../routes/routePath';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import QuestionCardSection from './components/sections/QuestionCardSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import AnsweringSection from './components/sections/AnsweringSection';
@@ -30,6 +30,32 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // OAuth 토큰 처리 (백엔드가 홈페이지로 리다이렉트하는 경우)
+  useEffect(() => {
+    const token = searchParams.get('token');
+    
+    if (token) {
+      console.log('=== 홈페이지에서 OAuth 토큰 발견 ===');
+      console.log('토큰:', token);
+      console.log('현재 URL:', window.location.href);
+      
+      // 토큰 저장
+      localStorage.setItem('accessToken', token);
+      console.log('토큰 저장 완료');
+      
+      // URL에서 토큰 파라미터 제거
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('token');
+      window.history.replaceState({}, '', newUrl.pathname);
+      
+      console.log('URL 정리 완료:', newUrl.pathname);
+      
+      // 페이지 새로고침하여 인증 상태 반영
+      window.location.reload();
+    }
+  }, [searchParams]);
   
   const { data: user } = useFetch<User>('/api/user');
   const { data: question } = useFetch<Question>('/api/questions/random');

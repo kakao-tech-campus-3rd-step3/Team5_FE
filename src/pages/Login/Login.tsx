@@ -1,11 +1,12 @@
 import styled from '@emotion/styled';
-//import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Logo from '../../shared/ui/Logo';
 import Tagline from '../../shared/components/Branding/Tagline';
-//import { initializeKakao } from '../../config/kakao';
+import { ROUTE_PATH } from '../../routes/routePath';
 
-const KAKAO_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/kakao';
-const GOOGLE_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/google';
+// TODO: 실제 OAuth 구현 시 주석 해제
+// const KAKAO_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/kakao';
+// const GOOGLE_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/google';
 // interface LoginPageProps {
 //   onLogin: () => void;
 // }
@@ -27,6 +28,19 @@ const GOOGLE_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/google';
 //     console.log('구글 로그인');
 //   };
 const LoginPage = () => {
+  const navigate = useNavigate();
+
+  // TODO: 임시 로그인 처리 - 실제 OAuth 구현 시 제거
+  const handleTempLogin = (provider: string) => {
+    console.log(`${provider} 로그인 (개발용 - 임시)`);
+    
+    // 임시 토큰 저장
+    localStorage.setItem('accessToken', 'temp-token-for-development');
+    
+    // 홈페이지로 이동
+    navigate(ROUTE_PATH.HOME);
+  };
+
   return (
     <Wrapper>
       <BrandingSection>
@@ -35,14 +49,14 @@ const LoginPage = () => {
       </BrandingSection>
 
       <LoginButtonSection>
-        <KakaoLoginButton href={KAKAO_AUTH_URL}>
+        <KakaoLoginButton type="button" onClick={() => handleTempLogin('카카오')}>
           <KakaoIcon>💬</KakaoIcon>
-          Login with Kakao
+          Login with Kakao (개발용)
         </KakaoLoginButton>
 
-        <GoogleLoginButton href={GOOGLE_AUTH_URL}>
+        <GoogleLoginButton type="button" onClick={() => handleTempLogin('구글')}>
           <GoogleIcon>G</GoogleIcon>
-          Sign in with Google
+          Sign in with Google (개발용)
         </GoogleLoginButton>
       </LoginButtonSection>
     </Wrapper>
@@ -78,7 +92,7 @@ const LoginButtonSection = styled.div`
   max-width: 320px;
 `;
 
-const BaseLoginLink = styled.a`
+const BaseLoginButton = styled.button`
   width: 100%;
   padding: 16px 24px;
   border-radius: 12px;
@@ -91,7 +105,6 @@ const BaseLoginLink = styled.a`
   align-items: center;
   justify-content: center;
   gap: 12px;
-  text-decoration: none; /* 링크의 기본 밑줄 제거 */
 
   &:hover {
     transform: translateY(-1px);
@@ -104,7 +117,7 @@ const BaseLoginLink = styled.a`
   }
 `;
 
-const KakaoLoginButton = styled(BaseLoginLink)`
+const KakaoLoginButton = styled(BaseLoginButton)`
   background-color: #fee500;
   color: #3c1e1e;
 
@@ -113,7 +126,7 @@ const KakaoLoginButton = styled(BaseLoginLink)`
   }
 `;
 
-const GoogleLoginButton = styled(BaseLoginLink)`
+const GoogleLoginButton = styled(BaseLoginButton)`
   background-color: #ffffff;
   color: #333;
   border: 1px solid #dadce0;

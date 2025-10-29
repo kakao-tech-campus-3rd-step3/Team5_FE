@@ -15,9 +15,13 @@ import LoginPage from '../pages/Login/Login';
 import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
 
 const AppRouter = () => {
-  // TODO: isAuthenticated 추후 state 관리
-  const isAuthenticated = true;
-  // TODO: isAuthenticated == false 일 경우 로그인 페이지, 익스텐션 설치 페이지 등으로 이동
+  // 실제 로그인 상태 확인
+  const isAuthenticated = !!localStorage.getItem('accessToken');
+  
+  console.log('=== AppRouter 렌더링 ===');
+  console.log('현재 인증 상태:', isAuthenticated);
+  console.log('저장된 토큰:', localStorage.getItem('accessToken'));
+  console.log('현재 경로:', window.location.pathname);
   return (
     <Routes>
       <Route element={<ProtectedRoute isAuth={isAuthenticated} />}>

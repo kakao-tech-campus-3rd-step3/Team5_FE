@@ -32,19 +32,19 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle>
-        {!isInstalled ? (
-          <PluginInstallPage onInstall={handleInstall} />
-        ) : !isAuthenticated ? (
-          <LoginPage />
-        ) : !selectedJob ? (
-          <JobSelectionPage onNext={handleJobSelect} />
-        ) : !selectedJobDetail ? (
-          <JobDetailSelectionPage selectedJob={selectedJob} onNext={handleJobDetailSelect} />
-        ) : (
-          <BrowserRouter>
+        <BrowserRouter>
+          {!isInstalled ? (
+            <PluginInstallPage onInstall={handleInstall} />
+          ) : !isAuthenticated ? (
+            <LoginPage />
+          ) : !selectedJob ? (
+            <JobSelectionPage onNext={handleJobSelect} />
+          ) : !selectedJobDetail ? (
+            <JobDetailSelectionPage selectedJob={selectedJob} onNext={handleJobDetailSelect} />
+          ) : (
             <AppRouter />
-          </BrowserRouter>
-        )}
+          )}
+        </BrowserRouter>
       </GlobalStyle>
     </ThemeProvider>
   );
