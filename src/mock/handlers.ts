@@ -1,10 +1,13 @@
 import { http, HttpResponse } from 'msw';
 import { API_BASE_URL } from '../api/apiClient';
 
+// MSW에서는 상대 경로 사용 (API_BASE_URL이 빈 문자열일 수 있음)
+const getApiPath = (path: string) => API_BASE_URL ? `${API_BASE_URL}${path}` : path;
+
 // TODO: mock api 수정
 export const handlers = [
   // Home(질문) 페이지 questions 가져오기
-  http.get(`${API_BASE_URL}/api/questions/random`, () => {
+  http.get(getApiPath('/api/questions/random'), () => {
     return HttpResponse.json({
       questionId: 123,
       questionType: 'FLOW',
@@ -14,7 +17,7 @@ export const handlers = [
     });
   }),
   // Home(질문) 페이지 users 가져오기
-  http.get(`${API_BASE_URL}/api/user`, () => {
+  http.get(getApiPath('/api/user'), () => {
     return HttpResponse.json({
       user: {
         user_id: 1,
@@ -206,5 +209,61 @@ export const handlers = [
     
     return new HttpResponse(null, { status: 200 });
   }),
+
+  // 답변 제출 API (음성/텍스트)
+  http.post(getApiPath('/api/answers'), async ({ request }) => {
+    const body = await request.json();
+    console.log('📝 답변 제출 요청:', body);
+    
+    return HttpResponse.json({
+      answerId: 'mock-answer-' + Date.now(),
+      feedbackId: 456,
+      status: 'PENDING_STT',
+      message: '답변이 성공적으로 제출되었습니다.'
+    });
+  }),
+
+  // Pre-signed URL 획득 API
+  http.get(getApiPath('/api/answers/upload-url'), () => {
+    console.log('📤 Pre-signed URL 요청');
+    
+    return HttpResponse.json({
+      preSignedUrl: 'https://mock-s3-bucket.com/upload-url',
+      audioUrl: 'mock-audio-url-' + Date.now()
+    });
+  }),
+
+  // STT 재시도 API
+  http.post(getApiPath('/api/answers/:answerId/retry-stt'), ({ params }) => {
+    console.log('🔄 STT 재시도 요청:', params.answerId);
+    
+    return HttpResponse.json({
+      message: 'STT 재시도가 시작되었습니다.',
+      status: 'PENDING_STT'
+    });
+  }),
+
+  // 답변 상태 조회 API
+  http.get(getApiPath('/api/answers/:answerId/status'), ({ params }) => {
+    console.log('📊 답변 상태 조회:', params.answerId);
+    
+    return HttpResponse.json({
+      answerId: params.answerId,
+      status: 'COMPLETED',
+      text: '안녕하세요. 저는 프론트엔드 개발자로 3년간 React와 TypeScript를 사용해왔습니다.',
+      audioUrl: 'https://mock-audio-storage.com/converted-audio.mp3'
+    });
+  }),
+
+  // SSE 연결 API (목업)
+  http.get(getApiPath('/api/sse/connect'), () => {
+    console.log('🔗 SSE 연결 요청');
+    
+    // SSE는 목업에서 제대로 구현하기 어려우므로 일반 응답 반환
+    return HttpResponse.json({
+      message: 'SSE 연결이 설정되었습니다. (목업 환경)'
+    });
+  }),
+
   // TODO: 본인이 사용 할 핸들러를 자유롭게 추가합니다.
 ];
