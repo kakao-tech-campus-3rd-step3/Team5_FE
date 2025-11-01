@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTE_PATH } from '../../routes/routePath';
+import { saveTokens } from '../../shared/utils/auth';
 
 const OauthRedirectPage = () => {
   const [searchParams] = useSearchParams();
@@ -11,23 +12,29 @@ const OauthRedirectPage = () => {
     console.log('현재 URL:', window.location.href);
     console.log('Search Params:', Object.fromEntries(searchParams.entries()));
     
-    const accessToken = searchParams.get('token');
+    const accessToken = searchParams.get('token') || searchParams.get('accessToken');
+    const refreshToken = searchParams.get('refreshToken') || searchParams.get('refresh_token');
     const error = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
 
-    console.log('Access Token:', accessToken);
+    console.log('Access Token:', accessToken ? accessToken.substring(0, 20) + '...' : '없음');
+    console.log('Refresh Token:', refreshToken ? refreshToken.substring(0, 20) + '...' : '없음');
     console.log('Error:', error);
     console.log('Error Description:', errorDescription);
 
     if (accessToken) {
-      console.log('✅ 토큰 발견, 로컬스토리지에 저장');
-      localStorage.setItem('accessToken', accessToken);
+      // 유틸리티 함수를 사용하여 토큰 저장
+      saveTokens(accessToken, refreshToken || undefined);
       
-      console.log('저장된 토큰 확인:', localStorage.getItem('accessToken'));
+      // URL에서 토큰 파라미터 제거 (보안)
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('token');
+      newUrl.searchParams.delete('accessToken');
+      newUrl.searchParams.delete('refreshToken');
+      newUrl.searchParams.delete('refresh_token');
+      window.history.replaceState({}, '', newUrl.toString());
       
       console.log('홈으로 이동 시도:', ROUTE_PATH.HOME);
-      
-      // history 조작 제거하고 navigate만 사용
       navigate(ROUTE_PATH.HOME, { replace: true });
     } else {
       console.log('❌ 토큰 없음 - 로그인 실패');

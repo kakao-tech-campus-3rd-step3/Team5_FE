@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Upload, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import styled from '@emotion/styled';
+import { ACCESS_TOKEN_KEY } from '../../../shared/utils/auth';
 
 interface RecordAnswerProps {
   onAnswerComplete?: (audioUrl: string, text?: string) => void;
@@ -52,7 +53,7 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
   const connectSSE = () => {
 
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
       if (!token) {
         throw new Error('인증 토큰이 없습니다.');
       }
@@ -142,7 +143,7 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
     try {
       const response = await fetch(`/api/answers/${answerIdToCheck}/status`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`,
         },
       });
       
@@ -411,7 +412,7 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
       const response = await fetch(`/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`,
           'Content-Type': 'application/json',
         },
       });
@@ -431,7 +432,7 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`,
         },
         body: JSON.stringify({
           audioUrl: serverAudioUrl,
@@ -510,7 +511,7 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
       const response = await fetch(`/api/answers/${answerId}/retry-stt`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`,
         },
       });
       

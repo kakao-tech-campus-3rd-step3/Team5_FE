@@ -8,8 +8,8 @@ export default defineConfig({
     // MSW 활성화 - 질문 API만 목업, 음성 답변은 실제 백엔드
     'import.meta.env.VITE_ENABLE_MSW': '"true"',
     // 실제 백엔드 서버 URL 설정
-    'import.meta.env.VITE_API_BASE_URL': '"http://localhost:8080"',
-    // 'import.meta.env.VITE_API_BASE_URL': '"https://be.dailyq.my"',
+    // 'import.meta.env.VITE_API_BASE_URL': '"http://localhost:8080"', // 로컬 개발 서버 사용 시
+    'import.meta.env.VITE_API_BASE_URL': '"https://be.dailyq.my"', // 실제 서버 사용 시
   },
   server: {
     hmr: {

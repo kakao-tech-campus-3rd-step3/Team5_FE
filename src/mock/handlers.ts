@@ -6,6 +6,58 @@ const getApiPath = (path: string) => API_BASE_URL ? `${API_BASE_URL}${path}` : p
 
 // TODO: mock api 수정
 export const handlers = [
+  // 개발용 토큰 획득 API (MSW 목업)
+  http.get('*/api/dev/token', ({ request }) => {
+    const url = new URL(request.url);
+    const password = url.searchParams.get('password');
+    
+    if (!password || password !== 'dev-password') {
+      return HttpResponse.json(
+        { message: 'Invalid password' },
+        { status: 401 }
+      );
+    }
+    
+    // 목업 토큰 생성
+    const accessToken = `mock-access-token-${Date.now()}`;
+    const refreshToken = `mock-refresh-token-${Date.now()}`;
+    
+    console.log('✅ [MSW] 개발용 토큰 발급 성공');
+    console.log('🔑 Access Token:', accessToken);
+    console.log('🔑 Refresh Token:', refreshToken);
+    
+    return HttpResponse.json({
+      accessToken,
+      refreshToken
+    });
+  }),
+  
+  // 리프레시 토큰 API (MSW 목업)
+  http.post('*/api/token/refresh', async ({ request }) => {
+    const body = await request.json() as { refresh_token?: string };
+    const refreshToken = body.refresh_token;
+    
+    if (!refreshToken || !refreshToken.startsWith('mock-refresh-token-')) {
+      return HttpResponse.json(
+        { message: 'Invalid refresh token' },
+        { status: 401 }
+      );
+    }
+    
+    // 새로운 토큰 생성
+    const newAccessToken = `mock-access-token-${Date.now()}`;
+    const newRefreshToken = `mock-refresh-token-${Date.now()}`;
+    
+    console.log('✅ [MSW] 토큰 갱신 성공');
+    console.log('🔑 New Access Token:', newAccessToken);
+    console.log('🔑 New Refresh Token:', newRefreshToken);
+    
+    return HttpResponse.json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken
+    });
+  }),
+  
   // 실제 백엔드로 전달해야 하는 API들 (MSW 가로채기 방지)
   http.get('*/api/sse/connect', () => passthrough()),
   http.get('*/api/answers', () => passthrough()),

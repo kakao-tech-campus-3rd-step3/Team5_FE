@@ -1,44 +1,58 @@
 import styled from '@emotion/styled';
-import { useNavigate } from 'react-router-dom';
 import Logo from '../../shared/ui/Logo';
 import Tagline from '../../shared/components/Branding/Tagline';
-import { ROUTE_PATH } from '../../routes/routePath';
 
-// TODO: 실제 OAuth 구현 시 주석 해제
-// const KAKAO_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/kakao';
-// const GOOGLE_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/google';
-// interface LoginPageProps {
-//   onLogin: () => void;
-// }
+import { API_BASE_URL } from '../../api/apiClient';
 
-// const LoginPage = ({ onLogin }: LoginPageProps) => {
-//   useEffect(() => {
-//     // 카카오 SDK 초기화
-//     initializeKakao();
-//   }, []);
+// 리다이렉트 URI 설정
+const getRedirectUri = () => {
+  const currentOrigin = window.location.origin;
+  return `${currentOrigin}/login/oauth`;
+};
 
-//   const handleKakaoLogin = () => {
-//     // TODO: 나중에 실제 카카오 로그인 구현
-//     console.log('카카오 로그인 (개발용)');
-//     onLogin(); // 바로 AppRouter로 이동
-//   };
-
-//   const handleGoogleLogin = () => {
-//     // TODO: 구글 로그인 로직 구현
-//     console.log('구글 로그인');
-//   };
 const LoginPage = () => {
-  const navigate = useNavigate();
+  // 실제 OAuth 로그인으로 리다이렉트
+  const handleKakaoLogin = () => {
+    const redirectUri = getRedirectUri();
+    // OAuth URL 생성 (redirect_uri는 백엔드 설정에 따라 선택적)
+    const kakaoAuthUrl = `${API_BASE_URL}/oauth2/authorization/kakao`;
+    
+    console.log('🔐 카카오 로그인 시작');
+    console.log('📍 현재 도메인:', window.location.origin);
+    console.log('📍 현재 경로:', window.location.pathname);
+    console.log('📍 예상 리다이렉트 URI:', redirectUri);
+    console.log('🌐 OAuth URL:', kakaoAuthUrl);
+    console.log('🌐 API_BASE_URL:', API_BASE_URL);
+    console.log('⚠️ 백엔드 OAuth 서버로 이동합니다...');
+    
+    // 실제 서버 확인
+    if (API_BASE_URL.includes('localhost:8080')) {
+      console.warn('⚠️ localhost:8080으로 설정되어 있습니다. 백엔드 서버가 실행 중인지 확인하세요.');
+    }
+    
+    // OAuth 인증을 위해 백엔드 서버로 이동 (전체 페이지 리다이렉트)
+    window.location.href = kakaoAuthUrl;
+  };
 
-  // TODO: 임시 로그인 처리 - 실제 OAuth 구현 시 제거
-  const handleTempLogin = (provider: string) => {
-    console.log(`${provider} 로그인 (개발용 - 임시)`);
+  const handleGoogleLogin = () => {
+    const redirectUri = getRedirectUri();
+    const googleAuthUrl = `${API_BASE_URL}/oauth2/authorization/google`;
     
-    // 임시 토큰 저장
-    localStorage.setItem('accessToken', 'temp-token-for-development');
+    console.log('🔐 구글 로그인 시작');
+    console.log('📍 현재 도메인:', window.location.origin);
+    console.log('📍 현재 경로:', window.location.pathname);
+    console.log('📍 예상 리다이렉트 URI:', redirectUri);
+    console.log('🌐 OAuth URL:', googleAuthUrl);
+    console.log('🌐 API_BASE_URL:', API_BASE_URL);
+    console.log('⚠️ 백엔드 OAuth 서버로 이동합니다...');
     
-    // 홈페이지로 이동
-    navigate(ROUTE_PATH.HOME);
+    // 실제 서버 확인
+    if (API_BASE_URL.includes('localhost:8080')) {
+      console.warn('⚠️ localhost:8080으로 설정되어 있습니다. 백엔드 서버가 실행 중인지 확인하세요.');
+    }
+    
+    // OAuth 인증을 위해 백엔드 서버로 이동 (전체 페이지 리다이렉트)
+    window.location.href = googleAuthUrl;
   };
 
   return (
@@ -49,14 +63,20 @@ const LoginPage = () => {
       </BrandingSection>
 
       <LoginButtonSection>
-        <KakaoLoginButton type="button" onClick={() => handleTempLogin('카카오')}>
+        <KakaoLoginButton 
+          type="button" 
+          onClick={handleKakaoLogin}
+        >
           <KakaoIcon>💬</KakaoIcon>
-          Login with Kakao (개발용)
+          Login with Kakao
         </KakaoLoginButton>
 
-        <GoogleLoginButton type="button" onClick={() => handleTempLogin('구글')}>
+        <GoogleLoginButton 
+          type="button" 
+          onClick={handleGoogleLogin}
+        >
           <GoogleIcon>G</GoogleIcon>
-          Sign in with Google (개발용)
+          Sign in with Google
         </GoogleLoginButton>
       </LoginButtonSection>
     </Wrapper>
@@ -106,12 +126,17 @@ const BaseLoginButton = styled.button`
   justify-content: center;
   gap: 12px;
 
-  &:hover {
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }

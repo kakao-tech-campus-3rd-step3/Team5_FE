@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTE_PATH } from '../../../routes/routePath';
 import apiClient from '../../../api/apiClient';
+import { saveTokens } from '../../../shared/utils/auth';
 
 interface LoginResponse {
   accessToken: string;
+  refreshToken?: string;
 }
 
 export const useLogin = () => {
@@ -17,10 +19,10 @@ export const useLogin = () => {
     setError(null);
     try {
       const response = await apiClient.post<LoginResponse>(`/auth/${provider}?code=${code}`);
-      const { accessToken } = response.data;
+      const { accessToken, refreshToken } = response.data;
 
       if (accessToken) {
-        localStorage.setItem('accessToken', accessToken);
+        saveTokens(accessToken, refreshToken);
         navigate(ROUTE_PATH.HOME, { replace: true });
       } else {
         throw new Error('토큰이 없습니다.');
