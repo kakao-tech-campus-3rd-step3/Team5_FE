@@ -1,6 +1,8 @@
 import './styles';
 import { StrictMode } from 'react';
+
 import { createRoot } from 'react-dom/client';
+
 import App from './App.tsx';
 import { logout, isAuthenticated, getAccessToken, getRefreshToken } from './shared/utils/auth';
 
@@ -9,8 +11,14 @@ if (import.meta.env.DEV) {
   (window as any).logout = logout;
   (window as any).checkAuth = () => {
     console.log('현재 로그인 상태:', isAuthenticated() ? '로그인됨' : '로그인 안됨');
-    console.log('Access Token:', getAccessToken() ? getAccessToken()?.substring(0, 20) + '...' : '없음');
-    console.log('Refresh Token:', getRefreshToken() ? getRefreshToken()?.substring(0, 20) + '...' : '없음');
+    console.log(
+      'Access Token:',
+      getAccessToken() ? getAccessToken()?.substring(0, 20) + '...' : '없음'
+    );
+    console.log(
+      'Refresh Token:',
+      getRefreshToken() ? getRefreshToken()?.substring(0, 20) + '...' : '없음'
+    );
   };
   console.log('🔧 개발 도구: 콘솔에서 logout() 또는 checkAuth()를 사용할 수 있습니다.');
 }

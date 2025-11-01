@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
-import Logo from '../../shared/ui/Logo';
-import Tagline from '../../shared/components/Branding/Tagline';
 
 import { API_BASE_URL } from '../../api/apiClient';
+import Tagline from '../../shared/components/Branding/Tagline';
+import Logo from '../../shared/ui/Logo';
 
 // 리다이렉트 URI 설정
 const getRedirectUri = () => {
@@ -16,7 +16,7 @@ const LoginPage = () => {
     const redirectUri = getRedirectUri();
     // OAuth URL 생성 (redirect_uri는 백엔드 설정에 따라 선택적)
     const kakaoAuthUrl = `${API_BASE_URL}/oauth2/authorization/kakao`;
-    
+
     console.log('🔐 카카오 로그인 시작');
     console.log('📍 현재 도메인:', window.location.origin);
     console.log('📍 현재 경로:', window.location.pathname);
@@ -24,12 +24,14 @@ const LoginPage = () => {
     console.log('🌐 OAuth URL:', kakaoAuthUrl);
     console.log('🌐 API_BASE_URL:', API_BASE_URL);
     console.log('⚠️ 백엔드 OAuth 서버로 이동합니다...');
-    
+
     // 실제 서버 확인
     if (API_BASE_URL.includes('localhost:8080')) {
-      console.warn('⚠️ localhost:8080으로 설정되어 있습니다. 백엔드 서버가 실행 중인지 확인하세요.');
+      console.warn(
+        '⚠️ localhost:8080으로 설정되어 있습니다. 백엔드 서버가 실행 중인지 확인하세요.'
+      );
     }
-    
+
     // OAuth 인증을 위해 백엔드 서버로 이동 (전체 페이지 리다이렉트)
     window.location.href = kakaoAuthUrl;
   };
@@ -37,7 +39,7 @@ const LoginPage = () => {
   const handleGoogleLogin = () => {
     const redirectUri = getRedirectUri();
     const googleAuthUrl = `${API_BASE_URL}/oauth2/authorization/google`;
-    
+
     console.log('🔐 구글 로그인 시작');
     console.log('📍 현재 도메인:', window.location.origin);
     console.log('📍 현재 경로:', window.location.pathname);
@@ -45,12 +47,14 @@ const LoginPage = () => {
     console.log('🌐 OAuth URL:', googleAuthUrl);
     console.log('🌐 API_BASE_URL:', API_BASE_URL);
     console.log('⚠️ 백엔드 OAuth 서버로 이동합니다...');
-    
+
     // 실제 서버 확인
     if (API_BASE_URL.includes('localhost:8080')) {
-      console.warn('⚠️ localhost:8080으로 설정되어 있습니다. 백엔드 서버가 실행 중인지 확인하세요.');
+      console.warn(
+        '⚠️ localhost:8080으로 설정되어 있습니다. 백엔드 서버가 실행 중인지 확인하세요.'
+      );
     }
-    
+
     // OAuth 인증을 위해 백엔드 서버로 이동 (전체 페이지 리다이렉트)
     window.location.href = googleAuthUrl;
   };
@@ -63,18 +67,12 @@ const LoginPage = () => {
       </BrandingSection>
 
       <LoginButtonSection>
-        <KakaoLoginButton 
-          type="button" 
-          onClick={handleKakaoLogin}
-        >
+        <KakaoLoginButton type="button" onClick={handleKakaoLogin}>
           <KakaoIcon>💬</KakaoIcon>
           Login with Kakao
         </KakaoLoginButton>
 
-        <GoogleLoginButton 
-          type="button" 
-          onClick={handleGoogleLogin}
-        >
+        <GoogleLoginButton type="button" onClick={handleGoogleLogin}>
           <GoogleIcon>G</GoogleIcon>
           Sign in with Google
         </GoogleLoginButton>

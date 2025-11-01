@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
-import Navigation from '../components/Navigation/Navigation';
 import { Outlet } from 'react-router-dom';
+
+import Navigation from '../components/Navigation/Navigation';
 
 const ModalLayout = () => {
   return (

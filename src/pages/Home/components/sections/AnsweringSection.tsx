@@ -1,8 +1,11 @@
-import styled from '@emotion/styled';
-import AnswerButton from '../../../../shared/ui/SharedButton';
-import type { AnswerStateType, AnswerType } from '../../Home';
-import AnswerInput from '../AnswerInput';
 import { useState, type ChangeEvent } from 'react';
+
+import styled from '@emotion/styled';
+
+import AnswerButton from '../../../../shared/ui/SharedButton';
+import AnswerInput from '../AnswerInput';
+
+import type { AnswerStateType, AnswerType } from '../../Home';
 
 interface AnsweringSectionProps {
   type: AnswerType;
@@ -11,7 +14,12 @@ interface AnsweringSectionProps {
   isSubmitting?: boolean;
 }
 
-const AnsweringSection = ({ type, answerState, onAnswerDone, isSubmitting = false }: AnsweringSectionProps) => {
+const AnsweringSection = ({
+  type,
+  answerState,
+  onAnswerDone,
+  isSubmitting = false,
+}: AnsweringSectionProps) => {
   const [answerText, setAnswerText] = useState('');
   const [audioUrl, setAudioUrl] = useState<string>('');
   const [convertedText, setConvertedText] = useState<string>('');
@@ -58,11 +66,7 @@ const AnsweringSection = ({ type, answerState, onAnswerDone, isSubmitting = fals
           onAnswerComplete={handleAnswerComplete}
           onError={handleError}
         />
-        <AnswerButton 
-          type="button" 
-          onClick={handleAnswerDone} 
-          disabled={!type || isSubmitting}
-        >
+        <AnswerButton type="button" onClick={handleAnswerDone} disabled={!type || isSubmitting}>
           {isSubmitting ? '제출 중...' : '답변 완료'}
         </AnswerButton>
       </Wrapper>

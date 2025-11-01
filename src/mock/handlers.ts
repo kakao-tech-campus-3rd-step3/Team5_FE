@@ -1,8 +1,4 @@
 import { http, HttpResponse, passthrough } from 'msw';
-import { API_BASE_URL } from '../api/apiClient';
-
-// MSW에서는 상대 경로 사용 (API_BASE_URL이 빈 문자열일 수 있음)
-const getApiPath = (path: string) => API_BASE_URL ? `${API_BASE_URL}${path}` : path;
 
 // TODO: mock api 수정
 export const handlers = [
@@ -10,54 +6,48 @@ export const handlers = [
   http.get('*/api/dev/token', ({ request }) => {
     const url = new URL(request.url);
     const password = url.searchParams.get('password');
-    
+
     if (!password || password !== 'dev-password') {
-      return HttpResponse.json(
-        { message: 'Invalid password' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ message: 'Invalid password' }, { status: 401 });
     }
-    
+
     // 목업 토큰 생성
     const accessToken = `mock-access-token-${Date.now()}`;
     const refreshToken = `mock-refresh-token-${Date.now()}`;
-    
+
     console.log('✅ [MSW] 개발용 토큰 발급 성공');
     console.log('🔑 Access Token:', accessToken);
     console.log('🔑 Refresh Token:', refreshToken);
-    
+
     return HttpResponse.json({
       accessToken,
-      refreshToken
+      refreshToken,
     });
   }),
-  
+
   // 리프레시 토큰 API (MSW 목업)
   http.post('*/api/token/refresh', async ({ request }) => {
-    const body = await request.json() as { refresh_token?: string };
+    const body = (await request.json()) as { refresh_token?: string };
     const refreshToken = body.refresh_token;
-    
+
     if (!refreshToken || !refreshToken.startsWith('mock-refresh-token-')) {
-      return HttpResponse.json(
-        { message: 'Invalid refresh token' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ message: 'Invalid refresh token' }, { status: 401 });
     }
-    
+
     // 새로운 토큰 생성
     const newAccessToken = `mock-access-token-${Date.now()}`;
     const newRefreshToken = `mock-refresh-token-${Date.now()}`;
-    
+
     console.log('✅ [MSW] 토큰 갱신 성공');
     console.log('🔑 New Access Token:', newAccessToken);
     console.log('🔑 New Refresh Token:', newRefreshToken);
-    
+
     return HttpResponse.json({
       accessToken: newAccessToken,
-      refreshToken: newRefreshToken
+      refreshToken: newRefreshToken,
     });
   }),
-  
+
   // 실제 백엔드로 전달해야 하는 API들 (MSW 가로채기 방지)
   http.get('*/api/sse/connect', () => passthrough()),
   http.get('*/api/answers', () => passthrough()),
@@ -70,37 +60,37 @@ export const handlers = [
   http.post('*/api/stt/callback/:sttTaskId', () => passthrough()),
   http.get('*/api/questions/random', () => passthrough()),
   http.get('*/api/user', () => passthrough()),
-  
+
   // Pre-signed URL 획득 API (MSW 목업)
   http.get('*/api/answers/upload-url', ({ request }) => {
     const url = new URL(request.url);
     const fileName = url.searchParams.get('fileName') || `audio_${Date.now()}.webm`;
-    
+
     // 목업 Pre-signed URL 생성 (로컬 URL로 반환하여 MSW가 가로챌 수 있도록)
     const preSignedUrl = `/api/mock/upload/${fileName}`;
     const finalAudioUrl = `https://cdn.example.com/audio/${fileName}`;
-    
+
     console.log('✅ [MSW] Pre-signed URL 요청 성공');
     console.log('📝 요청 파일명:', fileName);
     console.log('🔗 Pre-signed URL:', preSignedUrl);
     console.log('🔗 Final Audio URL:', finalAudioUrl);
-    
+
     return HttpResponse.json({
       preSignedUrl: preSignedUrl,
-      finalAudioUrl
+      finalAudioUrl,
     });
   }),
-  
+
   // Pre-signed URL로 파일 업로드 (PUT 요청 목업)
   http.put('*/api/mock/upload/*', async ({ request }) => {
     const file = await request.blob();
     console.log('✅ [MSW] 파일 업로드 성공');
     console.log('📦 파일 크기:', file.size, 'bytes');
     console.log('📦 파일 타입:', file.type);
-    
+
     return new HttpResponse(null, { status: 200 });
   }),
-  
+
   // Home(질문) 페이지 questions 가져오기 (목업 사용 시 주석 해제)
   // http.get(getApiPath('/api/questions/random'), () => {
   //   return HttpResponse.json({
@@ -214,7 +204,7 @@ export const handlers = [
   //     audioUrl: body.audioUrl || '없음',
   //     followUp: body.followUp ?? false
   //   });
-  //   
+  //
   //   return HttpResponse.json({
   //     answerId: 9007199254740991,
   //     answerText: body.answerText,
@@ -225,28 +215,28 @@ export const handlers = [
   http.get('*/api/rivals/search', ({ request }) => {
     const url = new URL(request.url);
     const email = url.searchParams.get('email');
-    
+
     if (email === 'test@example.com') {
       return HttpResponse.json({
         userId: 12345,
         email: 'test@example.com',
-        name: '테스트 유저'
+        name: '테스트 유저',
       });
     }
-    
+
     return HttpResponse.json({ message: '사용자를 찾을 수 없습니다.' }, { status: 404 });
   }),
   // Rival 프로필 조회 API
   http.get('*/api/rivals/:userId/profile', ({ params }) => {
     const { userId } = params;
-    
+
     return HttpResponse.json({
       userId: Number(userId),
       email: 'test@example.com',
       name: '테스트 유저',
       intro: '안녕하세요! 열심히 공부하는 개발자입니다.',
       dailyQDays: 15,
-      answeredQuestions: 28
+      answeredQuestions: 28,
     });
   }),
   // 팔로잉 목록 조회 API
@@ -254,17 +244,17 @@ export const handlers = [
     const url = new URL(request.url);
     const lastId = url.searchParams.get('lastId');
     const limit = Number(url.searchParams.get('limit')) || 10;
-    
+
     const mockItems = Array.from({ length: limit }, (_, i) => ({
       userId: (lastId ? Number(lastId) : 0) + i + 1,
       name: `팔로잉 유저 ${i + 1}`,
-      email: `following${i + 1}@example.com`
+      email: `following${i + 1}@example.com`,
     }));
-    
+
     return HttpResponse.json({
       items: mockItems,
       nextCursor: mockItems[mockItems.length - 1].userId,
-      hasNext: true
+      hasNext: true,
     });
   }),
   // 팔로워 목록 조회 API
@@ -272,43 +262,46 @@ export const handlers = [
     const url = new URL(request.url);
     const lastId = url.searchParams.get('lastId');
     const limit = Number(url.searchParams.get('limit')) || 10;
-    
+
     const mockItems = Array.from({ length: limit }, (_, i) => ({
       userId: (lastId ? Number(lastId) : 0) + i + 1,
       name: `팔로워 유저 ${i + 1}`,
-      email: `follower${i + 1}@example.com`
+      email: `follower${i + 1}@example.com`,
     }));
-    
+
     return HttpResponse.json({
       items: mockItems,
       nextCursor: mockItems[mockItems.length - 1].userId,
-      hasNext: true
+      hasNext: true,
     });
   }),
   // 라이벌 추가 (팔로우) API
   http.post('*/api/rivals/:targetUserId', ({ params }) => {
     const { targetUserId } = params;
     console.log(`✅ [백엔드] 라이벌 추가 성공 - POST /api/rivals/${targetUserId}`);
-    
-    return HttpResponse.json({
-      rivalId: Math.floor(Math.random() * 1000000),
-      senderId: 1,
-      senderName: '나',
-      receiverId: Number(targetUserId),
-      receiverName: '테스트 유저'
-    }, { status: 201 });
+
+    return HttpResponse.json(
+      {
+        rivalId: Math.floor(Math.random() * 1000000),
+        senderId: 1,
+        senderName: '나',
+        receiverId: Number(targetUserId),
+        receiverName: '테스트 유저',
+      },
+      { status: 201 }
+    );
   }),
   // 라이벌 삭제 (언팔로우) API
   http.delete('*/api/rivals/:targetUserId', ({ params }) => {
     const { targetUserId } = params;
     console.log(`✅ [백엔드] 라이벌 삭제 성공 - DELETE /api/rivals/${targetUserId}`);
-    
+
     return new HttpResponse(null, { status: 200 });
   }),
 
   // TODO: 음성 답변 관련 API는 실제 백엔드 서버로 요청
   // - /api/answers (POST) - 실제 백엔드
-  // - /api/answers/upload-url (GET) - 실제 백엔드  
+  // - /api/answers/upload-url (GET) - 실제 백엔드
   // - /api/answers/:id/retry-stt (POST) - 실제 백엔드
   // - /api/answers/:id/status (GET) - 실제 백엔드
   // - /api/sse/connect (GET) - 실제 백엔드

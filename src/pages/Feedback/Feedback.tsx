@@ -1,10 +1,14 @@
-import styled from '@emotion/styled';
-import SharedButton from '../../shared/ui/SharedButton';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { ROUTE_PATH } from '../../routes/routePath';
 import { useState } from 'react';
-import type { GetFeedbackData } from '../../api/feedback';
+
+import styled from '@emotion/styled';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import { ROUTE_PATH } from '../../routes/routePath';
+import SharedButton from '../../shared/ui/SharedButton';
+
 import Card from './components/Card';
+
+import type { GetFeedbackData } from '../../api/feedback';
 
 const questionData = {
   text: 'Q. Cookie와 Local Storage의 차이점이 무엇인가요?',
@@ -51,8 +55,8 @@ const FeedbackPage = () => {
   return (
     <Wrapper>
       <SectionContainer>
-          {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결*/} 
-          <QuestionText>{questionData.text}</QuestionText>
+        {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결*/}
+        <QuestionText>{questionData.text}</QuestionText>
       </SectionContainer>
 
       <SectionContainer>
@@ -100,7 +104,7 @@ const FeedbackPage = () => {
             placeholder="메모를 작성해주세요."
           />
           <SharedButton type="button" onClick={handleSaveMemo} disabled={false}>
-              메모 저장
+            메모 저장
           </SharedButton>
         </Card>
       </SectionContainer>
@@ -149,9 +153,9 @@ const CardParagraph = styled.p`
 `;
 
 const CardTitle = styled.h3`
-  font-size: ${({ theme }) => theme.typography.fontSizes.h3}; 
+  font-size: ${({ theme }) => theme.typography.fontSizes.h3};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.text}; 
+  color: ${({ theme }) => theme.colors.text};
   margin-bottom: ${({ theme }) => theme.space.space20};
   text-align: center;
 `;
@@ -174,7 +178,7 @@ const MemoTextArea = styled.textarea`
   width: 90%;
   min-height: 120px;
   padding: ${({ theme }) => theme.space.space16};
-  border-radius: ${({ theme }) => theme.radius.radius8}; 
+  border-radius: ${({ theme }) => theme.radius.radius8};
   font-size: ${({ theme }) => theme.typography.fontSizes.body};
   color: ${({ theme }) => theme.colors.textSecondary};
 

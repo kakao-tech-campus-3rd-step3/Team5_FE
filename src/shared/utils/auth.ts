@@ -25,10 +25,10 @@ export const parseAndSaveTokensFromUrl = (): boolean => {
   const urlParams = new URLSearchParams(window.location.search);
   const accessToken = urlParams.get('token') || urlParams.get('accessToken');
   const refreshToken = urlParams.get('refreshToken') || urlParams.get('refresh_token');
-  
+
   if (accessToken) {
     saveTokens(accessToken, refreshToken || undefined);
-    
+
     // URL에서 토큰 파라미터 제거 (보안)
     const newUrl = new URL(window.location.href);
     newUrl.searchParams.delete('token');
@@ -36,10 +36,10 @@ export const parseAndSaveTokensFromUrl = (): boolean => {
     newUrl.searchParams.delete('refreshToken');
     newUrl.searchParams.delete('refresh_token');
     window.history.replaceState({}, '', newUrl.toString());
-    
+
     return true;
   }
-  
+
   return false;
 };
 
@@ -50,7 +50,7 @@ export const logout = () => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   console.log('✅ 로그아웃 완료 - 토큰이 삭제되었습니다.');
-  
+
   // 페이지 새로고침하여 인증 상태 업데이트
   window.location.href = '/login';
 };
@@ -72,4 +72,3 @@ export const getAccessToken = (): string | null => {
 export const getRefreshToken = (): string | null => {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 };
-

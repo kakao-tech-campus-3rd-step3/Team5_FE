@@ -1,5 +1,6 @@
-import styled from '@emotion/styled';
 import { useState } from 'react';
+
+import styled from '@emotion/styled';
 
 interface JobDetailSelectionPageProps {
   selectedJob: string;
@@ -16,28 +17,28 @@ const JobDetailSelectionPage = ({ selectedJob, onNext }: JobDetailSelectionPageP
       { id: 'BACKEND', label: '백엔드' },
       { id: 'ANDROID', label: '안드로이드' },
       { id: 'IOS', label: 'iOS' },
-      { id: 'AI', label: 'AI' }
+      { id: 'AI', label: 'AI' },
     ],
     NURSING: [
       { id: 'GENERAL', label: '일반간호' },
       { id: 'ICU', label: '중환자실' },
       { id: 'EMERGENCY', label: '응급실' },
       { id: 'SURGERY', label: '수술실' },
-      { id: 'PEDIATRIC', label: '소아과' }
+      { id: 'PEDIATRIC', label: '소아과' },
     ],
     BROADCASTING: [
       { id: 'PRODUCER', label: '프로듀서' },
       { id: 'PD', label: 'PD' },
       { id: 'WRITER', label: '작가' },
       { id: 'REPORTER', label: '기자' },
-      { id: 'ANCHOR', label: '앵커' }
-    ]
+      { id: 'ANCHOR', label: '앵커' },
+    ],
   };
 
   const currentJobDetails = jobDetails[selectedJob as keyof typeof jobDetails] || jobDetails.IT;
 
   const handleDetailSelect = (detailId: string) => {
-    const selectedItem = currentJobDetails.find(item => item.id === detailId);
+    const selectedItem = currentJobDetails.find((item) => item.id === detailId);
     if (selectedItem) {
       setSelectedDetail(selectedItem.label);
     }
@@ -51,7 +52,7 @@ const JobDetailSelectionPage = ({ selectedJob, onNext }: JobDetailSelectionPageP
     const jobTitles = {
       IT: 'IT 직군을 선택하셨군요?',
       NURSING: '간호 직군을 선택하셨군요?',
-      BROADCASTING: '방송 직군을 선택하셨군요?'
+      BROADCASTING: '방송 직군을 선택하셨군요?',
     };
     return jobTitles[job as keyof typeof jobTitles] || '직군을 선택하셨군요?';
   };
@@ -77,9 +78,7 @@ const JobDetailSelectionPage = ({ selectedJob, onNext }: JobDetailSelectionPageP
         </JobDetailList>
       </Card>
 
-      <NextButton onClick={handleNext}>
-        다음
-      </NextButton>
+      <NextButton onClick={handleNext}>다음</NextButton>
     </Wrapper>
   );
 };
@@ -142,13 +141,13 @@ const JobDetailButton = styled.button<{ isSelected: boolean }>`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  
-  background-color: ${props => props.isSelected ? '#e98b8b' : '#ffffff'};
-  color: ${props => props.isSelected ? '#ffffff' : '#333333'};
-  border: ${props => props.isSelected ? 'none' : '1px solid #e0e0e0'};
+
+  background-color: ${(props) => (props.isSelected ? '#e98b8b' : '#ffffff')};
+  color: ${(props) => (props.isSelected ? '#ffffff' : '#333333')};
+  border: ${(props) => (props.isSelected ? 'none' : '1px solid #e0e0e0')};
 
   &:hover {
-    background-color: ${props => props.isSelected ? '#d77a7a' : '#f8f8f8'};
+    background-color: ${(props) => (props.isSelected ? '#d77a7a' : '#f8f8f8')};
   }
 
   &:active {

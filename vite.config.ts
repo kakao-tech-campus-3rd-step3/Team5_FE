@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -36,15 +36,15 @@ export default defineConfig({
         secure: false,
         // SSE를 위한 설정
         ws: false, // WebSocket이 아닌 HTTP 스트림
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (proxyReq, _req, _res) => {
+        configure: (proxy: any, _options: any) => {
+          proxy.on('proxyReq', (proxyReq: any, _req: any, _res: any) => {
             // SSE 요청 헤더 설정
             proxyReq.setHeader('Accept', 'text/event-stream');
             proxyReq.setHeader('Cache-Control', 'no-cache');
             proxyReq.setHeader('Connection', 'keep-alive');
           });
-          
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+
+          proxy.on('proxyRes', (proxyRes: any, _req: any, res: any) => {
             // SSE 응답 헤더 유지
             const contentType = proxyRes.headers['content-type'] || '';
             if (contentType.includes('text/event-stream')) {
@@ -58,9 +58,9 @@ export default defineConfig({
               }
             }
           });
-          
-          proxy.on('error', (err, req, res) => {
-            console.error('[SSE 프록시 오류]', err.message);
+
+          proxy.on('error', (_err: Error, _req: any, res: any) => {
+            // SSE 프록시 오류 처리
             if (!res.headersSent) {
               res.statusCode = 502;
               res.end('SSE 프록시 연결 실패');
@@ -68,6 +68,6 @@ export default defineConfig({
           });
         },
       },
-    }
+    },
   },
 });

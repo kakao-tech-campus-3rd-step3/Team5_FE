@@ -1,21 +1,25 @@
-import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ROUTE_PATH } from './routePath';
+import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+
+import { refreshAccessToken } from '../api/auth';
+
 import ArchivePage from '../pages/Archive/Archive';
 import FeedbackPage from '../pages/Feedback/Feedback';
-import SubscribePage from '../pages/Subscribe/Subscribe';
-import HomePage from '../pages/Home/Home';
-import RivalPage from '../pages/Rival/Rival';
-import NotFound from '../pages/NotFound/NotFound';
-import MainLayout from '../shared/layouts/MainLayout';
-import AuthLayout from '../shared/layouts/AuthLayout';
 import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
-import ModalLayout from '../shared/layouts/ModalLayout';
-import ProtectedRoute from './ProtectedRoute';
+import HomePage from '../pages/Home/Home';
 import LoginPage from '../pages/Login/Login';
 import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
-import { refreshAccessToken } from '../api/auth';
+import NotFound from '../pages/NotFound/NotFound';
+import RivalPage from '../pages/Rival/Rival';
+import SubscribePage from '../pages/Subscribe/Subscribe';
+
+import AuthLayout from '../shared/layouts/AuthLayout';
+import MainLayout from '../shared/layouts/MainLayout';
+import ModalLayout from '../shared/layouts/ModalLayout';
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../shared/utils/auth';
+
+import ProtectedRoute from './ProtectedRoute';
+import { ROUTE_PATH } from './routePath';
 
 const AppRouter = () => {
   const navigate = useNavigate();
@@ -28,18 +32,19 @@ const AppRouter = () => {
   // 토큰 갱신 함수
   const tryRefreshToken = async (): Promise<boolean> => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    
+
     if (!refreshToken) {
       return false;
     }
 
     try {
       const response = await refreshAccessToken(refreshToken);
-      
+
       // 응답에서 토큰 추출 (필드명이 정확하지 않을 수 있으므로 유연하게 처리)
       const newAccessToken = response.accessToken || response[Object.keys(response)[0]];
-      const newRefreshToken = response.refreshToken || response[Object.keys(response)[1]] || refreshToken;
-      
+      const newRefreshToken =
+        response.refreshToken || response[Object.keys(response)[1]] || refreshToken;
+
       if (newAccessToken) {
         localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
         if (newRefreshToken !== refreshToken) {
@@ -56,7 +61,7 @@ const AppRouter = () => {
       setIsAuthenticated(false);
       return false;
     }
-    
+
     return false;
   };
 
@@ -64,19 +69,19 @@ const AppRouter = () => {
   useEffect(() => {
     const checkAuth = async () => {
       setIsCheckingAuth(true);
-      
+
       // URL 파라미터에서 토큰이 있으면 즉시 파싱 및 저장 (OAuth 리다이렉트)
       const urlParams = new URLSearchParams(window.location.search);
       const tokenFromUrl = urlParams.get('token') || urlParams.get('accessToken');
       const refreshTokenFromUrl = urlParams.get('refreshToken') || urlParams.get('refresh_token');
-      
+
       if (tokenFromUrl) {
         // 토큰 즉시 저장
         localStorage.setItem(ACCESS_TOKEN_KEY, tokenFromUrl);
         if (refreshTokenFromUrl) {
           localStorage.setItem(REFRESH_TOKEN_KEY, refreshTokenFromUrl);
         }
-        
+
         // URL에서 토큰 파라미터 제거 (보안)
         const newUrl = new URL(window.location.href);
         newUrl.searchParams.delete('token');
@@ -84,22 +89,23 @@ const AppRouter = () => {
         newUrl.searchParams.delete('refreshToken');
         newUrl.searchParams.delete('refresh_token');
         window.history.replaceState({}, '', newUrl.toString());
-        
+
         // 인증 상태 업데이트 및 홈으로 이동
         setIsAuthenticated(true);
         setIsCheckingAuth(false);
-        
+
         // 홈이 아닌 경우에만 이동
         if (location.pathname !== ROUTE_PATH.HOME) {
           navigate(ROUTE_PATH.HOME, { replace: true });
         }
         return;
       }
-      
+
       const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-      const isPublicRoute = location.pathname === ROUTE_PATH.LOGIN || 
-                           location.pathname === '/login/oauth' ||
-                           location.pathname === ROUTE_PATH.NOTFOUND;
+      const isPublicRoute =
+        location.pathname === ROUTE_PATH.LOGIN ||
+        location.pathname === '/login/oauth' ||
+        location.pathname === ROUTE_PATH.NOTFOUND;
 
       // 공개 경로는 인증 확인 불필요
       if (isPublicRoute) {
@@ -120,12 +126,12 @@ const AppRouter = () => {
 
       // 액세스 토큰이 없으면 리프레시 토큰으로 갱신 시도
       const refreshed = await tryRefreshToken();
-      
+
       if (!refreshed && !isPublicRoute) {
         // 갱신 실패 시 로그인 페이지로 리다이렉트
         navigate(ROUTE_PATH.LOGIN, { replace: true });
       }
-      
+
       setIsCheckingAuth(false);
     };
 
@@ -165,16 +171,18 @@ const AppRouter = () => {
   // 로딩 중일 때는 간단한 로딩 화면 표시
   if (isCheckingAuth) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        flexDirection: 'column',
-        gap: '16px',
-        fontSize: '14px',
-        color: '#666'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+          gap: '16px',
+          fontSize: '14px',
+          color: '#666',
+        }}
+      >
         <div>로그인 처리 중...</div>
       </div>
     );

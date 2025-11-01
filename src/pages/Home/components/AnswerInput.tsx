@@ -1,8 +1,10 @@
-import type { AnswerType } from '../Home';
+import type { ChangeEvent } from 'react';
+
+import RecordAnswer from './RecordAnswer';
 import TextInput from './TextInput';
 import Timer from './Timer';
-import RecordAnswer from './RecordAnswer';
-import type { ChangeEvent } from 'react';
+
+import type { AnswerType } from '../Home';
 
 interface AnswerInputProps {
   type: AnswerType;
@@ -15,15 +17,15 @@ interface AnswerInputProps {
   onError?: (error: string) => void;
 }
 
-const AnswerInput = ({ 
-  type, 
-  isActive, 
-  onAnswerDone, 
-  value, 
-  onChange, 
+const AnswerInput = ({
+  type,
+  isActive,
+  onAnswerDone,
+  value,
+  onChange,
   onAudioUrlChange,
   onAnswerComplete,
-  onError 
+  onError,
 }: AnswerInputProps) => {
   if (!isActive) return null;
 
@@ -43,10 +45,7 @@ const AnswerInput = ({
     <>
       <Timer isActive={isActive} onAnswerDone={onAnswerDone} />
       {type === 'voice' && (
-        <RecordAnswer 
-          onAnswerComplete={handleAnswerComplete}
-          onError={onError}
-        />
+        <RecordAnswer onAnswerComplete={handleAnswerComplete} onError={onError} />
       )}
       {type === 'text' && <TextInput value={value} onChange={onChange} />}
     </>

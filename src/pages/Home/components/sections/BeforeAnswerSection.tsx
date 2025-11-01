@@ -1,8 +1,11 @@
-import styled from '@emotion/styled';
-import AnswerTypeSelector from '../AnswerTypeSelector';
-import AnswerButton from '../../../../shared/ui/SharedButton';
-import type { AnswerType } from '../../Home';
 import type { ChangeEvent } from 'react';
+
+import styled from '@emotion/styled';
+
+import AnswerButton from '../../../../shared/ui/SharedButton';
+import AnswerTypeSelector from '../AnswerTypeSelector';
+
+import type { AnswerType } from '../../Home';
 
 interface BeforeAnswerSectionProps {
   type: AnswerType;
