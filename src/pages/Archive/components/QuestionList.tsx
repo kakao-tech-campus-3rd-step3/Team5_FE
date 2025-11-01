@@ -42,14 +42,11 @@ const QuestionList = () => {
 
   useEffect(() => {
     const newParams = Object.fromEntries(searchParams.entries());
-    console.log('요청 파라미터:', newParams);
-
     setParams(newParams);
   }, [searchParams]);
 
   const { data } = useFetch<AnswersApiResponse>('/api/answers', { params });
   const items = data?.items;
-  console.log(items);
 
   const handleItemClick = (id: number) => {
     navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
@@ -57,7 +54,6 @@ const QuestionList = () => {
 
   const handleFilterChange = (filterId: string) => {
     setSelectedFilter(filterId);
-
     setIsLevelSelected(false);
     setIsTypeSelected(false);
     setSelectedDefault(false);
@@ -101,8 +97,6 @@ const QuestionList = () => {
     setSearchParams({ questionType: typeId }, { replace: true });
   };
 
-  // TODO: 직군별 & 플로우 별 구현
-  if (!items || items.length === 0) return null;
   return (
     <Wrapper>
       <FilterWrapper>
@@ -152,16 +146,21 @@ const QuestionList = () => {
           ))}
         </FilterWrapper>
       )}
-
-      <ListItemWrapper>
-        <ol>
-          {items.map((q: AnswerItem, index: number) => (
-            <ListItem key={q.answerId} onClick={() => handleItemClick(q.answerId)}>
-              {index + 1}. {q.questionText}
-            </ListItem>
-          ))}
-        </ol>
-      </ListItemWrapper>
+      {items?.length !== 0 ? (
+        <ListItemWrapper>
+          <ol>
+            {items?.map((q: AnswerItem, index: number) => (
+              <ListItem key={q.answerId} onClick={() => handleItemClick(q.answerId)}>
+                {index + 1}. {q.questionText}
+              </ListItem>
+            ))}
+          </ol>
+        </ListItemWrapper>
+      ) : (
+        <ListItemWrapper>
+          <Wrapper>EMPTY</Wrapper>
+        </ListItemWrapper>
+      )}
     </Wrapper>
   );
 };
@@ -178,6 +177,7 @@ const Wrapper = styled.div`
   height: 100%;
   gap: ${({ theme }) => theme.space.space32};
   margin-bottom: ${({ theme }) => theme.space.space32};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
 `;
 
 const FilterWrapper = styled.div`
