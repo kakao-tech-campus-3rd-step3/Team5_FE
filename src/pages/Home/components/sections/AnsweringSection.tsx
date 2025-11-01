@@ -12,6 +12,7 @@ interface AnsweringSectionProps {
   answerState: AnswerStateType;
   onAnswerDone: (answerText: string, audioUrl?: string) => void;
   isSubmitting?: boolean;
+  questionId?: number;
 }
 
 const AnsweringSection = ({
@@ -19,6 +20,7 @@ const AnsweringSection = ({
   answerState,
   onAnswerDone,
   isSubmitting = false,
+  questionId,
 }: AnsweringSectionProps) => {
   const [answerText, setAnswerText] = useState('');
   const [audioUrl, setAudioUrl] = useState<string>('');
@@ -65,6 +67,8 @@ const AnsweringSection = ({
           onAudioUrlChange={setAudioUrl}
           onAnswerComplete={handleAnswerComplete}
           onError={handleError}
+          questionId={questionId}
+          answerText={answerText}
         />
         <AnswerButton type="button" onClick={handleAnswerDone} disabled={!type || isSubmitting}>
           {isSubmitting ? '제출 중...' : '답변 완료'}

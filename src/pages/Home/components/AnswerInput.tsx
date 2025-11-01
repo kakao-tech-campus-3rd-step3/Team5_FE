@@ -15,6 +15,8 @@ interface AnswerInputProps {
   onAudioUrlChange?: (url: string) => void;
   onAnswerComplete?: (audioUrl: string, text?: string) => void;
   onError?: (error: string) => void;
+  questionId?: number;
+  answerText?: string;
 }
 
 const AnswerInput = ({
@@ -26,6 +28,8 @@ const AnswerInput = ({
   onAudioUrlChange,
   onAnswerComplete,
   onError,
+  questionId,
+  answerText,
 }: AnswerInputProps) => {
   if (!isActive) return null;
 
@@ -45,7 +49,12 @@ const AnswerInput = ({
     <>
       <Timer isActive={isActive} onAnswerDone={onAnswerDone} />
       {type === 'voice' && (
-        <RecordAnswer onAnswerComplete={handleAnswerComplete} onError={onError} />
+        <RecordAnswer
+          questionId={questionId}
+          answerText={answerText || value}
+          onAnswerComplete={handleAnswerComplete}
+          onError={onError}
+        />
       )}
       {type === 'text' && <TextInput value={value} onChange={onChange} />}
     </>

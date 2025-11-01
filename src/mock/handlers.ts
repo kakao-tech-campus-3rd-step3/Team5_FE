@@ -61,25 +61,8 @@ export const handlers = [
   http.get('*/api/questions/random', () => passthrough()),
   http.get('*/api/user', () => passthrough()),
 
-  // Pre-signed URL 획득 API (MSW 목업)
-  http.get('*/api/answers/upload-url', ({ request }) => {
-    const url = new URL(request.url);
-    const fileName = url.searchParams.get('fileName') || `audio_${Date.now()}.webm`;
-
-    // 목업 Pre-signed URL 생성 (로컬 URL로 반환하여 MSW가 가로챌 수 있도록)
-    const preSignedUrl = `/api/mock/upload/${fileName}`;
-    const finalAudioUrl = `https://cdn.example.com/audio/${fileName}`;
-
-    console.log('✅ [MSW] Pre-signed URL 요청 성공');
-    console.log('📝 요청 파일명:', fileName);
-    console.log('🔗 Pre-signed URL:', preSignedUrl);
-    console.log('🔗 Final Audio URL:', finalAudioUrl);
-
-    return HttpResponse.json({
-      preSignedUrl: preSignedUrl,
-      finalAudioUrl,
-    });
-  }),
+  // Pre-signed URL 획득 API는 실제 백엔드로 전달
+  http.get('*/api/answers/upload-url', () => passthrough()),
 
   // Pre-signed URL로 파일 업로드 (PUT 요청 목업)
   http.put('*/api/mock/upload/*', async ({ request }) => {

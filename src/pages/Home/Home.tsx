@@ -106,6 +106,7 @@ const HomePage = () => {
           answerState={answerState}
           onAnswerDone={handleAnswerDone}
           isSubmitting={isSubmitting}
+          questionId={question?.questionId}
         />
       )}
     </Wrapper>

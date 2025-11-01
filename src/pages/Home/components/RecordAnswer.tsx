@@ -3,9 +3,12 @@ import { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { Mic, Square, Upload, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 
+import apiClient, { API_BASE_URL } from '../../../api/apiClient';
 import { ACCESS_TOKEN_KEY } from '../../../shared/utils/auth';
 
 interface RecordAnswerProps {
+  questionId?: number;
+  answerText?: string;
   onAnswerComplete?: (audioUrl: string, text?: string) => void;
   onError?: (error: string) => void;
 }
@@ -32,7 +35,7 @@ type RecordingState =
 type NetworkState = 'online' | 'offline' | 'checking';
 type STTStatus = 'PENDING_STT' | 'COMPLETED' | 'FAILED_STT';
 
-const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
+const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: RecordAnswerProps) => {
   // 상태 관리
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [networkState, setNetworkState] = useState<NetworkState>('online');
@@ -378,29 +381,65 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
+      console.log('📤 [파일 업로드 시작]', {
+        preSignedUrl: preSignedUrl.substring(0, 100) + '...',
+        fileSize: file.size,
+        fileType: file.type,
+        method: 'PUT',
+      });
+
       // 업로드 진행률
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const progress = Math.round((event.loaded / event.total) * 100);
           setUploadProgress(progress);
+          console.log(`📊 [업로드 진행률] ${progress}%`);
         }
       };
 
       xhr.onload = () => {
+        console.log('✅ [파일 업로드 완료]', {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          responseHeaders: xhr.getAllResponseHeaders(),
+        });
+
         if (xhr.status >= 200 && xhr.status < 300) {
+          logInfo('파일 업로드 성공', { status: xhr.status, fileSize: file.size });
           resolve();
         } else {
-          reject(new Error(`Upload failed: ${xhr.status}`));
+          console.error('❌ [파일 업로드 실패]', {
+            status: xhr.status,
+            statusText: xhr.statusText,
+            responseText: xhr.responseText,
+          });
+          reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
         }
       };
 
-      xhr.onerror = () => reject(new Error('Upload network error'));
-      xhr.ontimeout = () => reject(new Error('Upload timeout'));
+      xhr.onerror = () => {
+        console.error('❌ [파일 업로드 네트워크 에러]');
+        reject(new Error('Upload network error'));
+      };
+
+      xhr.ontimeout = () => {
+        console.error('❌ [파일 업로드 타임아웃]', { timeout: CONFIG.UPLOAD_TIMEOUT });
+        reject(new Error('Upload timeout'));
+      };
 
       xhr.timeout = CONFIG.UPLOAD_TIMEOUT;
+      
+      // PUT 요청으로 pre-signed URL에 파일 직접 업로드
       xhr.open('PUT', preSignedUrl);
-      xhr.setRequestHeader('Content-Type', file.type);
+      
+      // Content-Type 헤더 설정 (파일 타입 사용)
+      // 주의: S3 pre-signed URL은 생성 시 지정된 Content-Type을 사용해야 할 수도 있음
+      xhr.setRequestHeader('Content-Type', file.type || 'audio/webm');
+      
+      // 파일만 body에 첨부하여 전송
       xhr.send(file);
+      
+      logInfo('파일 업로드 시작', { fileSize: file.size, fileType: file.type });
     });
   };
 
@@ -416,77 +455,162 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
       logInfo('Pre-signed URL 요청 시작');
       // 파일명 생성 (timestamp 기반)
       const fileName = `audio_${Date.now()}.webm`;
-      const response = await fetch(
-        `/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Pre-signed URL 획득 실패: ${response.status} ${response.statusText}`);
-      }
-
-      const { preSignedUrl, finalAudioUrl: serverAudioUrl } = await response.json();
-      logInfo('Pre-signed URL 획득 성공', { preSignedUrl, serverAudioUrl });
-
-      // 2. 파일 업로드
-      await uploadWithProgress(preSignedUrl, audioBlob);
-
-      // 3. 답변 제출
-      const submitResponse = await fetch('/api/answers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`,
-        },
-        body: JSON.stringify({
-          audioUrl: serverAudioUrl,
-          followUp: false, // 기본값: 추가 질문 없음
-          // TODO: questionId와 answerText가 필요한지 백엔드 명세 확인 필요
-        }),
+      
+      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+      console.log('📤 [Pre-signed URL 요청]', {
+        url: '/api/answers/upload-url',
+        apiBaseUrl: API_BASE_URL,
+        fullUrl: `${API_BASE_URL}/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`,
+        method: 'GET',
+        fileName,
+        token: token ? `${token.substring(0, 20)}...` : '없음',
+        hasToken: !!token,
       });
-
-      if (!submitResponse.ok) {
-        throw new Error('답변 제출 실패');
-      }
-
-      const result = await submitResponse.json();
-
-      // 답변 ID 저장
-      setAnswerId(result.answerId);
-
-      // 응답 상태 확인
-      if (result.status === 'PENDING_STT') {
-        setRecordingState('pending_stt');
-        setSTTStatus('PENDING_STT');
-
-        // STT 대기 중일 때만 SSE 연결 시작
-        if (!sseRef.current || sseRef.current.readyState === EventSource.CLOSED) {
-          logInfo('STT 대기 중 - SSE 연결 시작');
-          connectSSE();
-        }
-
-        // STT 타임아웃 설정
-        sttTimeoutRef.current = setTimeout(() => {
-          logInfo('STT 타임아웃 - 상태 조회 시작');
-          if (result.answerId) {
-            checkAnswerStatus(result.answerId);
+      
+      // apiClient를 사용하여 프로덕션 백엔드로 요청
+      try {
+        const response = await apiClient.get<{ preSignedUrl: string; finalAudioUrl: string }>(
+          '/api/answers/upload-url',
+          {
+            params: { fileName },
           }
-        }, CONFIG.STT_TIMEOUT);
+        );
+        
+        const { preSignedUrl, finalAudioUrl: serverAudioUrl } = response.data;
+        
+        console.log('✅ [Pre-signed URL 획득 성공]', {
+          preSignedUrl,
+          serverAudioUrl,
+          preSignedUrlLength: preSignedUrl?.length,
+        });
+        
+        logInfo('Pre-signed URL 획득 성공', { preSignedUrl, serverAudioUrl });
+        
+        // 2. 파일 업로드
+        await uploadWithProgress(preSignedUrl, audioBlob);
 
-        logInfo('STT 변환 대기 중', result);
-      } else {
-        // 즉시 완료된 경우
-        setRecordingState('completed');
-        if (onAnswerComplete) {
-          onAnswerComplete(serverAudioUrl);
+        // 3. 답변 제출
+        if (!questionId) {
+          throw new Error('질문 ID가 필요합니다.');
         }
-        logInfo('업로드 및 처리 완료', result);
+
+        const requestBody = {
+          questionId,
+          answerText: answerText || '음성 답변',
+          audioUrl: serverAudioUrl,
+          followUp: false,
+        };
+
+        console.log('📤 [답변 제출 요청]', {
+          url: '/api/answers',
+          apiBaseUrl: API_BASE_URL,
+          method: 'POST',
+          body: requestBody,
+          questionId: questionId ?? 'undefined ⚠️',
+          answerText: requestBody.answerText,
+          audioUrl: serverAudioUrl,
+          followUp: requestBody.followUp,
+          bodyStringified: JSON.stringify(requestBody),
+        });
+
+        try {
+          const submitResponse = await apiClient.post<{
+            answerId: number;
+            answerText: string;
+            feedbackId: number;
+            status?: string;
+          }>('/api/answers', requestBody);
+
+          const result = submitResponse.data;
+          
+          console.log('✅ [답변 제출 성공]', {
+            answerId: result.answerId,
+            feedbackId: result.feedbackId,
+            status: result.status,
+          });
+
+          // 답변 ID 저장
+          setAnswerId(result.answerId);
+
+          // 응답 상태 확인
+          if (result.status === 'PENDING_STT') {
+            setRecordingState('pending_stt');
+            setSTTStatus('PENDING_STT');
+
+            // STT 대기 중일 때만 SSE 연결 시작
+            if (!sseRef.current || sseRef.current.readyState === EventSource.CLOSED) {
+              logInfo('STT 대기 중 - SSE 연결 시작');
+              connectSSE();
+            }
+
+            // STT 타임아웃 설정
+            sttTimeoutRef.current = setTimeout(() => {
+              logInfo('STT 타임아웃 - 상태 조회 시작');
+              if (result.answerId) {
+                checkAnswerStatus(result.answerId);
+              }
+            }, CONFIG.STT_TIMEOUT);
+
+            logInfo('STT 변환 대기 중', result);
+          } else {
+            // 즉시 완료된 경우
+            setRecordingState('completed');
+            if (onAnswerComplete) {
+              onAnswerComplete(serverAudioUrl);
+            }
+            logInfo('업로드 및 처리 완료', result);
+          }
+        } catch (submitError: any) {
+          // 답변 제출 에러 상세 로깅
+          if (submitError.response) {
+            console.error('❌ [답변 제출 실패]', {
+              status: submitError.response.status,
+              statusText: submitError.response.statusText,
+              responseData: submitError.response.data,
+              requestBody: requestBody,
+              requestHeaders: submitError.config?.headers,
+              url: submitError.config?.url,
+              baseURL: submitError.config?.baseURL,
+            });
+            
+            const errorMessage = submitError.response.data?.message || submitError.response.data?.detail || JSON.stringify(submitError.response.data);
+            throw new Error(`답변 제출 실패 (${submitError.response.status}): ${errorMessage}`);
+          } else {
+            console.error('❌ [답변 제출 네트워크 에러]', {
+              message: submitError.message,
+              requestBody: requestBody,
+            });
+            throw submitError;
+          }
+        }
+      } catch (error: any) {
+        // 에러 응답 본문 확인
+        if (error.response) {
+          console.error('❌ [Pre-signed URL 요청 실패]', {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            headers: error.response.headers,
+            data: error.response.data,
+            config: {
+              url: error.config?.url,
+              method: error.config?.method,
+              headers: error.config?.headers,
+              params: error.config?.params,
+              baseURL: error.config?.baseURL,
+            },
+          });
+          
+          // 에러 메시지 추출
+          const errorMessage = error.response.data?.message || error.response.data || error.message || 'Pre-signed URL 획득 실패';
+          throw new Error(`Pre-signed URL 획득 실패 (${error.response.status}): ${JSON.stringify(errorMessage)}`);
+        } else {
+          console.error('❌ [Pre-signed URL 요청 실패]', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack,
+          });
+          throw error;
+        }
       }
     } catch (error) {
       logError('업로드 실패', error, { retryCount, fileSize: audioBlob?.size });
