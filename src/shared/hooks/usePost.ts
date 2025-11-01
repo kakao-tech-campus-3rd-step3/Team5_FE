@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import apiClient from '../../api/apiClient';
 
 interface UsePostOptions {
@@ -26,19 +27,19 @@ const usePost = <T = any>(options: UsePostOptions = {}): UsePostReturn<T> => {
     try {
       const response = await apiClient.post<T>(url, payload, config);
       setData(response.data);
-      
+
       if (options.onSuccess) {
         options.onSuccess(response.data);
       }
-      
+
       return response.data;
     } catch (err) {
       setError(err);
-      
+
       if (options.onError) {
         options.onError(err);
       }
-      
+
       throw err;
     } finally {
       setLoading(false);

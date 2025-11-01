@@ -1,5 +1,6 @@
-import styled from '@emotion/styled';
 import { useState } from 'react';
+
+import styled from '@emotion/styled';
 
 interface JobSelectionPageProps {
   onNext: (selectedJob: string) => void;
@@ -11,7 +12,7 @@ const JobSelectionPage = ({ onNext }: JobSelectionPageProps) => {
   const jobs = [
     { id: 'IT', label: 'IT' },
     { id: 'NURSING', label: '간호' },
-    { id: 'BROADCASTING', label: '방송' }
+    { id: 'BROADCASTING', label: '방송' },
   ];
 
   const handleJobSelect = (jobId: string) => {
@@ -43,9 +44,7 @@ const JobSelectionPage = ({ onNext }: JobSelectionPageProps) => {
         </JobList>
       </Card>
 
-      <NextButton onClick={handleNext}>
-        다음
-      </NextButton>
+      <NextButton onClick={handleNext}>다음</NextButton>
     </Wrapper>
   );
 };
@@ -108,13 +107,13 @@ const JobButton = styled.button<{ isSelected: boolean }>`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  
-  background-color: ${props => props.isSelected ? '#e98b8b' : '#ffffff'};
-  color: ${props => props.isSelected ? '#ffffff' : '#333333'};
-  border: ${props => props.isSelected ? 'none' : '1px solid #e0e0e0'};
+
+  background-color: ${(props) => (props.isSelected ? '#e98b8b' : '#ffffff')};
+  color: ${(props) => (props.isSelected ? '#ffffff' : '#333333')};
+  border: ${(props) => (props.isSelected ? 'none' : '1px solid #e0e0e0')};
 
   &:hover {
-    background-color: ${props => props.isSelected ? '#d77a7a' : '#f8f8f8'};
+    background-color: ${(props) => (props.isSelected ? '#d77a7a' : '#f8f8f8')};
   }
 
   &:active {

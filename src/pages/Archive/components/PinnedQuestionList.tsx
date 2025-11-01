@@ -1,7 +1,9 @@
 import styled from '@emotion/styled';
-import usePolygonAnimation from '../hooks/usePolygonAnimation';
 import { useNavigate } from 'react-router-dom';
+
 import { ROUTE_PATH } from '../../../routes/routePath';
+import usePolygonAnimation from '../hooks/usePolygonAnimation';
+
 import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
 interface PinnedQuestionListProps {

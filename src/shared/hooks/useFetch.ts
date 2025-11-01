@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+
 import apiClient from '../../api/apiClient';
+
 import type { AxiosRequestConfig } from 'axios';
 
 const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
@@ -7,6 +9,11 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
   const optionsString = JSON.stringify(options);
 
   useEffect(() => {
+    // URL이 빈 문자열이면 요청하지 않음
+    if (!url) {
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const response = await apiClient<T>(url);

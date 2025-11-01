@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
-import Logo from '../../shared/ui/Logo';
+
 import Tagline from '../../shared/components/Branding/Tagline';
+import Logo from '../../shared/ui/Logo';
 
 interface PluginInstallPageProps {
   onInstall: () => void;
