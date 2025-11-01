@@ -3,7 +3,7 @@ import { Mic, Square, Upload, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import styled from '@emotion/styled';
 
 interface RecordAnswerProps {
-  onAnswerComplete?: (audioUrl: string) => void;
+  onAnswerComplete?: (audioUrl: string, text?: string) => void;
   onError?: (error: string) => void;
 }
 
@@ -38,9 +38,9 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const uploadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const sttTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const recordingTimerRef = useRef<number | null>(null);
+  const uploadTimeoutRef = useRef<number | null>(null);
+  const sttTimeoutRef = useRef<number | null>(null);
   const sseRef = useRef<EventSource | null>(null);
   const reconnectAttemptsRef = useRef(0);
   
@@ -50,12 +50,14 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
 
   // SSE 연결 설정
   const connectSSE = () => {
+
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
         throw new Error('인증 토큰이 없습니다.');
       }
 
+      logInfo('SSE 연결 시도 시작');
       const eventSource = new EventSource(`/api/sse/connect?token=${token}`);
       sseRef.current = eventSource;
       
@@ -97,23 +99,35 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
       });
 
       // SSE 에러 처리
-      eventSource.onerror = () => {
-        logError('SSE 연결 오류', new Error('SSE connection failed'), {});
+      eventSource.onerror = (event) => {
+        const errorMsg = eventSource.readyState === EventSource.CLOSED 
+          ? 'SSE 연결이 종료되었습니다. 백엔드 서버가 실행 중인지 확인해주세요.'
+          : 'SSE 연결 오류가 발생했습니다.';
+        
+        logError('SSE 연결 오류', new Error(errorMsg), { 
+          event, 
+          readyState: eventSource.readyState,
+          url: eventSource.url 
+        });
         eventSource.close();
         
-        // 재연결 시도
-        if (reconnectAttemptsRef.current < CONFIG.MAX_RETRY_COUNT) {
+        
+        // 재연결 시도 (최대 2회로 제한하여 서버가 없을 때 무한 재시도 방지)
+        const maxSSERetryCount = 2;
+        if (reconnectAttemptsRef.current < maxSSERetryCount) {
           reconnectAttemptsRef.current++;
           setTimeout(() => {
-            logInfo(`SSE 재연결 시도 ${reconnectAttemptsRef.current}/${CONFIG.MAX_RETRY_COUNT}`);
+            logInfo(`SSE 재연결 시도 ${reconnectAttemptsRef.current}/${maxSSERetryCount}`);
             connectSSE();
           }, CONFIG.RECONNECT_DELAY * reconnectAttemptsRef.current);
         } else {
-          // 최종 실패 시 상태 조회 API 호출
+          // 최종 실패 시 상태 조회 API 호출 (서버가 없어도 폴백)
+          logInfo('SSE 연결 최종 실패 - 상태 조회 API로 폴백');
           if (answerId) {
             checkAnswerStatus(answerId);
           } else {
-            setErrorMessage('연결 오류가 발생했습니다. 페이지를 새로고침해주세요.');
+            setErrorMessage('실시간 연결에 실패했습니다. 상태 조회를 시도합니다.');
+            // 상태 조회는 answerId가 필요하므로, 업로드가 완료된 후에만 가능
           }
         }
       };
@@ -176,8 +190,9 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
 
   // 1. 메모리 누수 방지 및 SSE 연결 관리 (필수)
   useEffect(() => {
-    // 페이지 진입 시 SSE 연결
-    connectSSE();
+    // SSE 연결은 실제로 필요할 때만 연결 (업로드 후)
+    // 페이지 진입 시 자동 연결하지 않음
+    // connectSSE();
     
     return () => {
       // 모든 타이머 정리
@@ -380,6 +395,7 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
     });
   };
 
+
   // 서버에 업로드
   const uploadToServer = async () => {
     if (!audioBlob) return;
@@ -389,18 +405,23 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
       setUploadProgress(0);
       
       // 1. Pre-signed URL 획득
-      const response = await fetch('/api/answers/upload-url', {
+      logInfo('Pre-signed URL 요청 시작');
+      // 파일명 생성 (timestamp 기반)
+      const fileName = `audio_${Date.now()}.webm`;
+      const response = await fetch(`/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
         },
       });
       
       if (!response.ok) {
-        throw new Error('Pre-signed URL 획득 실패');
+        throw new Error(`Pre-signed URL 획득 실패: ${response.status} ${response.statusText}`);
       }
       
-      const { preSignedUrl, audioUrl: serverAudioUrl } = await response.json();
+      const { preSignedUrl, finalAudioUrl: serverAudioUrl } = await response.json();
+      logInfo('Pre-signed URL 획득 성공', { preSignedUrl, serverAudioUrl });
       
       // 2. 파일 업로드
       await uploadWithProgress(preSignedUrl, audioBlob);
@@ -414,7 +435,8 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
         },
         body: JSON.stringify({
           audioUrl: serverAudioUrl,
-          timestamp: new Date().toISOString(),
+          followUp: false, // 기본값: 추가 질문 없음
+          // TODO: questionId와 answerText가 필요한지 백엔드 명세 확인 필요
         }),
       });
       
@@ -431,6 +453,12 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
       if (result.status === 'PENDING_STT') {
         setRecordingState('pending_stt');
         setSTTStatus('PENDING_STT');
+        
+        // STT 대기 중일 때만 SSE 연결 시작
+        if (!sseRef.current || sseRef.current.readyState === EventSource.CLOSED) {
+          logInfo('STT 대기 중 - SSE 연결 시작');
+          connectSSE();
+        }
         
         // STT 타임아웃 설정
         sttTimeoutRef.current = setTimeout(() => {
@@ -451,6 +479,8 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
       }
     } catch (error) {
       logError('업로드 실패', error, { retryCount, fileSize: audioBlob?.size });
+      
+      
       setRecordingState('error');
       setErrorMessage(`업로드 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
       
@@ -568,7 +598,6 @@ const RecordAnswer = ({ onAnswerComplete, onError }: RecordAnswerProps) => {
 
   const statusInfo = getStatusInfo();
   const isRecording = recordingState === 'recording';
-  const isProcessing = ['processing', 'uploading'].includes(recordingState);
   const canRecord = recordingState === 'idle' && networkState === 'online';
 
   return (

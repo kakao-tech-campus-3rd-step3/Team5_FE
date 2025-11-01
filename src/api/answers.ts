@@ -4,6 +4,7 @@ export interface SubmitAnswerRequest {
   questionId: number;
   answerText: string;
   audioUrl?: string; // 음성 답변인 경우
+  followUp?: boolean; // 추가 질문 여부
 }
 
 export interface SubmitAnswerResponse {
