@@ -1,5 +1,6 @@
-import styled from '@emotion/styled';
 import type { ChangeEvent } from 'react';
+
+import styled from '@emotion/styled';
 
 interface TextInputProps {
   value: string;
@@ -11,9 +12,9 @@ const TextInput = ({ value, onChange }: TextInputProps) => {
     <Wrapper>
       <Textarea
         placeholder="이곳에 답변을 입력하세요..."
-        value = {value}
-        onChange = {onChange}
-        ></Textarea>
+        value={value}
+        onChange={onChange}
+      ></Textarea>
     </Wrapper>
   );
 };

@@ -1,32 +1,64 @@
 import styled from '@emotion/styled';
-//import { useEffect } from 'react';
-import Logo from '../../shared/ui/Logo';
+
+import { API_BASE_URL } from '../../api/apiClient';
 import Tagline from '../../shared/components/Branding/Tagline';
-//import { initializeKakao } from '../../config/kakao';
+import Logo from '../../shared/ui/Logo';
 
-const KAKAO_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/kakao';
-const GOOGLE_AUTH_URL = 'https://be.dailyq.my/oauth2/authorization/google';
-// interface LoginPageProps {
-//   onLogin: () => void;
-// }
+// 리다이렉트 URI 설정
+const getRedirectUri = () => {
+  const currentOrigin = window.location.origin;
+  return `${currentOrigin}/login/oauth`;
+};
 
-// const LoginPage = ({ onLogin }: LoginPageProps) => {
-//   useEffect(() => {
-//     // 카카오 SDK 초기화
-//     initializeKakao();
-//   }, []);
-
-//   const handleKakaoLogin = () => {
-//     // TODO: 나중에 실제 카카오 로그인 구현
-//     console.log('카카오 로그인 (개발용)');
-//     onLogin(); // 바로 AppRouter로 이동
-//   };
-
-//   const handleGoogleLogin = () => {
-//     // TODO: 구글 로그인 로직 구현
-//     console.log('구글 로그인');
-//   };
 const LoginPage = () => {
+  // 실제 OAuth 로그인으로 리다이렉트
+  const handleKakaoLogin = () => {
+    const redirectUri = getRedirectUri();
+    // OAuth URL 생성 (redirect_uri는 백엔드 설정에 따라 선택적)
+    const kakaoAuthUrl = `${API_BASE_URL}/oauth2/authorization/kakao`;
+
+    console.log('🔐 카카오 로그인 시작');
+    console.log('📍 현재 도메인:', window.location.origin);
+    console.log('📍 현재 경로:', window.location.pathname);
+    console.log('📍 예상 리다이렉트 URI:', redirectUri);
+    console.log('🌐 OAuth URL:', kakaoAuthUrl);
+    console.log('🌐 API_BASE_URL:', API_BASE_URL);
+    console.log('⚠️ 백엔드 OAuth 서버로 이동합니다...');
+
+    // 실제 서버 확인
+    if (API_BASE_URL.includes('localhost:8080')) {
+      console.warn(
+        '⚠️ localhost:8080으로 설정되어 있습니다. 백엔드 서버가 실행 중인지 확인하세요.'
+      );
+    }
+
+    // OAuth 인증을 위해 백엔드 서버로 이동 (전체 페이지 리다이렉트)
+    window.location.href = kakaoAuthUrl;
+  };
+
+  const handleGoogleLogin = () => {
+    const redirectUri = getRedirectUri();
+    const googleAuthUrl = `${API_BASE_URL}/oauth2/authorization/google`;
+
+    console.log('🔐 구글 로그인 시작');
+    console.log('📍 현재 도메인:', window.location.origin);
+    console.log('📍 현재 경로:', window.location.pathname);
+    console.log('📍 예상 리다이렉트 URI:', redirectUri);
+    console.log('🌐 OAuth URL:', googleAuthUrl);
+    console.log('🌐 API_BASE_URL:', API_BASE_URL);
+    console.log('⚠️ 백엔드 OAuth 서버로 이동합니다...');
+
+    // 실제 서버 확인
+    if (API_BASE_URL.includes('localhost:8080')) {
+      console.warn(
+        '⚠️ localhost:8080으로 설정되어 있습니다. 백엔드 서버가 실행 중인지 확인하세요.'
+      );
+    }
+
+    // OAuth 인증을 위해 백엔드 서버로 이동 (전체 페이지 리다이렉트)
+    window.location.href = googleAuthUrl;
+  };
+
   return (
     <Wrapper>
       <BrandingSection>
@@ -35,12 +67,12 @@ const LoginPage = () => {
       </BrandingSection>
 
       <LoginButtonSection>
-        <KakaoLoginButton href={KAKAO_AUTH_URL}>
+        <KakaoLoginButton type="button" onClick={handleKakaoLogin}>
           <KakaoIcon>💬</KakaoIcon>
           Login with Kakao
         </KakaoLoginButton>
 
-        <GoogleLoginButton href={GOOGLE_AUTH_URL}>
+        <GoogleLoginButton type="button" onClick={handleGoogleLogin}>
           <GoogleIcon>G</GoogleIcon>
           Sign in with Google
         </GoogleLoginButton>
@@ -78,7 +110,7 @@ const LoginButtonSection = styled.div`
   max-width: 320px;
 `;
 
-const BaseLoginLink = styled.a`
+const BaseLoginButton = styled.button`
   width: 100%;
   padding: 16px 24px;
   border-radius: 12px;
@@ -91,20 +123,24 @@ const BaseLoginLink = styled.a`
   align-items: center;
   justify-content: center;
   gap: 12px;
-  text-decoration: none; /* 링크의 기본 밑줄 제거 */
 
-  &:hover {
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 `;
 
-const KakaoLoginButton = styled(BaseLoginLink)`
+const KakaoLoginButton = styled(BaseLoginButton)`
   background-color: #fee500;
   color: #3c1e1e;
 
@@ -113,7 +149,7 @@ const KakaoLoginButton = styled(BaseLoginLink)`
   }
 `;
 
-const GoogleLoginButton = styled(BaseLoginLink)`
+const GoogleLoginButton = styled(BaseLoginButton)`
   background-color: #ffffff;
   color: #333;
   border: 1px solid #dadce0;

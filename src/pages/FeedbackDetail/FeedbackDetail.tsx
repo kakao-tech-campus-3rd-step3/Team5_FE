@@ -1,8 +1,10 @@
-import styled from '@emotion/styled';
-import SharedButton from '../../shared/ui/SharedButton';
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+
+import styled from '@emotion/styled';
+import { useNavigate } from 'react-router-dom';
+
 import GlassBackground from '../../shared/components/GlassBackground/GlassBackground';
+import SharedButton from '../../shared/ui/SharedButton';
 
 const FeedbackDetailPage = () => {
   const navigate = useNavigate();
