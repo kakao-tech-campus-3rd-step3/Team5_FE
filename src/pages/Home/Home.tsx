@@ -3,11 +3,10 @@ import { useState, type ChangeEvent } from 'react';
 import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
 
-import { type SubmitAnswerRequest } from '../../api/answers';
+// import { type SubmitAnswerRequest } from '../../api/answers';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
-import usePost from '../../shared/hooks/usePost';
-
+import { getFeedback, postAnswer } from '../../api/feedback';
 import AnsweringSection from './components/sections/AnsweringSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import QuestionCardSection from './components/sections/QuestionCardSection';
@@ -33,6 +32,7 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 사용자 정보는 현재 미사용이지만 향후 사용 예정
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,26 +54,36 @@ const HomePage = () => {
     setAnswerType(e.target.value as AnswerType);
   };
 
-  const handleAnswerDone = async (text: string, audioUrl?: string) => {
-    if (!question) {
+  const handleAnswerDone = async (answerText: string, audioUrl?: string) => {
+    if (!question || !_user) {
       alert('질문 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
       return;
     }
 
-    // const submitData: SubmitAnswerRequest = {
-    //   questionId: question.questionId,
-    //   answerText: text,
-    //   followUp: false, // 기본값: 추가 질문 없음
-    //   ...(audioUrl && { audioUrl }),
-    // };
+    setIsSubmitting(true);
 
-    // try {
-    //   await submitAnswerPost('/api/answers', submitData);
-    // } catch (error) {
-    //   console.error('답변 제출 중 오류:', error);
-    // }
-    setAnswerState('answered');
-    navigate(ROUTE_PATH.FEEDBACK);
+    try {
+      const postResponse = await postAnswer(_user.userId, question.questionId, answerText);
+      const { feedbackId, answerId } = postResponse;
+
+      const feedbackData = await getFeedback(feedbackId);
+
+      navigate(`${ROUTE_PATH.FEEDBACK}/${feedbackId}`, {
+        state: {
+          answerId: answerId,
+          questionText: question.content,
+          userAnswer: answerText,
+          feedbackResult: feedbackData,
+        },
+      });
+
+      setAnswerState('answered');
+    } catch (error) {
+      console.error('답변 제출 중 오류:', error);
+      alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAnswering = () => {
@@ -107,7 +117,7 @@ const HomePage = () => {
           type={answerType}
           answerState={answerState}
           onAnswerDone={handleAnswerDone}
-          //isSubmitting={isSubmitting}
+          isSubmitting={isSubmitting}
         />
       )}
     </Wrapper>

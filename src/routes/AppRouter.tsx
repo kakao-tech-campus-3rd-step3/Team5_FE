@@ -201,12 +201,12 @@ const AppRouter = () => {
 
       <Route element={<AuthLayout />}>
         {/* TODO: LOGINPAGE 등 네비, 푸터 없이 콘텐츠만 보여줘야 하는 레이아웃 추가 */}
-        {/* <Route path={ROUTE_PATH.LOGIN} element={<LoginPage />} /> */}
+        <Route path={ROUTE_PATH.LOGIN} element={<LoginPage />} />
       </Route>
     {/* <Route path={ROUTE_PATH.LOGIN_OAUTH} element={<OauthRedirectPage />} /> */}
 
       <Route element={<ModalLayout />}>
-        <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} />
+        <Route path={`${ROUTE_PATH.FEEDBACK}/:feedbackId`} element={<FeedbackPage />} />
         <Route path={ROUTE_PATH.FEEDBACK_DETAIL} element={<FeedbackDetailPage />} />
       </Route>
 

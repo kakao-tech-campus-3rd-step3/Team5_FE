@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 
 import GlassBackground from '../../../../shared/components/GlassBackground/GlassBackground';
-import useFetch from '../../../../shared/hooks/useFetch';
+//import useFetch from '../../../../shared/hooks/useFetch';
 
 import type { AnswerStateType } from '../../Home';
 
@@ -17,16 +17,22 @@ interface Question {
   jobId: number;
 }
 
-const QuestionCardSection = ({ answerState }: QuestionCardSectionProps) => {
-  const { data: question } = useFetch<Question>('/api/questions/random');
+const QuestionCardSection = ({ answerState, user, question }: QuestionCardSectionProps) => {
+  // const { data: question } = useFetch<Question>('/api/questions/random');
+  const questionText =
+    answerState === 'before-answer'
+      ? '오늘의 질문을 확인하세요!'
+      : question?.content || '질문을 불러오는 중...';
+
+  const welcomeMessage = user ? `${user.name}님,` : '';
 
   if (!question) return null;
 
   return (
     <section>
       <QuestionCard isStarted={answerState === 'answering'}>
-        <GlassBackground>
-          {answerState === 'before-answer' ? '오늘의 질문을 확인하세요!' : question.questionText}
+/       <GlassBackground>
+          {welcomeMessage} {questionText}
         </GlassBackground>
       </QuestionCard>
     </section>
