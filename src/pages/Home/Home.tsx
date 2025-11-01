@@ -39,16 +39,16 @@ const HomePage = () => {
   const { data: _user } = useFetch<User>('/api/user');
   const { data: question } = useFetch<Question>('/api/questions/random');
 
-  const { execute: submitAnswerPost, loading: isSubmitting } = usePost({
-    onSuccess: (data) => {
-      setAnswerState('answered');
-      navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
-    },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onError: (_error) => {
-      alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
-    },
-  });
+  // const { execute: submitAnswerPost, loading: isSubmitting } = usePost({
+  //   onSuccess: (data) => {
+  //     setAnswerState('answered');
+  //     navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
+  //   },
+  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //   onError: (_error) => {
+  //     alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
+  //   },
+  // });
 
   const handleAnswerTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAnswerType(e.target.value as AnswerType);
@@ -60,18 +60,20 @@ const HomePage = () => {
       return;
     }
 
-    const submitData: SubmitAnswerRequest = {
-      questionId: question.questionId,
-      answerText: text,
-      followUp: false, // 기본값: 추가 질문 없음
-      ...(audioUrl && { audioUrl }),
-    };
+    // const submitData: SubmitAnswerRequest = {
+    //   questionId: question.questionId,
+    //   answerText: text,
+    //   followUp: false, // 기본값: 추가 질문 없음
+    //   ...(audioUrl && { audioUrl }),
+    // };
 
-    try {
-      await submitAnswerPost('/api/answers', submitData);
-    } catch (error) {
-      console.error('답변 제출 중 오류:', error);
-    }
+    // try {
+    //   await submitAnswerPost('/api/answers', submitData);
+    // } catch (error) {
+    //   console.error('답변 제출 중 오류:', error);
+    // }
+    setAnswerState('answered');
+    navigate(ROUTE_PATH.FEEDBACK);
   };
 
   const handleAnswering = () => {
@@ -105,7 +107,7 @@ const HomePage = () => {
           type={answerType}
           answerState={answerState}
           onAnswerDone={handleAnswerDone}
-          isSubmitting={isSubmitting}
+          //isSubmitting={isSubmitting}
         />
       )}
     </Wrapper>
