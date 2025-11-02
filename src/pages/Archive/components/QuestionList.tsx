@@ -4,6 +4,7 @@ import { generatePath, useNavigate, useSearchParams } from 'react-router-dom';
 import type { AnswerItem, AnswersApiResponse } from '../Archive';
 import { useEffect, useState } from 'react';
 import useFetch from '../../../shared/hooks/useFetch';
+import InfiniteScrollList from './InfiniteScrollList';
 
 const filters = [
   { id: 'ALL', label: '전체' },
@@ -54,15 +55,15 @@ const QuestionList = () => {
     setParams(newParams);
   }, [searchParams]);
 
-  const { data } = useFetch<AnswersApiResponse>('/api/answers', { params });
-  const items = data?.items;
+  // const { data } = useFetch<AnswersApiResponse>('/api/answers', { params });
+  // const items = data?.items;
+  // console.log(items);
 
   const { data: occupations } = useFetch<OccupationsApiResponse>('/api/occupations', { params });
-  console.log(occupations);
 
-  const handleItemClick = (id: number) => {
-    navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
-  };
+  // const handleItemClick = (id: number) => {
+  //   navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
+  // };
 
   const handleFilterChange = (filterId: string) => {
     setSelectedFilter(filterId);
@@ -180,7 +181,7 @@ const QuestionList = () => {
         </FilterWrapper>
       )}
 
-      {items?.length !== 0 ? (
+      {/* {items?.length !== 0 ? (
         <ListItemWrapper>
           <ol>
             {items?.map((q: AnswerItem, index: number) => (
@@ -194,7 +195,8 @@ const QuestionList = () => {
         <ListItemWrapper>
           <Wrapper>EMPTY</Wrapper>
         </ListItemWrapper>
-      )}
+      )} */}
+      <InfiniteScrollList />
     </Wrapper>
   );
 };
