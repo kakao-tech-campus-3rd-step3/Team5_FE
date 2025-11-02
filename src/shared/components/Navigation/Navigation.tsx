@@ -1,7 +1,8 @@
 import styled from '@emotion/styled';
-import { NavLink } from 'react-router-dom';
-import { ROUTE_PATH } from '../../../routes/routePath';
 import { Home, Archive, Star, Users, PlusCircle } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+
+import { ROUTE_PATH } from '../../../routes/routePath';
 
 const Navigation = () => {
   // TODO: 아이콘은 추후에 적절한 걸로 교체 예정

@@ -1,10 +1,12 @@
 import styled from '@emotion/styled';
+import Lottie from 'lottie-react';
+
+import clickAnimation from '../../assets/lottie/clickIcon.json';
+
 import Description from './components/Description';
 import PinnedQuestionList from './components/PinnedQuestionList';
 import QuestionList from './components/QuestionList';
 import useSectionScroll from './hooks/useSectionScroll';
-import Lottie from 'lottie-react';
-import clickAnimation from '../../assets/lottie/clickIcon.json';
 
 export interface AnswerItem {
   answerId: number;

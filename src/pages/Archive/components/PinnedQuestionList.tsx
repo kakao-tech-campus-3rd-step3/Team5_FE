@@ -1,9 +1,11 @@
 import styled from '@emotion/styled';
-import usePolygonAnimation from '../hooks/usePolygonAnimation';
 import { generatePath, useNavigate } from 'react-router-dom';
+
 import { ROUTE_PATH } from '../../../routes/routePath';
-import type { AnswerItem, AnswersApiResponse } from '../Archive';
 import useFetch from '../../../shared/hooks/useFetch';
+import usePolygonAnimation from '../hooks/usePolygonAnimation';
+
+import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
 const PinnedQuestionList = () => {
   const navigate = useNavigate();

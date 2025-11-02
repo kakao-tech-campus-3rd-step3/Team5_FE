@@ -5,6 +5,7 @@ export const ROUTE_PATH = {
   FEEDBACK_DETAIL: '/feedbackDetail/:id',
   SUBSCRIBE: '/subscribe',
   LOGIN: '/login',
+  LOGIN_OAUTH: '/login/oauth',
   RIVAL: '/rival',
   NOTFOUND: '*',
 };

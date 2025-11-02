@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+
 import GlassBackground from '../../../shared/components/GlassBackground/GlassBackground';
 
 interface CardProps {
@@ -20,6 +21,6 @@ const CardWrapper = styled.div`
   width: 80%;
   height: 100px;
   min-height: 150px;
-  
+
   margin-bottom: ${({ theme }) => theme.space.space32};
 `;

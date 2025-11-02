@@ -1,10 +1,13 @@
-import styled from '@emotion/styled';
 import { useEffect, useRef, useState } from 'react';
+
+import styled from '@emotion/styled';
 // import useFetch from '../../../shared/hooks/useFetch';
-import type { AnswerItem, AnswersApiResponse } from '../Archive';
-import { generatePath, useNavigate } from 'react-router-dom';
-import { ROUTE_PATH } from '../../../routes/routePath';
 import axios from 'axios';
+import { generatePath, useNavigate } from 'react-router-dom';
+
+import { ROUTE_PATH } from '../../../routes/routePath';
+
+import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
 function InfiniteScrollList() {
   const navigate = useNavigate();

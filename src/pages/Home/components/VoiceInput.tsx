@@ -1,7 +1,12 @@
 import { useState, useRef } from 'react';
+
 import { Mic, Square } from 'lucide-react';
 
-const VoiceInput = () => {
+interface VoiceInputProps {
+  onAudioUrlChange?: (url: string) => void;
+}
+
+const VoiceInput = ({ onAudioUrlChange }: VoiceInputProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -37,6 +42,11 @@ const VoiceInput = () => {
         // 미리보기용 URL 생성
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
+
+        // 부모 컴포넌트에 URL 전달
+        if (onAudioUrlChange) {
+          onAudioUrlChange(url);
+        }
 
         // Console에 URL 출력
         console.log('녹음된 오디오 URL:', url);

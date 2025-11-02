@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+
 import type { State } from '../types';
 
 const PI2 = Math.PI * 2;

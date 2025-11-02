@@ -1,10 +1,14 @@
-import styled from '@emotion/styled';
-import { ROUTE_PATH } from '../../../routes/routePath';
-import { generatePath, useNavigate, useSearchParams } from 'react-router-dom';
-import type { AnswerItem, AnswersApiResponse } from '../Archive';
 import { useEffect, useState } from 'react';
+
+import styled from '@emotion/styled';
+import { useSearchParams } from 'react-router-dom';
+
+// import { ROUTE_PATH } from '../../../routes/routePath';
 import useFetch from '../../../shared/hooks/useFetch';
+
 import InfiniteScrollList from './InfiniteScrollList';
+
+// import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
 const filters = [
   { id: 'ALL', label: '전체' },
@@ -35,7 +39,7 @@ interface Occupation {
 type OccupationsApiResponse = Occupation[];
 
 const QuestionList = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [params, setParams] = useState(Object.fromEntries(searchParams.entries()));
 
@@ -241,21 +245,21 @@ const FilterButton = styled.button<{ selected: boolean }>`
   transition: background 0.2s;
 `;
 
-const ListItemWrapper = styled.div`
-  width: 90%;
-  max-width: 900px;
-  max-height: 70%;
-  padding: ${({ theme }) => theme.space.space16};
+// const ListItemWrapper = styled.div`
+//   width: 90%;
+//   max-width: 900px;
+//   max-height: 70%;
+//   padding: ${({ theme }) => theme.space.space16};
 
-  background-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
-  border-radius: ${({ theme }) => theme.radius.radius24};
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-`;
+//   background-color: rgba(255, 255, 255, 0.08);
+//   backdrop-filter: ${({ theme }) => theme.blurs.blur4};
+//   border-radius: ${({ theme }) => theme.radius.radius24};
+//   border: 1px solid rgba(255, 255, 255, 0.2);
+//   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+// `;
 
-const ListItem = styled.li`
-  font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-  margin: ${({ theme }) => theme.space.space12};
-`;
+// const ListItem = styled.li`
+//   font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
+//   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+//   margin: ${({ theme }) => theme.space.space12};
+// `;

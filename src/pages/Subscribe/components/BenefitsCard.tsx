@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+
 import { theme } from '../../../styles/theme';
 
 interface BenefitsCardProps {
@@ -34,7 +35,9 @@ const Card = styled.div`
   max-width: 320px;
   margin-bottom: ${theme.space.space32};
   text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 0 0 2px rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -46,14 +49,20 @@ const Card = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
     border-radius: inherit;
     pointer-events: none;
   }
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.3);
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.2),
+      0 0 0 2px rgba(255, 255, 255, 0.3);
   }
 `;
 
@@ -94,4 +103,3 @@ const BenefitItem = styled.li`
     font-weight: ${theme.typography.fontWeights.bold};
   }
 `;
-
