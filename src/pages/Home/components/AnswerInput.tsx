@@ -13,8 +13,15 @@ interface AnswerInputProps {
   value: string;
   onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   onAudioUrlChange?: (url: string) => void;
-  onAnswerComplete?: (audioUrl: string, text?: string) => void;
+  onAnswerComplete?: (
+    audioUrl: string,
+    text?: string,
+    alreadySubmitted?: boolean,
+    feedbackId?: number
+  ) => void;
   onError?: (error: string) => void;
+  questionId?: number;
+  answerText?: string;
 }
 
 const AnswerInput = ({
@@ -26,26 +33,41 @@ const AnswerInput = ({
   onAudioUrlChange,
   onAnswerComplete,
   onError,
+  questionId,
+  answerText,
 }: AnswerInputProps) => {
   if (!isActive) return null;
 
   // RecordAnswer 완료 시 처리
-  const handleAnswerComplete = (audioUrl: string, text?: string) => {
+  const handleAnswerComplete = (
+    audioUrl: string,
+    text?: string,
+    alreadySubmitted?: boolean,
+    feedbackId?: number
+  ) => {
     if (onAudioUrlChange) {
       onAudioUrlChange(audioUrl);
     }
     if (onAnswerComplete) {
-      onAnswerComplete(audioUrl, text);
+      onAnswerComplete(audioUrl, text, alreadySubmitted, feedbackId);
     }
-    // 자동으로 답변 완료 처리
-    onAnswerDone();
+    // 이미 제출된 경우에는 onAnswerDone을 호출하지 않음 (중복 제출 방지)
+    if (!alreadySubmitted) {
+      // 자동으로 답변 완료 처리
+      onAnswerDone();
+    }
   };
 
   return (
     <>
       <Timer isActive={isActive} onAnswerDone={onAnswerDone} />
       {type === 'voice' && (
-        <RecordAnswer onAnswerComplete={handleAnswerComplete} onError={onError} />
+        <RecordAnswer
+          questionId={questionId}
+          answerText={answerText || value}
+          onAnswerComplete={handleAnswerComplete}
+          onError={onError}
+        />
       )}
       {type === 'text' && <TextInput value={value} onChange={onChange} />}
     </>

@@ -3,7 +3,7 @@ import { useState, type ChangeEvent } from 'react';
 import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
 
-import { type SubmitAnswerRequest } from '../../api/answers';
+import { type SubmitAnswerRequest, type SubmitAnswerResponse } from '../../api/answers';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
 import usePost from '../../shared/hooks/usePost';
@@ -39,7 +39,7 @@ const HomePage = () => {
   const { data: _user } = useFetch<User>('/api/user');
   const { data: question } = useFetch<Question>('/api/questions/random');
 
-  const { execute: submitAnswerPost, loading: isSubmitting } = usePost({
+  const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
     onSuccess: (data) => {
       setAnswerState('answered');
       navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
@@ -106,6 +106,7 @@ const HomePage = () => {
           answerState={answerState}
           onAnswerDone={handleAnswerDone}
           isSubmitting={isSubmitting}
+          questionId={question?.questionId}
         />
       )}
     </Wrapper>
