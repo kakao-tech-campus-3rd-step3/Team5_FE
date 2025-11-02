@@ -12,8 +12,6 @@ import AnsweringSection from './components/sections/AnsweringSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import QuestionCardSection from './components/sections/QuestionCardSection';
 
-import type { SubmitAnswerRequest } from '../../api/answers';
-
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
 
