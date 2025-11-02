@@ -26,8 +26,8 @@ if (import.meta.env.DEV) {
 // MSW 클라이언트 초기화
 async function enableMocking() {
   if (import.meta.env.VITE_ENABLE_MSW === 'true') {
-    const { client, mswOptions } = await import('./mock/client');
-    return client.start(mswOptions);
+    //const { client, mswOptions } = await import('./mock/client');
+    // return client.start(mswOptions);
   }
 }
 
