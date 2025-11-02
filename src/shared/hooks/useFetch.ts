@@ -16,7 +16,7 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
 
     const fetchData = async () => {
       try {
-        const response = await apiClient<T>(url);
+        const response = await apiClient<T>(url, options);
         setData(response.data);
       } catch (error) {
         // TODO: 에러 핸들링 로직 추가

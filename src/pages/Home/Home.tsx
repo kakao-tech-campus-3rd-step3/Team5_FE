@@ -42,16 +42,16 @@ const HomePage = () => {
   const { data: _user } = useFetch<User>('/api/user');
   const { data: question } = useFetch<Question>('/api/questions/random');
 
-  // const { execute: submitAnswerPost, loading: isSubmitting } = usePost({
-  //   onSuccess: (data) => {
-  //     setAnswerState('answered');
-  //     navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
-  //   },
-  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //   onError: (_error) => {
-  //     alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
-  //   },
-  // });
+  const { execute: submitAnswerPost, loading: isSubmitting } = usePost({
+    onSuccess: (data) => {
+      setAnswerState('answered');
+      navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onError: (_error) => {
+      alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
+    },
+  });
 
   const handleAnswerTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAnswerType(e.target.value as AnswerType);
@@ -63,39 +63,17 @@ const HomePage = () => {
       return;
     }
 
-    if (answerType === 'text' && answerText.trim() === '') {
-      alert('답변을 입력해주세요.');
-      return;
-    }
-
-    setIsSubmitting(true);
+    const submitData: SubmitAnswerRequest = {
+      questionId: question.questionId,
+      answerText: text,
+      followUp: false, // 기본값: 추가 질문 없음
+      ...(audioUrl && { audioUrl }),
+    };
 
     try {
-      const postResponse = await postAnswer(
-        _user.userId,
-        question.questionId,
-        answerText,
-        audioUrl
-      );
-      const { feedbackId, answerId } = postResponse;
-
-      const feedbackData = await getFeedback(feedbackId);
-
-      navigate(`${ROUTE_PATH.FEEDBACK}/${feedbackId}`, {
-        state: {
-          answerId: answerId,
-          questionText: question.content,
-          userAnswer: answerText,
-          feedbackResult: feedbackData,
-        },
-      });
-
-      setAnswerState('answered');
+      await submitAnswerPost('/api/answers', submitData);
     } catch (error) {
       console.error('답변 제출 중 오류:', error);
-      alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
