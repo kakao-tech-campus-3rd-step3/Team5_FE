@@ -43,7 +43,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [retryCount, setRetryCount] = useState(0);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [answerId, setAnswerId] = useState<string | null>(null);
+  const [answerId, setAnswerId] = useState<number | null>(null);
   const [convertedText, setConvertedText] = useState<string>('');
   const [sttStatus, setSTTStatus] = useState<STTStatus | null>(null);
 
@@ -150,7 +150,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   };
 
   // 상태 조회 API
-  const checkAnswerStatus = async (answerIdToCheck: string) => {
+  const checkAnswerStatus = async (answerIdToCheck: number) => {
     try {
       const response = await fetch(`/api/answers/${answerIdToCheck}/status`, {
         headers: {
@@ -377,7 +377,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   };
 
   // 3. 파일 업로드 (진행률 포함)
-  const uploadWithProgress = async (preSignedUrl: string, file: Blob): Promise<void> => {
+  const uploadWithProgress = async (preSignedUrl: string, file: Blob, fileName: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
@@ -432,12 +432,23 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       // PUT 요청으로 pre-signed URL에 파일 직접 업로드
       xhr.open('PUT', preSignedUrl);
       
-      // Content-Type 헤더 설정 (파일 타입 사용)
-      // 주의: S3 pre-signed URL은 생성 시 지정된 Content-Type을 사용해야 할 수도 있음
-      xhr.setRequestHeader('Content-Type', file.type || 'audio/webm');
+      // PUT 요청 body에 fileName 포함하여 전송
+      // FormData를 사용하여 fileName과 파일을 함께 전송
+      const formData = new FormData();
+      formData.append('fileName', fileName);
+      formData.append('file', file);
       
-      // 파일만 body에 첨부하여 전송
-      xhr.send(file);
+      console.log('📦 [PUT 요청 Body]', {
+        preSignedUrl: preSignedUrl.substring(0, 100) + '...',
+        fileName,
+        fileSize: file.size,
+        fileType: file.type,
+        formDataKeys: Array.from(formData.keys()),
+      });
+      
+      // fileName과 파일을 함께 body에 첨부하여 전송
+      // Content-Type은 FormData를 사용할 때 브라우저가 자동으로 설정하므로 수동 설정 불필요
+      xhr.send(formData);
       
       logInfo('파일 업로드 시작', { fileSize: file.size, fileType: file.type });
     });
@@ -453,28 +464,133 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
 
       // 1. Pre-signed URL 획득
       logInfo('Pre-signed URL 요청 시작');
+      
       // 파일명 생성 (timestamp 기반)
-      const fileName = `audio_${Date.now()}.webm`;
+      // ⚠️ 중요: 백엔드가 .webm을 받지 않으므로 반드시 .mp3로 설정
+      // 빌드 캐시 문제로 인해 .webm이 나올 수 있으므로 강제로 .mp3로 고정
+      const timestamp = Date.now();
+      
+      // 확장자를 명시적으로 .mp3로 강제 설정 (절대 .webm이 되지 않도록)
+      // 문자열 리터럴을 사용하여 빌드 최적화가 확장자를 변경하지 못하도록 함
+      const extension = '.mp3'; // 상수로 정의하여 변경 불가능하게 함
+      let fileName = `audio_${timestamp}${extension}`;
+      
+      // 최종 검증: 반드시 .mp3로 끝나도록 강제
+      if (!fileName.endsWith('.mp3')) {
+        console.error('❌ [치명적 오류] 파일명이 .mp3로 끝나지 않습니다! 강제 수정합니다.', {
+          원본파일명: fileName,
+          파일명길이: fileName.length,
+          마지막3글자: fileName.slice(-3),
+        });
+        // 확장자 제거 후 .mp3 추가
+        fileName = fileName.replace(/\.[^.]+$/, '') + '.mp3';
+      }
+      
+      // 배포 환경 확인을 위한 상세 로그
+      console.log('📝 [파일명 생성 및 검증]', {
+        최종파일명: fileName,
+        확장자: fileName.split('.').pop(),
+        타임스탬프: timestamp,
+        extension상수: extension,
+        API_BASE_URL: API_BASE_URL,
+        VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+        프로덕션모드: import.meta.env.PROD,
+        개발모드: import.meta.env.DEV,
+        빌드시간: new Date().toISOString(),
+        파일명검증결과: fileName.endsWith('.mp3') ? '✅ mp3 확인' : '❌ mp3 아님',
+        파일명길이: fileName.length,
+        파일명시작: fileName.substring(0, 10),
+        파일명끝: fileName.substring(fileName.length - 4),
+      });
+      
+      // 런타임 검증: 혹시 모를 빌드 최적화나 변수 치환을 막기 위한 추가 검증
+      if (fileName.includes('.webm')) {
+        console.error('❌ [치명적 오류] 파일명에 .webm이 포함되어 있습니다! 즉시 수정합니다.');
+        fileName = fileName.replace(/\.webm/g, '.mp3');
+      }
+      
+      // 최종 파일명 확인 (요청 직전 재검증)
+      if (!fileName.endsWith('.mp3')) {
+        console.error('❌ [최종 검증 실패] 파일명이 여전히 .mp3가 아닙니다!', fileName);
+        fileName = `audio_${Date.now()}.mp3`;
+        console.warn('✅ [파일명 강제 수정 완료]', fileName);
+      }
       
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+      const requestUrl = `${API_BASE_URL}/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`;
+      
       console.log('📤 [Pre-signed URL 요청]', {
         url: '/api/answers/upload-url',
         apiBaseUrl: API_BASE_URL,
-        fullUrl: `${API_BASE_URL}/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`,
+        fullUrl: requestUrl,
         method: 'GET',
-        fileName,
+        fileName: fileName,
+        fileName검증: fileName.endsWith('.mp3') ? '✅ .mp3 확인' : '❌ .mp3 아님',
+        encode된파일명: encodeURIComponent(fileName),
         token: token ? `${token.substring(0, 20)}...` : '없음',
         hasToken: !!token,
       });
       
       // apiClient를 사용하여 프로덕션 백엔드로 요청
       try {
-        const response = await apiClient.get<{ preSignedUrl: string; finalAudioUrl: string }>(
-          '/api/answers/upload-url',
-          {
-            params: { fileName },
+        // 백엔드가 기대하는 형식 확인을 위해 파라미터 상세 로깅
+        // 백엔드가 snake_case를 선호할 수 있으므로 두 가지 형식 모두 시도
+        const requestParams = { 
+          fileName, // camelCase
+          file_name: fileName, // snake_case (일부 백엔드는 이것을 선호)
+        };
+        console.log('📋 [Pre-signed URL 파라미터]', {
+          fileName: fileName,
+          fileNameType: typeof fileName,
+          fileNameLength: fileName.length,
+          params: requestParams,
+          paramsStringified: JSON.stringify(requestParams),
+          note: 'fileName과 file_name 둘 다 포함하여 전송 (백엔드가 snake_case를 선호할 수 있음)',
+        });
+        
+        // 먼저 fileName만으로 시도
+        let response;
+        try {
+          console.log('🔄 [Pre-signed URL 요청 시도 1] fileName 사용:', fileName);
+          response = await apiClient.get<{ preSignedUrl: string; finalAudioUrl: string }>(
+            '/api/answers/upload-url',
+            {
+              params: { fileName },
+            }
+          );
+        } catch (firstError: any) {
+          console.error('❌ [Pre-signed URL 요청 실패 1]', {
+            status: firstError.response?.status,
+            statusText: firstError.response?.statusText,
+            data: firstError.response?.data,
+            message: firstError.message,
+            fileName,
+          });
+          
+          // 400 또는 404 에러인 경우 file_name으로 재시도
+          if (firstError.response?.status === 400 || firstError.response?.status === 404) {
+            console.log('⚠️ [재시도] fileName으로 실패, file_name으로 재시도');
+            try {
+              response = await apiClient.get<{ preSignedUrl: string; finalAudioUrl: string }>(
+                '/api/answers/upload-url',
+                {
+                  params: { file_name: fileName },
+                }
+              );
+              console.log('✅ [재시도 성공] file_name 사용:', fileName);
+            } catch (secondError: any) {
+              console.error('❌ [Pre-signed URL 요청 실패 2] file_name도 실패:', {
+                status: secondError.response?.status,
+                statusText: secondError.response?.statusText,
+                data: secondError.response?.data,
+                message: secondError.message,
+              });
+              throw secondError;
+            }
+          } else {
+            throw firstError;
           }
-        );
+        }
         
         const { preSignedUrl, finalAudioUrl: serverAudioUrl } = response.data;
         
@@ -486,8 +602,8 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         
         logInfo('Pre-signed URL 획득 성공', { preSignedUrl, serverAudioUrl });
         
-        // 2. 파일 업로드
-        await uploadWithProgress(preSignedUrl, audioBlob);
+        // 2. 파일 업로드 (fileName을 함께 전송)
+        await uploadWithProgress(preSignedUrl, audioBlob, fileName);
 
         // 3. 답변 제출
         if (!questionId) {
@@ -505,13 +621,23 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           url: '/api/answers',
           apiBaseUrl: API_BASE_URL,
           method: 'POST',
+          fullUrl: `${API_BASE_URL}/api/answers`,
           body: requestBody,
+          bodyStringified: JSON.stringify(requestBody, null, 2),
+          bodyKeys: Object.keys(requestBody),
+          bodyValues: Object.values(requestBody),
           questionId: questionId ?? 'undefined ⚠️',
           answerText: requestBody.answerText,
+          answerTextType: typeof requestBody.answerText,
+          answerTextLength: requestBody.answerText?.length,
           audioUrl: serverAudioUrl,
+          audioUrlType: typeof serverAudioUrl,
+          audioUrlLength: serverAudioUrl?.length,
           followUp: requestBody.followUp,
-          bodyStringified: JSON.stringify(requestBody),
+          followUpType: typeof requestBody.followUp,
         });
+
+        console.log('📦 [POST /api/answers 요청 Body 상세]', JSON.stringify(requestBody, null, 2));
 
         try {
           const submitResponse = await apiClient.post<{
@@ -586,28 +712,58 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       } catch (error: any) {
         // 에러 응답 본문 확인
         if (error.response) {
+          const errorData = error.response.data;
           console.error('❌ [Pre-signed URL 요청 실패]', {
             status: error.response.status,
             statusText: error.response.statusText,
-            headers: error.response.headers,
-            data: error.response.data,
+            responseData: errorData,
+            responseDataStringified: JSON.stringify(errorData, null, 2),
+            requestParams: {
+              fileName: fileName,
+              fullUrl: `${API_BASE_URL}/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`,
+            },
             config: {
               url: error.config?.url,
               method: error.config?.method,
               headers: error.config?.headers,
               params: error.config?.params,
+              paramsStringified: JSON.stringify(error.config?.params, null, 2),
               baseURL: error.config?.baseURL,
             },
           });
           
-          // 에러 메시지 추출
-          const errorMessage = error.response.data?.message || error.response.data || error.message || 'Pre-signed URL 획득 실패';
-          throw new Error(`Pre-signed URL 획득 실패 (${error.response.status}): ${JSON.stringify(errorMessage)}`);
+          // 에러 메시지 추출 (더 상세하게)
+          let errorMessage = 'Pre-signed URL 획득 실패';
+          if (errorData) {
+            if (typeof errorData === 'string') {
+              errorMessage = errorData;
+            } else if (errorData.detail) {
+              errorMessage = errorData.detail;
+            } else if (errorData.message) {
+              errorMessage = errorData.message;
+            } else if (errorData.title) {
+              errorMessage = `${errorData.title}: ${errorData.detail || ''}`;
+            } else {
+              errorMessage = JSON.stringify(errorData);
+            }
+          }
+          
+          console.error('❌ [Pre-signed URL 에러 상세]', {
+            code: errorData?.code,
+            detail: errorData?.detail,
+            message: errorData?.message,
+            instance: errorData?.instance,
+            type: errorData?.type,
+            status: errorData?.status,
+          });
+          
+          throw new Error(`Pre-signed URL 획득 실패 (${error.response.status}): ${errorMessage}`);
         } else {
-          console.error('❌ [Pre-signed URL 요청 실패]', {
+          console.error('❌ [Pre-signed URL 요청 실패 - 네트워크 에러]', {
             message: error.message,
             code: error.code,
             stack: error.stack,
+            fileName: fileName,
           });
           throw error;
         }
