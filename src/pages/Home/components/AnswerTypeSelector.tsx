@@ -1,7 +1,9 @@
+import type { ChangeEvent } from 'react';
+
 import styled from '@emotion/styled';
 import { Keyboard, Mic } from 'lucide-react';
+
 import type { AnswerType } from '../Home';
-import type { ChangeEvent } from 'react';
 
 interface AnswerTypeSelectorProps {
   type: AnswerType;

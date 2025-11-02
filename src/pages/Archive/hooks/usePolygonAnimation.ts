@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { makePolygon } from '../utils/makePolygon';
+
 import { onDown, onMove, onUp } from '../utils/eventHandlers';
+import { makePolygon } from '../utils/makePolygon';
 
 const usePolygonAnimation = () => {
   const pinnedItemWrapperRef = useRef<HTMLDivElement>(null);

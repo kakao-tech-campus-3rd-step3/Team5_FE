@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
+
 import { ROUTE_PATH } from './routePath';
 
 interface ProtectedRouteProps {

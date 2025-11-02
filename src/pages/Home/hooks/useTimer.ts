@@ -10,6 +10,12 @@ const useTimer = ({ userDefinedTime: initialSeconds, isActive, onAnswerDone }: u
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
 
   const intervalRef = useRef<number | null>(null);
+  const onAnswerDoneRef = useRef(onAnswerDone);
+
+  // onAnswerDone ref를 최신값으로 유지
+  useEffect(() => {
+    onAnswerDoneRef.current = onAnswerDone;
+  }, [onAnswerDone]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -21,7 +27,7 @@ const useTimer = ({ userDefinedTime: initialSeconds, isActive, onAnswerDone }: u
 
       if (newRemainingTime <= 0) {
         setRemainingSeconds(0);
-        onAnswerDone();
+        onAnswerDoneRef.current();
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
         }
@@ -35,7 +41,7 @@ const useTimer = ({ userDefinedTime: initialSeconds, isActive, onAnswerDone }: u
         clearInterval(intervalRef.current);
       }
     };
-  }, [isActive]);
+  }, [isActive, remainingSeconds]);
 
   return { remainingSeconds };
 };

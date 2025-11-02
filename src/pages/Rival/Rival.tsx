@@ -1,7 +1,9 @@
-import styled from '@emotion/styled';
-import { css } from '@emotion/react';
 import { useState, useEffect } from 'react';
+
+import { css } from '@emotion/react';
+import styled from '@emotion/styled';
 import { searchRival, getRivalProfile, getFollowingList, getFollowerList } from '../../api/rivals';
+
 import type { RivalProfileResponse, RivalUserItem } from '../../api/rivals';
 
 const RivalPage = () => {
@@ -37,7 +39,7 @@ const RivalPage = () => {
         const searchResult = await searchRival(searchEmail);
         const profileData = await getRivalProfile(searchResult.userId);
         setProfile(profileData);
-        
+
         // 검색한 사용자의 팔로잉/팔로워 목록 로드
         const following = await getFollowingList(undefined, 10);
         const follower = await getFollowerList(undefined, 10);
@@ -54,8 +56,8 @@ const RivalPage = () => {
 
   return (
     <Wrapper>
-      <SearchBar 
-        placeholder="🔍 이메일로 검색" 
+      <SearchBar
+        placeholder="🔍 이메일로 검색"
         value={searchEmail}
         onChange={(e) => setSearchEmail(e.target.value)}
         onKeyDown={handleSearch}
@@ -105,16 +107,10 @@ const RivalPage = () => {
           </StatsContainer>
 
           <TabContainer>
-            <TabButton 
-              active={activeTab === 'following'} 
-              onClick={() => setActiveTab('following')}
-            >
+            <TabButton active={activeTab === 'following'} onClick={() => setActiveTab('following')}>
               팔로잉 ({followingList?.length || 0})
             </TabButton>
-            <TabButton 
-              active={activeTab === 'follower'} 
-              onClick={() => setActiveTab('follower')}
-            >
+            <TabButton active={activeTab === 'follower'} onClick={() => setActiveTab('follower')}>
               팔로워 ({followerList?.length || 0})
             </TabButton>
           </TabContainer>
@@ -134,20 +130,18 @@ const RivalPage = () => {
               ) : (
                 <EmptyText>팔로잉한 사용자가 없습니다.</EmptyText>
               )
+            ) : followerList && followerList.length > 0 ? (
+              followerList.map((user) => (
+                <UserItem key={user.userId}>
+                  <UserIcon>👤</UserIcon>
+                  <UserInfo>
+                    <UserName>{user.name}</UserName>
+                    <UserEmail>{user.email}</UserEmail>
+                  </UserInfo>
+                </UserItem>
+              ))
             ) : (
-              followerList && followerList.length > 0 ? (
-                followerList.map((user) => (
-                  <UserItem key={user.userId}>
-                    <UserIcon>👤</UserIcon>
-                    <UserInfo>
-                      <UserName>{user.name}</UserName>
-                      <UserEmail>{user.email}</UserEmail>
-                    </UserInfo>
-                  </UserItem>
-                ))
-              ) : (
-                <EmptyText>팔로워가 없습니다.</EmptyText>
-              )
+              <EmptyText>팔로워가 없습니다.</EmptyText>
             )}
           </UserListCard>
 
