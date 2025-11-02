@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import styled from '@emotion/styled';
 // import useFetch from '../../../shared/hooks/useFetch';
@@ -16,12 +16,31 @@ function InfiniteScrollList() {
     navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
   };
 
-  const [loading, setLoading] = useState(false);
-
   const [items, setItems] = useState<AnswerItem[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
   const loader = useRef(null);
+
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+
+    // const { data } = useFetch<AnswersApiResponse>(`/api/answers/page=${page}`);
+    const response = await axios.get<AnswersApiResponse>(`/api/answers`, {
+      params: { page: page },
+    });
+    const items = response.data?.items;
+    console.log(items?.length);
+
+    if (items) {
+      setItems((prev) => [...prev, ...items]);
+      setPage((prev) => prev + 1);
+    }
+
+    if (items?.length === 0) setHasMore(false);
+    setLoading(false);
+  }, [loading, hasMore, page]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -39,26 +58,7 @@ function InfiniteScrollList() {
     return () => {
       if (el) observer.unobserve(el);
     };
-  }, [loader, hasMore]);
-
-  const loadMore = async () => {
-    if (loading || !hasMore) return;
-    setLoading(true);
-
-    // const { data } = useFetch<AnswersApiResponse>(`/api/answers/page=${page}`);
-    const response = await axios.get<AnswersApiResponse>(`/api/answers`, {
-      params: { page: page },
-    });
-    const items = response.data?.items;
-    console.log(items?.length);
-
-    if (items) {
-      setItems((prev) => [...prev, ...items]);
-      setPage((prev) => prev + 1);
-    }
-
-    if (items?.length === 0) setHasMore(false);
-  };
+  }, [loadMore, hasMore]);
 
   return (
     <>

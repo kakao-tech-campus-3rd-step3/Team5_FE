@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
+
 import { searchRival, getRivalProfile, getFollowingList, getFollowerList } from '../../api/rivals';
 
 import type { RivalProfileResponse, RivalUserItem } from '../../api/rivals';
@@ -148,7 +149,6 @@ const RivalPage = () => {
           <CheerButton type="button">응원하기</CheerButton>
         </>
       )}
-
     </Wrapper>
   );
 };
