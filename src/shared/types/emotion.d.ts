@@ -1,6 +1,5 @@
-import { radius, zIndex } from './../../styles/tokens';
-
 import '@emotion/react';
+
 import type { theme } from '../styles/theme';
 
 // TODO: 테마 타입 정의 - 디자인 시스템 확정 후 최종 수정

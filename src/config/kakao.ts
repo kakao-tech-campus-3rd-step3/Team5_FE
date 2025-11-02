@@ -50,6 +50,7 @@ export const getKakaoUserInfo = async () => {
 // 타입 정의
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Kakao: any;
   }
 }
