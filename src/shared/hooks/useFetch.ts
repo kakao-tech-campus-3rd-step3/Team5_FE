@@ -16,7 +16,8 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
 
     const fetchData = async () => {
       try {
-        const response = await apiClient<T>(url, options);
+        const response = await apiClient.get<T>(url, options);
+
         setData(response.data);
       } catch (error: unknown) {
         const err = error as {
