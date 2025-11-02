@@ -36,7 +36,14 @@ export default defineConfig({
         secure: false,
         // SSE를 위한 설정
         ws: false, // WebSocket이 아닌 HTTP 스트림
-        configure: (proxy: any, _options: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        configure: (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          proxy: any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+          _options: any
+        ) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
           proxy.on('proxyReq', (proxyReq: any, _req: any, _res: any) => {
             // SSE 요청 헤더 설정
             proxyReq.setHeader('Accept', 'text/event-stream');
@@ -44,6 +51,7 @@ export default defineConfig({
             proxyReq.setHeader('Connection', 'keep-alive');
           });
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           proxy.on('proxyRes', (proxyRes: any, _req: any, res: any) => {
             // SSE 응답 헤더 유지
             const contentType = proxyRes.headers['content-type'] || '';
@@ -59,6 +67,7 @@ export default defineConfig({
             }
           });
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           proxy.on('error', (_err: Error, _req: any, res: any) => {
             // SSE 프록시 오류 처리
             if (!res.headersSent) {

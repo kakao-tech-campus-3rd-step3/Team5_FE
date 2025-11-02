@@ -18,8 +18,8 @@ const apiClient = axios.create({
 // 리프레시 토큰 갱신 중인지 확인하는 플래그
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value?: any) => void;
-  reject: (error?: any) => void;
+  resolve: (value?: unknown) => void;
+  reject: (error?: unknown) => void;
 }> = [];
 
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
@@ -95,7 +95,7 @@ apiClient.interceptors.response.use(
       const requestUrl = originalRequest.url || '';
       const baseURL = originalRequest.baseURL || '';
       const fullUrl = baseURL + requestUrl;
-      
+
       console.error('❌ [API 오류] 네트워크 오류:', {
         message: errorMessage,
         code: error.code,
@@ -107,13 +107,13 @@ apiClient.interceptors.response.use(
 
       // CORS 오류 또는 리다이렉트로 인한 실패인 경우
       // 백엔드가 인증되지 않은 요청을 /login으로 리다이렉트하면 CORS 에러 발생
-      const isCorsError = 
-        errorMessage.includes('CORS') || 
+      const isCorsError =
+        errorMessage.includes('CORS') ||
         errorMessage.includes('redirected') ||
         errorMessage.includes('Failed to fetch') ||
         errorMessage.includes('Network Error') ||
         (error.stack && (error.stack.includes('CORS') || error.stack.includes('Network Error')));
-      
+
       console.log('🔍 [API 오류] CORS 에러 여부 확인:', {
         isCorsError,
         errorMessage,
@@ -125,10 +125,10 @@ apiClient.interceptors.response.use(
         urlIncludesLogin: fullUrl.includes('/login'),
         requestUrl: requestUrl,
       });
-      
+
       if (isCorsError || fullUrl.includes('/login') || requestUrl.includes('/login')) {
         console.warn('⚠️ [API 오류] CORS/리다이렉트/네트워크 에러 감지 - 인증 필요로 처리');
-        
+
         // 토큰 확인
         const token = localStorage.getItem(ACCESS_TOKEN_KEY);
         console.log('🔑 [API 오류] 토큰 상태 확인:', {
@@ -136,22 +136,24 @@ apiClient.interceptors.response.use(
           tokenPreview: token ? token.substring(0, 20) + '...' : '없음',
           currentPath: window.location.pathname,
         });
-        
+
         if (!token) {
           console.warn('⚠️ [API 오류] 토큰이 없습니다. 로그인 페이지로 이동합니다.');
-          
+
           // 로그인 페이지가 아니면 리다이렉트
           if (!window.location.pathname.includes('/login')) {
             console.warn('⚠️ [API 오류] 로그인 페이지로 리다이렉트');
             window.location.href = '/login';
           }
         } else {
-          console.warn('⚠️ [API 오류] 토큰이 있지만 백엔드가 리다이렉트하고 있습니다. 토큰이 만료되었을 수 있습니다.');
+          console.warn(
+            '⚠️ [API 오류] 토큰이 있지만 백엔드가 리다이렉트하고 있습니다. 토큰이 만료되었을 수 있습니다.'
+          );
           console.warn('⚠️ [API 오류] 토큰 갱신을 시도합니다.');
-          
+
           // 토큰 갱신 시도는 이미 apiClient의 다른 부분에서 처리됨
         }
-        
+
         const newError = new AxiosError(
           '인증이 필요합니다. 로그인 페이지로 이동합니다.',
           'UNAUTHENTICATED',
@@ -161,7 +163,7 @@ apiClient.interceptors.response.use(
             status: 401,
             statusText: 'Unauthorized',
             data: { message: 'Authentication required - redirect to login' },
-          } as any
+          } as AxiosError['response']
         );
         return Promise.reject(newError);
       }

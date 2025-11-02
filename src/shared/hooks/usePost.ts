@@ -3,24 +3,24 @@ import { useState } from 'react';
 import apiClient from '../../api/apiClient';
 
 interface UsePostOptions {
-  onSuccess?: (data: any) => void;
-  onError?: (error: any) => void;
+  onSuccess?: <TData = unknown>(data: TData) => void;
+  onError?: (error: unknown) => void;
 }
 
 interface UsePostReturn<T> {
   data: T | null;
   loading: boolean;
-  error: any;
-  execute: (url: string, payload?: any, config?: any) => Promise<T>;
+  error: unknown;
+  execute: (url: string, payload?: unknown, config?: unknown) => Promise<T>;
   reset: () => void;
 }
 
-const usePost = <T = any>(options: UsePostOptions = {}): UsePostReturn<T> => {
+const usePost = <T = unknown>(options: UsePostOptions = {}): UsePostReturn<T> => {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null);
 
-  const execute = async (url: string, payload?: any, config?: any): Promise<T> => {
+  const execute = async (url: string, payload?: unknown, config?: unknown): Promise<T> => {
     setLoading(true);
     setError(null);
 

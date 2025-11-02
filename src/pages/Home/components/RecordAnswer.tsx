@@ -252,10 +252,12 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   }, []);
 
   // 로깅 함수들
-  const logError = (stage: string, error: any, context: any) => {
+  const logError = (stage: string, error: Error | unknown, context?: Record<string, unknown>) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
     console.error(`[AudioRecording] ${stage}:`, {
-      error: error.message,
-      stack: error.stack,
+      error: errorMessage,
+      stack: errorStack,
       context,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
@@ -263,7 +265,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
     });
   };
 
-  const logInfo = (message: string, data?: any) => {
+  const logInfo = (message: string, data?: Record<string, unknown>) => {
     console.log(`[AudioRecording] ${message}`, data || '');
   };
 
@@ -377,7 +379,11 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   };
 
   // 3. 파일 업로드 (진행률 포함)
-  const uploadWithProgress = async (preSignedUrl: string, file: Blob, fileName: string): Promise<void> => {
+  const uploadWithProgress = async (
+    preSignedUrl: string,
+    file: Blob,
+    fileName: string
+  ): Promise<void> => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
@@ -428,16 +434,16 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       };
 
       xhr.timeout = CONFIG.UPLOAD_TIMEOUT;
-      
+
       // PUT 요청으로 pre-signed URL에 파일 직접 업로드
       xhr.open('PUT', preSignedUrl);
-      
+
       // PUT 요청 body에 fileName 포함하여 전송
       // FormData를 사용하여 fileName과 파일을 함께 전송
       const formData = new FormData();
       formData.append('fileName', fileName);
       formData.append('file', file);
-      
+
       console.log('📦 [PUT 요청 Body]', {
         preSignedUrl: preSignedUrl.substring(0, 100) + '...',
         fileName,
@@ -445,11 +451,11 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         fileType: file.type,
         formDataKeys: Array.from(formData.keys()),
       });
-      
+
       // fileName과 파일을 함께 body에 첨부하여 전송
       // Content-Type은 FormData를 사용할 때 브라우저가 자동으로 설정하므로 수동 설정 불필요
       xhr.send(formData);
-      
+
       logInfo('파일 업로드 시작', { fileSize: file.size, fileType: file.type });
     });
   };
@@ -464,17 +470,17 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
 
       // 1. Pre-signed URL 획득
       logInfo('Pre-signed URL 요청 시작');
-      
+
       // 파일명 생성 (timestamp 기반)
       // ⚠️ 중요: 백엔드가 .webm을 받지 않으므로 반드시 .mp3로 설정
       // 빌드 캐시 문제로 인해 .webm이 나올 수 있으므로 강제로 .mp3로 고정
       const timestamp = Date.now();
-      
+
       // 확장자를 명시적으로 .mp3로 강제 설정 (절대 .webm이 되지 않도록)
       // 문자열 리터럴을 사용하여 빌드 최적화가 확장자를 변경하지 못하도록 함
       const extension = '.mp3'; // 상수로 정의하여 변경 불가능하게 함
       let fileName = `audio_${timestamp}${extension}`;
-      
+
       // 최종 검증: 반드시 .mp3로 끝나도록 강제
       if (!fileName.endsWith('.mp3')) {
         console.error('❌ [치명적 오류] 파일명이 .mp3로 끝나지 않습니다! 강제 수정합니다.', {
@@ -485,7 +491,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         // 확장자 제거 후 .mp3 추가
         fileName = fileName.replace(/\.[^.]+$/, '') + '.mp3';
       }
-      
+
       // 배포 환경 확인을 위한 상세 로그
       console.log('📝 [파일명 생성 및 검증]', {
         최종파일명: fileName,
@@ -502,23 +508,23 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         파일명시작: fileName.substring(0, 10),
         파일명끝: fileName.substring(fileName.length - 4),
       });
-      
+
       // 런타임 검증: 혹시 모를 빌드 최적화나 변수 치환을 막기 위한 추가 검증
       if (fileName.includes('.webm')) {
         console.error('❌ [치명적 오류] 파일명에 .webm이 포함되어 있습니다! 즉시 수정합니다.');
         fileName = fileName.replace(/\.webm/g, '.mp3');
       }
-      
+
       // 최종 파일명 확인 (요청 직전 재검증)
       if (!fileName.endsWith('.mp3')) {
         console.error('❌ [최종 검증 실패] 파일명이 여전히 .mp3가 아닙니다!', fileName);
         fileName = `audio_${Date.now()}.mp3`;
         console.warn('✅ [파일명 강제 수정 완료]', fileName);
       }
-      
+
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
       const requestUrl = `${API_BASE_URL}/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`;
-      
+
       console.log('📤 [Pre-signed URL 요청]', {
         url: '/api/answers/upload-url',
         apiBaseUrl: API_BASE_URL,
@@ -530,12 +536,12 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         token: token ? `${token.substring(0, 20)}...` : '없음',
         hasToken: !!token,
       });
-      
+
       // apiClient를 사용하여 프로덕션 백엔드로 요청
       try {
         // 백엔드가 기대하는 형식 확인을 위해 파라미터 상세 로깅
         // 백엔드가 snake_case를 선호할 수 있으므로 두 가지 형식 모두 시도
-        const requestParams = { 
+        const requestParams = {
           fileName, // camelCase
           file_name: fileName, // snake_case (일부 백엔드는 이것을 선호)
         };
@@ -547,7 +553,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           paramsStringified: JSON.stringify(requestParams),
           note: 'fileName과 file_name 둘 다 포함하여 전송 (백엔드가 snake_case를 선호할 수 있음)',
         });
-        
+
         // 먼저 fileName만으로 시도
         let response;
         try {
@@ -558,17 +564,21 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
               params: { fileName },
             }
           );
-        } catch (firstError: any) {
+        } catch (firstError: unknown) {
+          const error = firstError as {
+            response?: { status?: number; statusText?: string; data?: unknown };
+            message?: string;
+          };
           console.error('❌ [Pre-signed URL 요청 실패 1]', {
-            status: firstError.response?.status,
-            statusText: firstError.response?.statusText,
-            data: firstError.response?.data,
-            message: firstError.message,
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message,
             fileName,
           });
-          
+
           // 400 또는 404 에러인 경우 file_name으로 재시도
-          if (firstError.response?.status === 400 || firstError.response?.status === 404) {
+          if (error.response?.status === 400 || error.response?.status === 404) {
             console.log('⚠️ [재시도] fileName으로 실패, file_name으로 재시도');
             try {
               response = await apiClient.get<{ preSignedUrl: string; finalAudioUrl: string }>(
@@ -578,12 +588,16 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
                 }
               );
               console.log('✅ [재시도 성공] file_name 사용:', fileName);
-            } catch (secondError: any) {
+            } catch (secondError: unknown) {
+              const secondErr = secondError as {
+                response?: { status?: number; statusText?: string; data?: unknown };
+                message?: string;
+              };
               console.error('❌ [Pre-signed URL 요청 실패 2] file_name도 실패:', {
-                status: secondError.response?.status,
-                statusText: secondError.response?.statusText,
-                data: secondError.response?.data,
-                message: secondError.message,
+                status: secondErr.response?.status,
+                statusText: secondErr.response?.statusText,
+                data: secondErr.response?.data,
+                message: secondErr.message,
               });
               throw secondError;
             }
@@ -591,17 +605,17 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
             throw firstError;
           }
         }
-        
+
         const { preSignedUrl, finalAudioUrl: serverAudioUrl } = response.data;
-        
+
         console.log('✅ [Pre-signed URL 획득 성공]', {
           preSignedUrl,
           serverAudioUrl,
           preSignedUrlLength: preSignedUrl?.length,
         });
-        
+
         logInfo('Pre-signed URL 획득 성공', { preSignedUrl, serverAudioUrl });
-        
+
         // 2. 파일 업로드 (fileName을 함께 전송)
         await uploadWithProgress(preSignedUrl, audioBlob, fileName);
 
@@ -648,7 +662,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           }>('/api/answers', requestBody);
 
           const result = submitResponse.data;
-          
+
           console.log('✅ [답변 제출 성공]', {
             answerId: result.answerId,
             feedbackId: result.feedbackId,
@@ -686,36 +700,61 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
             }
             logInfo('업로드 및 처리 완료', result);
           }
-        } catch (submitError: any) {
+        } catch (submitError: unknown) {
+          const error = submitError as {
+            response?: {
+              status?: number;
+              statusText?: string;
+              data?: { message?: string; detail?: string };
+            };
+            config?: { headers?: unknown; url?: string; baseURL?: string };
+            message?: string;
+          };
           // 답변 제출 에러 상세 로깅
-          if (submitError.response) {
+          if (error.response) {
             console.error('❌ [답변 제출 실패]', {
-              status: submitError.response.status,
-              statusText: submitError.response.statusText,
-              responseData: submitError.response.data,
+              status: error.response.status,
+              statusText: error.response.statusText,
+              responseData: error.response.data,
               requestBody: requestBody,
-              requestHeaders: submitError.config?.headers,
-              url: submitError.config?.url,
-              baseURL: submitError.config?.baseURL,
+              requestHeaders: error.config?.headers,
+              url: error.config?.url,
+              baseURL: error.config?.baseURL,
             });
-            
-            const errorMessage = submitError.response.data?.message || submitError.response.data?.detail || JSON.stringify(submitError.response.data);
-            throw new Error(`답변 제출 실패 (${submitError.response.status}): ${errorMessage}`);
+
+            const errorMessage =
+              error.response.data?.message ||
+              error.response.data?.detail ||
+              JSON.stringify(error.response.data);
+            throw new Error(`답변 제출 실패 (${error.response.status}): ${errorMessage}`);
           } else {
             console.error('❌ [답변 제출 네트워크 에러]', {
-              message: submitError.message,
+              message: error.message,
               requestBody: requestBody,
             });
             throw submitError;
           }
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // 에러 응답 본문 확인
-        if (error.response) {
-          const errorData = error.response.data;
+        const err = error as {
+          response?: { status?: number; statusText?: string; data?: unknown };
+          config?: {
+            url?: string;
+            method?: string;
+            headers?: unknown;
+            params?: unknown;
+            baseURL?: string;
+          };
+          message?: string;
+          code?: string;
+          stack?: string;
+        };
+        if (err.response) {
+          const errorData = err.response.data;
           console.error('❌ [Pre-signed URL 요청 실패]', {
-            status: error.response.status,
-            statusText: error.response.statusText,
+            status: err.response.status,
+            statusText: err.response.statusText,
             responseData: errorData,
             responseDataStringified: JSON.stringify(errorData, null, 2),
             requestParams: {
@@ -723,46 +762,65 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
               fullUrl: `${API_BASE_URL}/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`,
             },
             config: {
-              url: error.config?.url,
-              method: error.config?.method,
-              headers: error.config?.headers,
-              params: error.config?.params,
-              paramsStringified: JSON.stringify(error.config?.params, null, 2),
-              baseURL: error.config?.baseURL,
+              url: err.config?.url,
+              method: err.config?.method,
+              headers: err.config?.headers,
+              params: err.config?.params,
+              paramsStringified: JSON.stringify(err.config?.params, null, 2),
+              baseURL: err.config?.baseURL,
             },
           });
-          
+
           // 에러 메시지 추출 (더 상세하게)
           let errorMessage = 'Pre-signed URL 획득 실패';
           if (errorData) {
             if (typeof errorData === 'string') {
               errorMessage = errorData;
-            } else if (errorData.detail) {
-              errorMessage = errorData.detail;
-            } else if (errorData.message) {
-              errorMessage = errorData.message;
-            } else if (errorData.title) {
-              errorMessage = `${errorData.title}: ${errorData.detail || ''}`;
             } else {
-              errorMessage = JSON.stringify(errorData);
+              const data = errorData as {
+                detail?: string;
+                message?: string;
+                title?: string;
+                code?: string;
+                instance?: string;
+                type?: string;
+                status?: number;
+              };
+              if (data.detail) {
+                errorMessage = data.detail;
+              } else if (data.message) {
+                errorMessage = data.message;
+              } else if (data.title) {
+                errorMessage = `${data.title}: ${data.detail || ''}`;
+              } else {
+                errorMessage = JSON.stringify(errorData);
+              }
             }
           }
-          
+
+          const errorDataTyped = errorData as {
+            code?: string;
+            detail?: string;
+            message?: string;
+            instance?: string;
+            type?: string;
+            status?: number;
+          };
           console.error('❌ [Pre-signed URL 에러 상세]', {
-            code: errorData?.code,
-            detail: errorData?.detail,
-            message: errorData?.message,
-            instance: errorData?.instance,
-            type: errorData?.type,
-            status: errorData?.status,
+            code: errorDataTyped?.code,
+            detail: errorDataTyped?.detail,
+            message: errorDataTyped?.message,
+            instance: errorDataTyped?.instance,
+            type: errorDataTyped?.type,
+            status: errorDataTyped?.status,
           });
-          
-          throw new Error(`Pre-signed URL 획득 실패 (${error.response.status}): ${errorMessage}`);
+
+          throw new Error(`Pre-signed URL 획득 실패 (${err.response.status}): ${errorMessage}`);
         } else {
           console.error('❌ [Pre-signed URL 요청 실패 - 네트워크 에러]', {
-            message: error.message,
-            code: error.code,
-            stack: error.stack,
+            message: err.message,
+            code: err.code,
+            stack: err.stack,
             fileName: fileName,
           });
           throw error;

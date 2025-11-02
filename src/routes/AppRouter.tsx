@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+
 import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 
 import { refreshAccessToken } from '../api/auth';
-
 import ArchivePage from '../pages/Archive/Archive';
 import FeedbackPage from '../pages/Feedback/Feedback';
 import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
@@ -12,7 +12,6 @@ import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
 import NotFound from '../pages/NotFound/NotFound';
 import RivalPage from '../pages/Rival/Rival';
 import SubscribePage from '../pages/Subscribe/Subscribe';
-
 import AuthLayout from '../shared/layouts/AuthLayout';
 import MainLayout from '../shared/layouts/MainLayout';
 import ModalLayout from '../shared/layouts/ModalLayout';
