@@ -8,7 +8,7 @@ import useFetch from '../../../shared/hooks/useFetch';
 const filters = [
   { id: 'ALL', label: '전체' },
   { id: 'level', label: '난이도' },
-  { id: 'OCCUPATION', label: '직군별' },
+  { id: 'jobId', label: '직군별' },
   { id: 'questionType', label: '질문 타입' },
 ] as const;
 
@@ -26,6 +26,13 @@ const questionTypes = [
   { id: 'TECH', label: '기술' },
 ] as const;
 
+interface Occupation {
+  occupationId: number;
+  occupationName: string;
+}
+
+type OccupationsApiResponse = Occupation[];
+
 const QuestionList = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -35,10 +42,12 @@ const QuestionList = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
   const [selectedLevel, setSelectedLevel] = useState<string>();
   const [selectedType, setSelectedType] = useState<string>();
+  const [selectedOccupation, setSelectedOccupation] = useState<string>();
 
   const [isLevelSelected, setIsLevelSelected] = useState(false);
   const [isTypeSelected, setIsTypeSelected] = useState(false);
   const [isStarredSelected, setIsStarredSelected] = useState(false);
+  const [isOccupationSelected, setIsOccupationSelected] = useState(false);
 
   useEffect(() => {
     const newParams = Object.fromEntries(searchParams.entries());
@@ -47,6 +56,9 @@ const QuestionList = () => {
 
   const { data } = useFetch<AnswersApiResponse>('/api/answers', { params });
   const items = data?.items;
+
+  const { data: occupations } = useFetch<OccupationsApiResponse>('/api/occupations', { params });
+  console.log(occupations);
 
   const handleItemClick = (id: number) => {
     navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
@@ -57,12 +69,14 @@ const QuestionList = () => {
     setIsLevelSelected(false);
     setIsTypeSelected(false);
     setSelectedDefault(false);
+    setIsOccupationSelected(false);
 
     switch (filterId) {
       case 'level':
         setIsLevelSelected(true);
         break;
-      case 'OCCUPATION':
+      case 'jobId':
+        setIsOccupationSelected(true);
         break;
       case 'questionType':
         setIsTypeSelected(true);
@@ -95,6 +109,11 @@ const QuestionList = () => {
   const handleTypeClick = (typeId: string) => {
     setSelectedType(typeId);
     setSearchParams({ questionType: typeId }, { replace: true });
+  };
+
+  const handleOccupationClick = (occupationName: string) => {
+    setSelectedOccupation(occupationName);
+    setSearchParams({ jobId: occupationName }, { replace: true });
   };
 
   return (
@@ -133,6 +152,20 @@ const QuestionList = () => {
         </FilterWrapper>
       )}
 
+      {isOccupationSelected && (
+        <FilterWrapper>
+          {occupations?.map((occupation) => (
+            <FilterButton
+              key={occupation.occupationId}
+              selected={selectedOccupation === occupation.occupationId.toString()}
+              onClick={() => handleOccupationClick(occupation.occupationId.toString())}
+            >
+              {occupation.occupationName}
+            </FilterButton>
+          ))}
+        </FilterWrapper>
+      )}
+
       {isTypeSelected && (
         <FilterWrapper>
           {questionTypes.map((type) => (
@@ -146,6 +179,7 @@ const QuestionList = () => {
           ))}
         </FilterWrapper>
       )}
+
       {items?.length !== 0 ? (
         <ListItemWrapper>
           <ol>
