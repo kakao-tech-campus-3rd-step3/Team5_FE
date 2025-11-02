@@ -17,7 +17,6 @@ import type { SubmitAnswerRequest } from '../../api/answers';
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
 
-// 사용자 정보 타입
 interface User {
   userId: number;
   name: string;
