@@ -66,7 +66,7 @@ const AnsweringSection = ({
           onAnswerComplete={handleAnswerComplete}
           onError={handleError}
         />
-        <AnswerButton type="button" onClick={handleAnswerDone} disabled={!type || isSubmitting}>
+        <AnswerButton type="button" onClick={() => onAnswerDone(answerText)}>
           {isSubmitting ? '제출 중...' : '답변 완료'}
         </AnswerButton>
       </Wrapper>

@@ -4,9 +4,13 @@ import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
 
 // import { type SubmitAnswerRequest } from '../../api/answers';
+//import { ROUTE_PATH } from '../../routes/routePath';
+//import useFetch from '../../shared/hooks/useFetch';
+//import { getFeedback, postAnswer } from '../../api/feedback';
+import { getFeedback, postAnswer } from '../../api/feedback';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
-import { getFeedback, postAnswer } from '../../api/feedback';
+
 import AnsweringSection from './components/sections/AnsweringSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import QuestionCardSection from './components/sections/QuestionCardSection';
@@ -35,7 +39,6 @@ const HomePage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 사용자 정보는 현재 미사용이지만 향후 사용 예정
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: _user } = useFetch<User>('/api/user');
   const { data: question } = useFetch<Question>('/api/questions/random');
 
@@ -54,9 +57,14 @@ const HomePage = () => {
     setAnswerType(e.target.value as AnswerType);
   };
 
-  const handleAnswerDone = async (answerText: string, audioUrl?: string) => {
+  const handleAnswerDone = async (answerText: string) => {
     if (!question || !_user) {
       alert('질문 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    if (answerType === 'text' && answerText.trim() === '') {
+      alert('답변을 입력해주세요.');
       return;
     }
 

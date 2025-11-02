@@ -31,7 +31,7 @@ const QuestionCardSection = ({ answerState, user, question }: QuestionCardSectio
   return (
     <section>
       <QuestionCard isStarted={answerState === 'answering'}>
-/       <GlassBackground>
+        <GlassBackground>
           {welcomeMessage} {questionText}
         </GlassBackground>
       </QuestionCard>
