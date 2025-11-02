@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import Card from '../Feedback/components/Card';
 import useFetch from '../../shared/hooks/useFetch';
 import usePatch from '../../shared/hooks/usePatch';
+import { Heart, Star } from 'lucide-react';
+import { theme } from '../../styles/theme';
 
 export interface Question {
   questionId: number;
@@ -58,7 +60,11 @@ const FeedbackDetailPage = () => {
   useEffect(() => {
     if (data?.memo !== undefined && data.memo !== memoContent) setMemoContent(data?.memo);
   }, [data?.memo]);
-  console.log(memoContent);
+
+  const [isStarred, setIsStarred] = useState<boolean | undefined>();
+  useEffect(() => {
+    setIsStarred(data?.starred);
+  }, [data?.starred]);
 
   const handleArchiveClick = () => {
     navigate(ROUTE_PATH.ARCHIVE);
@@ -77,20 +83,68 @@ const FeedbackDetailPage = () => {
     }
   };
 
+  const handleStarredChange = async (starred: boolean) => {
+    const payload: AnswerPayload = {
+      starred: starred,
+    };
+
+    try {
+      await patchData(payload);
+      setIsStarred(starred);
+    } catch (e) {
+      alert;
+    }
+  };
+
+  const [level, setLevel] = useState<number>(data?.level || 0);
+  useEffect(() => {
+    if (data?.level !== undefined) {
+      setLevel(data?.level);
+    }
+  }, [data?.level]);
+  const handleLevelChange = async (level: number) => {
+    const payload: AnswerPayload = {
+      level: level,
+    };
+
+    try {
+      await patchData(payload);
+      setLevel(level);
+    } catch (e) {
+      alert;
+    }
+  };
+
   if (!data || !question || !feedback) return null;
   return (
     <Wrapper>
       <SectionContainer>
-        {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결*/}
         <QuestionText>{question.questionText}</QuestionText>
+      </SectionContainer>
+
+      <SectionContainer>
+        <InfoWrapper>
+          <FilterWrapper>{question.questionType}</FilterWrapper>
+          <FilterWrapper>
+            {[1, 2, 3, 4, 5].map((starIndex) => (
+              <StyledStar
+                key={starIndex}
+                onClick={() => handleLevelChange(starIndex)}
+                fill={starIndex <= level ? '#FFD700' : 'none'}
+                color="#FFD700"
+              />
+            ))}
+          </FilterWrapper>
+          <FilterWrapper onClick={() => handleStarredChange(!isStarred)}>
+            <Heart fill={isStarred ? theme.colors.secondary : 'none'} />
+          </FilterWrapper>
+        </InfoWrapper>
       </SectionContainer>
 
       <SectionContainer>
         <Title>나의 답변</Title>
         <Card>
-          {/* {answerData.content.map((paragraph, index) => ( */}
           <CardParagraph>{data.answerText}</CardParagraph>
-          {/* ))} */}
         </Card>
       </SectionContainer>
 
@@ -214,4 +268,38 @@ const MemoTextArea = styled.textarea`
     outline: none;
     border-color: ${({ theme }) => theme.colors.text};
   }
+`;
+
+const FilterWrapper = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space.space8};
+
+  width: auto;
+  height: auto;
+  padding: ${({ theme }) => theme.space.space8} ${({ theme }) => theme.space.space12};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+
+  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
+  border-radius: ${({ theme }) => theme.radius.radius24};
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+`;
+
+const InfoWrapper = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space.space16};
+  align-items: center;
+  justify-content: center;
+`;
+
+// const StarRatingContainer = styled.div`
+//   display: flex;
+//   align-items: center;
+//   gap: 4px;
+// `;
+
+const StyledStar = styled(Star)`
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
 `;
