@@ -1,23 +1,21 @@
 import styled from '@emotion/styled';
-import { useNavigate } from 'react-router-dom';
+import { generatePath, useNavigate } from 'react-router-dom';
 
 import { ROUTE_PATH } from '../../../routes/routePath';
+import useFetch from '../../../shared/hooks/useFetch';
 import usePolygonAnimation from '../hooks/usePolygonAnimation';
 
 import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
-interface PinnedQuestionListProps {
-  data: AnswersApiResponse | null;
-}
-
-const PinnedQuestionList = ({ data }: PinnedQuestionListProps) => {
+const PinnedQuestionList = () => {
   const navigate = useNavigate();
   const { pinnedItemWrapperRef, pinnedItemRefs } = usePolygonAnimation();
-  const items = data?.items?.filter((q: AnswerItem) => q.starred);
+  const { data } = useFetch<AnswersApiResponse>('/api/answers', { params: { starred: true } });
 
-  const handleItemClick = () => {
-    // TODO: id 값에 따라 동적라우팅 구현
-    navigate(ROUTE_PATH.FEEDBACK_DETAIL);
+  const items = data?.items;
+
+  const handleItemClick = (id: number) => {
+    navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
   };
 
   if (!items) return null;
@@ -29,7 +27,7 @@ const PinnedQuestionList = ({ data }: PinnedQuestionListProps) => {
           ref={(pinnedItemRef: HTMLDivElement) => {
             pinnedItemRefs.current[i] = pinnedItemRef;
           }}
-          onClick={handleItemClick}
+          onClick={() => handleItemClick(data.answerId)}
         >
           <ItemText>{data.questionText}</ItemText>
         </PinnedItem>

@@ -55,14 +55,7 @@ apiClient.interceptors.request.use(
 
     if (token && token !== 'temp-token-for-development') {
       // 실제 토큰이 있으면 사용
-      config.headers['Authorization'] = `Bearer ${token}`;
-      console.log('🔑 [API 요청] 토큰 포함:', {
-        url: config.url,
-        method: config.method,
-        baseURL: config.baseURL,
-        hasToken: true,
-        tokenPreview: token.substring(0, 20) + '...',
-      });
+      config.headers['Authorization'] = `Bearer ${TEMP_TOKEN}`; // TODO: 개발 후 제거 - 임시 토큰 사용 (개발용)
     } else if (TEMP_TOKEN && !token) {
       // 토큰이 전혀 없을 때만 임시 토큰 사용 (개발용)
       config.headers['Authorization'] = `Bearer ${TEMP_TOKEN}`;

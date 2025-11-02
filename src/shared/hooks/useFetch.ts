@@ -16,22 +16,7 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
 
     const fetchData = async () => {
       try {
-        console.log('📡 [useFetch] 요청 시작:', {
-          url,
-          options: options,
-          fullUrl: url.startsWith('http')
-            ? url
-            : `${import.meta.env.VITE_API_BASE_URL || ''}${url}`,
-        });
-
-        // apiClient.get을 사용하여 GET 요청
-        const response = await apiClient.get<T>(url, options);
-
-        console.log('✅ [useFetch] 요청 성공:', {
-          url,
-          data: response.data,
-        });
-
+        const response = await apiClient<T>(url, options);
         setData(response.data);
       } catch (error: unknown) {
         const err = error as {
