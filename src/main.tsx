@@ -8,7 +8,9 @@ import { logout, isAuthenticated, getAccessToken, getRefreshToken } from './shar
 
 // 개발 환경에서 콘솔에서 쉽게 사용할 수 있도록 전역 함수 노출
 if (import.meta.env.DEV) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).logout = logout;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).checkAuth = () => {
     console.log('현재 로그인 상태:', isAuthenticated() ? '로그인됨' : '로그인 안됨');
     console.log(
