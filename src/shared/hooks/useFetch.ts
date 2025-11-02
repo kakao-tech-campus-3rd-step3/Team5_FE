@@ -24,7 +24,8 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
             : `${import.meta.env.VITE_API_BASE_URL || ''}${url}`,
         });
 
-        const response = await apiClient<T>(url, options);
+        // apiClient.get을 사용하여 GET 요청
+        const response = await apiClient.get<T>(url, options);
 
         console.log('✅ [useFetch] 요청 성공:', {
           url,

@@ -70,11 +70,20 @@ const AppRouter = () => {
       setIsCheckingAuth(true);
 
       // URL 파라미터에서 토큰이 있으면 즉시 파싱 및 저장 (OAuth 리다이렉트)
-      const urlParams = new URLSearchParams(window.location.search);
+      // window.location.search를 직접 사용하여 잘못된 URL 형식도 처리
+      const searchParams = window.location.search;
+      const urlParams = new URLSearchParams(searchParams);
       const tokenFromUrl = urlParams.get('token') || urlParams.get('accessToken');
       const refreshTokenFromUrl = urlParams.get('refreshToken') || urlParams.get('refresh_token');
 
       if (tokenFromUrl) {
+        console.log('✅ [OAuth 리다이렉트] 토큰 발견:', {
+          tokenPreview: tokenFromUrl.substring(0, 20) + '...',
+          hasRefreshToken: !!refreshTokenFromUrl,
+          currentUrl: window.location.href,
+          searchParams: searchParams,
+        });
+
         // 토큰 즉시 저장
         localStorage.setItem(ACCESS_TOKEN_KEY, tokenFromUrl);
         if (refreshTokenFromUrl) {
@@ -82,12 +91,29 @@ const AppRouter = () => {
         }
 
         // URL에서 토큰 파라미터 제거 (보안)
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete('token');
-        newUrl.searchParams.delete('accessToken');
-        newUrl.searchParams.delete('refreshToken');
-        newUrl.searchParams.delete('refresh_token');
-        window.history.replaceState({}, '', newUrl.toString());
+        // window.location.href가 잘못된 형식일 수 있으므로 안전하게 처리
+        try {
+          const currentUrl = window.location.href;
+          // 잘못된 URL 형식 (localhost:?token=...) 감지 및 수정
+          if (currentUrl.includes('localhost:?') || currentUrl.includes('://?')) {
+            console.warn('⚠️ [OAuth 리다이렉트] 잘못된 URL 형식 감지, 수정 중...', currentUrl);
+            // 현재 origin과 pathname을 사용하여 올바른 URL 생성
+            const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+            window.history.replaceState({}, '', cleanUrl);
+          } else {
+            // 정상적인 URL 형식인 경우에만 URL 객체 사용
+            const newUrl = new URL(currentUrl);
+            newUrl.searchParams.delete('token');
+            newUrl.searchParams.delete('accessToken');
+            newUrl.searchParams.delete('refreshToken');
+            newUrl.searchParams.delete('refresh_token');
+            window.history.replaceState({}, '', newUrl.toString());
+          }
+        } catch (urlError) {
+          // URL 파싱 실패 시 간단하게 pathname만 사용
+          console.warn('⚠️ [OAuth 리다이렉트] URL 파싱 실패, 기본 경로로 이동:', urlError);
+          window.history.replaceState({}, '', window.location.pathname);
+        }
 
         // 인증 상태 업데이트 및 홈으로 이동
         setIsAuthenticated(true);

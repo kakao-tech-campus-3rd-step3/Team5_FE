@@ -29,12 +29,29 @@ const OauthRedirectPage = () => {
       saveTokens(accessToken, refreshToken || undefined);
 
       // URL에서 토큰 파라미터 제거 (보안)
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('token');
-      newUrl.searchParams.delete('accessToken');
-      newUrl.searchParams.delete('refreshToken');
-      newUrl.searchParams.delete('refresh_token');
-      window.history.replaceState({}, '', newUrl.toString());
+      // window.location.href가 잘못된 형식일 수 있으므로 안전하게 처리
+      try {
+        const currentUrl = window.location.href;
+        // 잘못된 URL 형식 (localhost:?token=...) 감지 및 수정
+        if (currentUrl.includes('localhost:?') || currentUrl.includes('://?')) {
+          console.warn('⚠️ [OAuth 리다이렉트] 잘못된 URL 형식 감지, 수정 중...', currentUrl);
+          // 현재 origin과 pathname을 사용하여 올바른 URL 생성
+          const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+          window.history.replaceState({}, '', cleanUrl);
+        } else {
+          // 정상적인 URL 형식인 경우에만 URL 객체 사용
+          const newUrl = new URL(currentUrl);
+          newUrl.searchParams.delete('token');
+          newUrl.searchParams.delete('accessToken');
+          newUrl.searchParams.delete('refreshToken');
+          newUrl.searchParams.delete('refresh_token');
+          window.history.replaceState({}, '', newUrl.toString());
+        }
+      } catch (urlError) {
+        // URL 파싱 실패 시 간단하게 pathname만 사용
+        console.warn('⚠️ [OAuth 리다이렉트] URL 파싱 실패, 기본 경로로 이동:', urlError);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
 
       console.log('홈으로 이동 시도:', ROUTE_PATH.HOME);
       navigate(ROUTE_PATH.HOME, { replace: true });

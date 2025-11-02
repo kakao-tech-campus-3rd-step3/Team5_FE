@@ -9,7 +9,12 @@ import { ACCESS_TOKEN_KEY } from '../../../shared/utils/auth';
 interface RecordAnswerProps {
   questionId?: number;
   answerText?: string;
-  onAnswerComplete?: (audioUrl: string, text?: string) => void;
+  onAnswerComplete?: (
+    audioUrl: string,
+    text?: string,
+    alreadySubmitted?: boolean,
+    feedbackId?: number
+  ) => void;
   onError?: (error: string) => void;
 }
 
@@ -46,7 +51,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   const [answerId, setAnswerId] = useState<number | null>(null);
   const [convertedText, setConvertedText] = useState<string>('');
   const [sttStatus, setSTTStatus] = useState<STTStatus | null>(null);
-
+  
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
@@ -56,7 +61,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   const sttTimeoutRef = useRef<number | null>(null);
   const sseRef = useRef<EventSource | null>(null);
   const reconnectAttemptsRef = useRef(0);
-
+  
   // 오디오 데이터
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -72,7 +77,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       logInfo('SSE 연결 시도 시작');
       const eventSource = new EventSource(`/api/sse/connect?token=${token}`);
       sseRef.current = eventSource;
-
+      
       eventSource.onopen = () => {
         logInfo('SSE 연결 성공');
         reconnectAttemptsRef.current = 0;
@@ -82,15 +87,15 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       eventSource.addEventListener('sttCompleted', (event) => {
         const data = JSON.parse(event.data);
         logInfo('STT 변환 완료', data);
-
+        
         setConvertedText(data.text);
         setSTTStatus('COMPLETED');
         setRecordingState('completed');
-
+        
         if (sttTimeoutRef.current) {
           clearTimeout(sttTimeoutRef.current);
         }
-
+        
         if (onAnswerComplete) {
           onAnswerComplete(data.audioUrl);
         }
@@ -100,11 +105,11 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       eventSource.addEventListener('sttFailed', (event) => {
         const data = JSON.parse(event.data);
         logError('STT 변환 실패', new Error(data.message), data);
-
+        
         setSTTStatus('FAILED_STT');
         setRecordingState('error');
         setErrorMessage('음성을 텍스트로 변환하는데 실패했습니다.');
-
+        
         if (sttTimeoutRef.current) {
           clearTimeout(sttTimeoutRef.current);
         }
@@ -123,7 +128,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           url: eventSource.url,
         });
         eventSource.close();
-
+        
         // 재연결 시도 (최대 2회로 제한하여 서버가 없을 때 무한 재시도 방지)
         const maxSSERetryCount = 2;
         if (reconnectAttemptsRef.current < maxSSERetryCount) {
@@ -157,14 +162,14 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`,
         },
       });
-
+      
       if (!response.ok) {
         throw new Error('상태 조회 실패');
       }
-
+      
       const data = await response.json();
       logInfo('답변 상태 조회 결과', data);
-
+      
       switch (data.status) {
         case 'PENDING_STT':
           // CLOVA 콜백이 아직 안 왔거나 누락된 상태 -> 실패로 간주
@@ -172,25 +177,25 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           setRecordingState('error');
           setErrorMessage('음성 변환이 지연되고 있습니다. 재시도해주세요.');
           break;
-
+          
         case 'FAILED_STT':
           // STT 변환 실패 상태
           setSTTStatus('FAILED_STT');
           setRecordingState('error');
           setErrorMessage('음성 변환에 실패했습니다.');
           break;
-
+          
         case 'COMPLETED':
           // STT 변환 성공 - SSE 알림만 놓친 상태
           setConvertedText(data.text);
           setSTTStatus('COMPLETED');
           setRecordingState('completed');
-
+          
           if (onAnswerComplete) {
             onAnswerComplete(data.audioUrl);
           }
           break;
-
+          
         default:
           setErrorMessage('알 수 없는 상태입니다.');
       }
@@ -205,23 +210,23 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
     // SSE 연결은 실제로 필요할 때만 연결 (업로드 후)
     // 페이지 진입 시 자동 연결하지 않음
     // connectSSE();
-
+    
     return () => {
       // 모든 타이머 정리
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
       if (uploadTimeoutRef.current) clearTimeout(uploadTimeoutRef.current);
       if (sttTimeoutRef.current) clearTimeout(sttTimeoutRef.current);
-
+      
       // SSE 연결 해제
       if (sseRef.current) {
         sseRef.current.close();
       }
-
+      
       // 미디어 스트림 정리
       if (audioStreamRef.current) {
         audioStreamRef.current.getTracks().forEach((track) => track.stop());
       }
-
+      
       // Blob URL 해제
       if (audioUrl) {
         URL.revokeObjectURL(audioUrl);
@@ -235,7 +240,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       setNetworkState('online');
       logInfo('네트워크 연결 복구됨');
     };
-
+    
     const handleOffline = () => {
       setNetworkState('offline');
       setErrorMessage('네트워크 연결이 끊어졌습니다.');
@@ -244,7 +249,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
+    
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -294,7 +299,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       audioChunksRef.current = [];
 
       // 마이크 접근
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -319,7 +324,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       // 녹음 완료 처리
       mediaRecorder.onstop = () => {
         const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-
+        
         if (!validateFileSize(blob)) {
           setRecordingState('error');
           return;
@@ -329,7 +334,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
         setRecordingState('processing');
-
+        
         logInfo('녹음 완료', {
           size: blob.size,
           duration: recordingTime,
@@ -339,7 +344,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
 
       // 녹음 시작
       mediaRecorder.start(1000); // 1초마다 데이터 수집
-
+      
       // 녹음 시간 타이머
       recordingTimerRef.current = setInterval(() => {
         setRecordingTime((prev) => {
@@ -364,16 +369,16 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
     if (mediaRecorderRef.current && recordingState === 'recording') {
       mediaRecorderRef.current.stop();
       setRecordingState('processing');
-
+      
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
       }
-
+      
       // 스트림 정리
       if (audioStreamRef.current) {
         audioStreamRef.current.getTracks().forEach((track) => track.stop());
       }
-
+      
       logInfo('녹음 중지', { duration: recordingTime });
     }
   };
@@ -393,7 +398,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         fileType: file.type,
         method: 'PUT',
       });
-
+      
       // 업로드 진행률
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -402,7 +407,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           console.log(`📊 [업로드 진행률] ${progress}%`);
         }
       };
-
+      
       xhr.onload = () => {
         console.log('✅ [파일 업로드 완료]', {
           status: xhr.status,
@@ -424,37 +429,59 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       };
 
       xhr.onerror = () => {
-        console.error('❌ [파일 업로드 네트워크 에러]');
-        reject(new Error('Upload network error'));
+        console.error('❌ [파일 업로드 네트워크 에러]', {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          readyState: xhr.readyState,
+          responseText: xhr.responseText,
+          responseHeaders: xhr.getAllResponseHeaders(),
+          url: preSignedUrl.substring(0, 100) + '...',
+        });
+        
+        // CORS 에러인 경우 더 명확한 메시지 제공
+        if (xhr.status === 0 && xhr.readyState === 4) {
+          console.error('❌ [CORS 에러] Object Storage가 CORS를 허용하지 않습니다.');
+          console.error('⚠️ 해결 방법: NCP Object Storage CORS 설정 필요');
+          console.error('   - Allowed Origins: http://localhost:5173, https://dailyq.my 등');
+          console.error('   - Allowed Methods: PUT, POST, GET, DELETE');
+          console.error('   - Allowed Headers: Content-Type 등');
+          reject(new Error('CORS 에러: Object Storage CORS 설정이 필요합니다. 백엔드/인프라팀에 문의하세요.'));
+        } else {
+          reject(new Error('Upload network error'));
+        }
       };
 
       xhr.ontimeout = () => {
         console.error('❌ [파일 업로드 타임아웃]', { timeout: CONFIG.UPLOAD_TIMEOUT });
         reject(new Error('Upload timeout'));
       };
-
+      
       xhr.timeout = CONFIG.UPLOAD_TIMEOUT;
 
       // PUT 요청으로 pre-signed URL에 파일 직접 업로드
       xhr.open('PUT', preSignedUrl);
 
-      // PUT 요청 body에 fileName 포함하여 전송
-      // FormData를 사용하여 fileName과 파일을 함께 전송
-      const formData = new FormData();
-      formData.append('fileName', fileName);
-      formData.append('file', file);
+      // ⚠️ 중요: FormData를 사용하지 않고 파일 Blob을 직접 전송
+      // FormData를 사용하면 preflight OPTIONS 요청이 발생하여 CORS 문제 발생
+      // 파일만 body에 직접 첨부하여 전송 (fileName은 백엔드가 이미 알고 있음)
+      // Content-Type 헤더를 제거하여 브라우저가 자동 감지하도록 함
+      // S3/Object Storage는 파일 내용을 보고 Content-Type을 자동 감지함
+      // 주의: 일부 브라우저는 PUT 요청에서도 preflight를 보낼 수 있음 (Object Storage CORS 설정 필요)
 
-      console.log('📦 [PUT 요청 Body]', {
+      console.log('📦 [PUT 요청 정보]', {
         preSignedUrl: preSignedUrl.substring(0, 100) + '...',
         fileName,
         fileSize: file.size,
         fileType: file.type,
-        formDataKeys: Array.from(formData.keys()),
+        method: 'PUT',
+        hasContentTypeHeader: false,
+        note: '파일 Blob을 직접 전송, Content-Type 헤더 없음 (브라우저 자동 감지)',
+        warning: 'PUT 요청은 여전히 preflight를 트리거할 수 있습니다. Object Storage CORS 설정이 필요합니다.',
       });
 
-      // fileName과 파일을 함께 body에 첨부하여 전송
-      // Content-Type은 FormData를 사용할 때 브라우저가 자동으로 설정하므로 수동 설정 불필요
-      xhr.send(formData);
+      // 파일 Blob을 직접 body에 전송 (Content-Type 없이)
+      // 브라우저가 Blob의 type을 자동으로 사용하거나, 서버가 자동 감지
+      xhr.send(file);
 
       logInfo('파일 업로드 시작', { fileSize: file.size, fileType: file.type });
     });
@@ -467,7 +494,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
     try {
       setRecordingState('uploading');
       setUploadProgress(0);
-
+      
       // 1. Pre-signed URL 획득
       logInfo('Pre-signed URL 요청 시작');
 
@@ -614,12 +641,12 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           preSignedUrlLength: preSignedUrl?.length,
         });
 
-        logInfo('Pre-signed URL 획득 성공', { preSignedUrl, serverAudioUrl });
-
+      logInfo('Pre-signed URL 획득 성공', { preSignedUrl, serverAudioUrl });
+      
         // 2. 파일 업로드 (fileName을 함께 전송)
         await uploadWithProgress(preSignedUrl, audioBlob, fileName);
-
-        // 3. 답변 제출
+      
+      // 3. 답변 제출
         if (!questionId) {
           throw new Error('질문 ID가 필요합니다.');
         }
@@ -634,7 +661,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         console.log('📤 [답변 제출 요청]', {
           url: '/api/answers',
           apiBaseUrl: API_BASE_URL,
-          method: 'POST',
+        method: 'POST',
           fullUrl: `${API_BASE_URL}/api/answers`,
           body: requestBody,
           bodyStringified: JSON.stringify(requestBody, null, 2),
@@ -654,6 +681,14 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         console.log('📦 [POST /api/answers 요청 Body 상세]', JSON.stringify(requestBody, null, 2));
 
         try {
+          console.log('📤 [POST /api/answers 최종 요청 Body]', {
+            questionId: typeof questionId === 'number' ? questionId : '⚠️ 숫자가 아님',
+            answerText: typeof requestBody.answerText === 'string' ? requestBody.answerText : '⚠️ 문자열이 아님',
+            audioUrl: typeof requestBody.audioUrl === 'string' ? requestBody.audioUrl : '⚠️ 문자열이 아님',
+            followUp: typeof requestBody.followUp === 'boolean' ? requestBody.followUp : '⚠️ 불린이 아님',
+            전체Body: requestBody,
+          });
+
           const submitResponse = await apiClient.post<{
             answerId: number;
             answerText: string;
@@ -663,43 +698,68 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
 
           const result = submitResponse.data;
 
+          console.log('✅ [POST /api/answers 응답 성공]', {
+            answerId: result.answerId,
+            feedbackId: result.feedbackId,
+            status: result.status,
+            전체응답: result,
+          });
+
           console.log('✅ [답변 제출 성공]', {
             answerId: result.answerId,
             feedbackId: result.feedbackId,
             status: result.status,
           });
-
-          // 답변 ID 저장
-          setAnswerId(result.answerId);
-
-          // 응답 상태 확인
-          if (result.status === 'PENDING_STT') {
-            setRecordingState('pending_stt');
-            setSTTStatus('PENDING_STT');
+      
+      // 답변 ID 저장
+      setAnswerId(result.answerId);
+      
+      // 응답 상태 확인
+      if (result.status === 'PENDING_STT') {
+        setRecordingState('pending_stt');
+        setSTTStatus('PENDING_STT');
 
             // STT 대기 중일 때만 SSE 연결 시작
             if (!sseRef.current || sseRef.current.readyState === EventSource.CLOSED) {
               logInfo('STT 대기 중 - SSE 연결 시작');
               connectSSE();
             }
-
-            // STT 타임아웃 설정
-            sttTimeoutRef.current = setTimeout(() => {
-              logInfo('STT 타임아웃 - 상태 조회 시작');
-              if (result.answerId) {
-                checkAnswerStatus(result.answerId);
-              }
-            }, CONFIG.STT_TIMEOUT);
-
-            logInfo('STT 변환 대기 중', result);
-          } else {
-            // 즉시 완료된 경우
-            setRecordingState('completed');
-            if (onAnswerComplete) {
-              onAnswerComplete(serverAudioUrl);
-            }
-            logInfo('업로드 및 처리 완료', result);
+        
+        // STT 타임아웃 설정
+        sttTimeoutRef.current = setTimeout(() => {
+          logInfo('STT 타임아웃 - 상태 조회 시작');
+          if (result.answerId) {
+            checkAnswerStatus(result.answerId);
           }
+        }, CONFIG.STT_TIMEOUT);
+        
+        logInfo('STT 변환 대기 중', result);
+      } else {
+        // 즉시 완료된 경우
+        setRecordingState('completed');
+        
+        console.log('✅ [RecordAnswer] 답변 제출 완료', {
+          answerId: result.answerId,
+          feedbackId: result.feedbackId,
+          audioUrl: serverAudioUrl,
+          status: result.status,
+          note: 'RecordAnswer에서 이미 제출 완료 - 이미 제출됨 플래그 및 feedbackId 전달',
+        });
+        
+        // ⚠️ 중요: RecordAnswer에서 이미 답변을 제출했으므로
+        // onAnswerComplete에 alreadySubmitted=true 플래그와 feedbackId를 전달하여
+        // 상위 컴포넌트가 중복 제출하지 않고 피드백 페이지로 이동하도록 함
+        if (onAnswerComplete) {
+          onAnswerComplete(
+            serverAudioUrl,
+            undefined,
+            true, // alreadySubmitted = true
+            result.feedbackId // feedbackId 전달
+          );
+        }
+        
+        logInfo('업로드 및 처리 완료', result);
+      }
         } catch (submitError: unknown) {
           const error = submitError as {
             response?: {
@@ -828,10 +888,10 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       }
     } catch (error) {
       logError('업로드 실패', error, { retryCount, fileSize: audioBlob?.size });
-
+      
       setRecordingState('error');
       setErrorMessage(`업로드 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
-
+      
       if (onError) {
         onError(error instanceof Error ? error.message : '업로드 실패');
       }
@@ -844,7 +904,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       setErrorMessage('답변 ID가 없습니다.');
       return;
     }
-
+    
     if (retryCount >= CONFIG.MAX_RETRY_COUNT) {
       setErrorMessage('최대 재시도 횟수를 초과했습니다.');
       return;
@@ -854,24 +914,24 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       setRetryCount((prev) => prev + 1);
       setErrorMessage('');
       setRecordingState('pending_stt');
-
+      
       const response = await fetch(`/api/answers/${answerId}/retry-stt`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`,
         },
       });
-
+      
       if (!response.ok) {
         throw new Error('STT 재시도 요청 실패');
       }
-
+      
       // 다시 SSE로 변환 결과 대기
       sttTimeoutRef.current = setTimeout(() => {
         logInfo('STT 재시도 타임아웃 - 상태 조회 시작');
         checkAnswerStatus(answerId);
       }, CONFIG.STT_TIMEOUT);
-
+      
       logInfo('STT 재시도 요청 완료', { answerId, retryCount });
     } catch (error) {
       logError('STT 재시도 실패', error, { answerId, retryCount });
@@ -885,7 +945,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
     if (retryCount < CONFIG.MAX_RETRY_COUNT) {
       setRetryCount((prev) => prev + 1);
       setErrorMessage('');
-
+      
       if (audioBlob) {
         uploadToServer();
       } else {
@@ -952,7 +1012,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
     <Wrapper>
       <StatusSection>
         <h2>음성 답변</h2>
-
+        
         {/* 네트워크 상태 표시 */}
         <NetworkStatus $isOnline={networkState === 'online'}>
           {networkState === 'online' ? <Wifi size={16} /> : <WifiOff size={16} />}
@@ -1007,7 +1067,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
             업로드
           </ActionButton>
         )}
-
+        
         {statusInfo.canRetry && (
           <>
             {sttStatus === 'FAILED_STT' && answerId ? (
@@ -1067,19 +1127,19 @@ const RecordButton = styled.button<{ $isRecording: boolean; $isDisabled: boolean
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-
+  
   background: ${(props) => {
     if (props.$isDisabled) return '#e5e7eb';
     return props.$isRecording ? '#ef4444' : '#3b82f6';
   }};
-
+  
   color: ${(props) => (props.$isDisabled ? '#9ca3af' : 'white')};
-
+  
   &:hover:not(:disabled) {
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
-
+  
   &:active:not(:disabled) {
     transform: scale(0.95);
   }
@@ -1111,7 +1171,7 @@ const ProgressFill = styled.div`
 
 const AudioPreview = styled.div`
   width: 100%;
-
+  
   audio {
     width: 100%;
   }
@@ -1123,14 +1183,14 @@ const ConvertedText = styled.div`
   background: #f3f4f6;
   border-radius: 8px;
   border-left: 4px solid #3b82f6;
-
+  
   h4 {
     margin: 0 0 8px 0;
     font-size: 14px;
     font-weight: 600;
     color: #374151;
   }
-
+  
   p {
     margin: 0;
     font-size: 16px;
@@ -1158,12 +1218,12 @@ const ActionButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-
+  
   &:hover {
     background: #2563eb;
     transform: translateY(-1px);
   }
-
+  
   &:active {
     transform: translateY(0);
   }
@@ -1171,7 +1231,7 @@ const ActionButton = styled.button`
 
 const RetryButton = styled(ActionButton)`
   background: #f59e0b;
-
+  
   &:hover {
     background: #d97706;
   }

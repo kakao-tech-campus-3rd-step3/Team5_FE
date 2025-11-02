@@ -1,7 +1,9 @@
 import { useState, type ChangeEvent } from 'react';
 
 import styled from '@emotion/styled';
+import { useNavigate } from 'react-router-dom';
 
+import { ROUTE_PATH } from '../../../../routes/routePath';
 import AnswerButton from '../../../../shared/ui/SharedButton';
 import AnswerInput from '../AnswerInput';
 
@@ -22,6 +24,7 @@ const AnsweringSection = ({
   isSubmitting = false,
   questionId,
 }: AnsweringSectionProps) => {
+  const navigate = useNavigate();
   const [answerText, setAnswerText] = useState('');
   const [audioUrl, setAudioUrl] = useState<string>('');
   const [convertedText, setConvertedText] = useState<string>('');
@@ -37,11 +40,34 @@ const AnsweringSection = ({
   };
 
   // RecordAnswer에서 완료된 답변 처리
-  const handleAnswerComplete = (audioUrl: string, text?: string) => {
+  const handleAnswerComplete = (
+    audioUrl: string,
+    text?: string,
+    alreadySubmitted?: boolean,
+    feedbackId?: number
+  ) => {
     setAudioUrl(audioUrl);
     if (text) {
       setConvertedText(text);
     }
+    
+    // 이미 제출된 경우 (RecordAnswer에서 이미 POST 완료)
+    // feedbackId가 있으면 피드백 페이지로 바로 이동, 추가 제출하지 않음
+    if (alreadySubmitted && feedbackId) {
+      console.log('✅ [AnsweringSection] 이미 제출 완료 - 피드백 페이지로 이동', {
+        audioUrl,
+        text,
+        alreadySubmitted,
+        feedbackId,
+      });
+      
+      // RecordAnswer에서 이미 제출했으므로 중복 제출 없이
+      // feedbackId를 사용하여 피드백 페이지로 바로 이동
+      navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId } });
+      return;
+    }
+    
+    // 아직 제출되지 않은 경우에만 제출
     // 음성 답변 완료 시 자동으로 제출
     setTimeout(() => {
       const finalText = text || '음성 답변';
