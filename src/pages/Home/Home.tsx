@@ -3,17 +3,15 @@ import { useState, type ChangeEvent } from 'react';
 import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
 
-// import { type SubmitAnswerRequest } from '../../api/answers';
-//import { ROUTE_PATH } from '../../routes/routePath';
-//import useFetch from '../../shared/hooks/useFetch';
-//import { getFeedback, postAnswer } from '../../api/feedback';
-import { getFeedback, postAnswer } from '../../api/feedback';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
+import usePost from '../../shared/hooks/usePost';
 
 import AnsweringSection from './components/sections/AnsweringSection';
 import BeforeAnswerSection from './components/sections/BeforeAnswerSection';
 import QuestionCardSection from './components/sections/QuestionCardSection';
+
+import type { SubmitAnswerRequest } from '../../api/answers';
 
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
@@ -36,7 +34,6 @@ const HomePage = () => {
   const [answerType, setAnswerType] = useState<AnswerType>(null);
   const [answerState, setAnswerState] = useState<AnswerStateType>('before-answer');
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 사용자 정보는 현재 미사용이지만 향후 사용 예정
   const { data: _user } = useFetch<User>('/api/user');
@@ -57,7 +54,7 @@ const HomePage = () => {
     setAnswerType(e.target.value as AnswerType);
   };
 
-  const handleAnswerDone = async (answerText: string, audioUrl?: string) => {
+  const handleAnswerDone = async (text: string, audioUrl?: string) => {
     if (!question || !_user) {
       alert('질문 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
       return;

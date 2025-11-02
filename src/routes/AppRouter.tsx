@@ -8,7 +8,7 @@ import FeedbackPage from '../pages/Feedback/Feedback';
 import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
 import HomePage from '../pages/Home/Home';
 import LoginPage from '../pages/Login/Login';
-//import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
+import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
 import NotFound from '../pages/NotFound/NotFound';
 import RivalPage from '../pages/Rival/Rival';
 import SubscribePage from '../pages/Subscribe/Subscribe';

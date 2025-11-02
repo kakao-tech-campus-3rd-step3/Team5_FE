@@ -1,13 +1,15 @@
-import styled from '@emotion/styled';
-import SharedButton from '../../shared/ui/SharedButton';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ROUTE_PATH } from '../../routes/routePath';
 import { useEffect, useState } from 'react';
-import Card from '../Feedback/components/Card';
+
+import styled from '@emotion/styled';
+import { Heart, Star } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
 import usePatch from '../../shared/hooks/usePatch';
-import { Heart, Star } from 'lucide-react';
+import SharedButton from '../../shared/ui/SharedButton';
 import { theme } from '../../styles/theme';
+import Card from '../Feedback/components/Card';
 
 export interface Question {
   questionId: number;
