@@ -57,7 +57,7 @@ const HomePage = () => {
     setAnswerType(e.target.value as AnswerType);
   };
 
-  const handleAnswerDone = async (answerText: string) => {
+  const handleAnswerDone = async (answerText: string, audioUrl?: string) => {
     if (!question || !_user) {
       alert('질문 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
       return;
@@ -71,7 +71,12 @@ const HomePage = () => {
     setIsSubmitting(true);
 
     try {
-      const postResponse = await postAnswer(_user.userId, question.questionId, answerText);
+      const postResponse = await postAnswer(
+        _user.userId,
+        question.questionId,
+        answerText,
+        audioUrl
+      );
       const { feedbackId, answerId } = postResponse;
 
       const feedbackData = await getFeedback(feedbackId);
