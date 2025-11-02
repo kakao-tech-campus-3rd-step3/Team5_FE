@@ -50,7 +50,7 @@ const AnsweringSection = ({
     if (text) {
       setConvertedText(text);
     }
-    
+
     // 이미 제출된 경우 (RecordAnswer에서 이미 POST 완료)
     // feedbackId가 있으면 피드백 페이지로 바로 이동, 추가 제출하지 않음
     if (alreadySubmitted && feedbackId) {
@@ -60,13 +60,13 @@ const AnsweringSection = ({
         alreadySubmitted,
         feedbackId,
       });
-      
+
       // RecordAnswer에서 이미 제출했으므로 중복 제출 없이
       // feedbackId를 사용하여 피드백 페이지로 바로 이동
       navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId } });
       return;
     }
-    
+
     // 아직 제출되지 않은 경우에만 제출
     // 음성 답변 완료 시 자동으로 제출
     setTimeout(() => {

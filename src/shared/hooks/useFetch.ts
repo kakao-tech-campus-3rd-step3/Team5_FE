@@ -55,6 +55,7 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
       }
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, optionsString]);
   return { data };
 };

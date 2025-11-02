@@ -36,7 +36,7 @@ export default defineConfig({
         secure: false,
         // SSE를 위한 설정
         ws: false, // WebSocket이 아닌 HTTP 스트림
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         configure: (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           proxy: any,
