@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 
 import styled from '@emotion/styled';
-import { useSearchParams } from 'react-router-dom';
+import { generatePath, useNavigate, useSearchParams } from 'react-router-dom';
 
 // import { ROUTE_PATH } from '../../../routes/routePath';
 import useFetch from '../../../shared/hooks/useFetch';
 
-import InfiniteScrollList from './InfiniteScrollList';
+// import InfiniteScrollList from './InfiniteScrollList';
+import type { AnswerItem, AnswersApiResponse } from '../Archive';
+import { ROUTE_PATH } from '../../../routes/routePath';
 
 // import type { AnswerItem, AnswersApiResponse } from '../Archive';
 
@@ -39,7 +41,7 @@ interface Occupation {
 type OccupationsApiResponse = Occupation[];
 
 const QuestionList = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [params, setParams] = useState(Object.fromEntries(searchParams.entries()));
 
@@ -59,15 +61,15 @@ const QuestionList = () => {
     setParams(newParams);
   }, [searchParams]);
 
-  // const { data } = useFetch<AnswersApiResponse>('/api/answers', { params });
-  // const items = data?.items;
-  // console.log(items);
+  const { data } = useFetch<AnswersApiResponse>('/api/answers', { params });
+  const items = data?.items;
+  console.log(items);
 
   const { data: occupations } = useFetch<OccupationsApiResponse>('/api/occupations', { params });
 
-  // const handleItemClick = (id: number) => {
-  //   navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
-  // };
+  const handleItemClick = (id: number) => {
+    navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
+  };
 
   const handleFilterChange = (filterId: string) => {
     setSelectedFilter(filterId);
@@ -185,7 +187,7 @@ const QuestionList = () => {
         </FilterWrapper>
       )}
 
-      {/* {items?.length !== 0 ? (
+      {items?.length !== 0 ? (
         <ListItemWrapper>
           <ol>
             {items?.map((q: AnswerItem, index: number) => (
@@ -199,8 +201,8 @@ const QuestionList = () => {
         <ListItemWrapper>
           <Wrapper>EMPTY</Wrapper>
         </ListItemWrapper>
-      )} */}
-      <InfiniteScrollList />
+      )}
+      {/* <InfiniteScrollList /> */}
     </Wrapper>
   );
 };
@@ -245,21 +247,21 @@ const FilterButton = styled.button<{ selected: boolean }>`
   transition: background 0.2s;
 `;
 
-// const ListItemWrapper = styled.div`
-//   width: 90%;
-//   max-width: 900px;
-//   max-height: 70%;
-//   padding: ${({ theme }) => theme.space.space16};
+const ListItemWrapper = styled.div`
+  width: 90%;
+  max-width: 900px;
+  max-height: 70%;
+  padding: ${({ theme }) => theme.space.space16};
 
-//   background-color: rgba(255, 255, 255, 0.08);
-//   backdrop-filter: ${({ theme }) => theme.blurs.blur4};
-//   border-radius: ${({ theme }) => theme.radius.radius24};
-//   border: 1px solid rgba(255, 255, 255, 0.2);
-//   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-// `;
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
+  border-radius: ${({ theme }) => theme.radius.radius24};
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+`;
 
-// const ListItem = styled.li`
-//   font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
-//   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-//   margin: ${({ theme }) => theme.space.space12};
-// `;
+const ListItem = styled.li`
+  font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  margin: ${({ theme }) => theme.space.space12};
+`;

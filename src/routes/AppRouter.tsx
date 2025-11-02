@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+
 import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 
 import { refreshAccessToken } from '../api/auth';
-
 import ArchivePage from '../pages/Archive/Archive';
 import FeedbackPage from '../pages/Feedback/Feedback';
 import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
@@ -12,7 +12,6 @@ import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
 import NotFound from '../pages/NotFound/NotFound';
 import RivalPage from '../pages/Rival/Rival';
 import SubscribePage from '../pages/Subscribe/Subscribe';
-
 import AuthLayout from '../shared/layouts/AuthLayout';
 import MainLayout from '../shared/layouts/MainLayout';
 import ModalLayout from '../shared/layouts/ModalLayout';
@@ -201,9 +200,9 @@ const AppRouter = () => {
 
       <Route element={<AuthLayout />}>
         {/* TODO: LOGINPAGE 등 네비, 푸터 없이 콘텐츠만 보여줘야 하는 레이아웃 추가 */}
-        {/* <Route path={ROUTE_PATH.LOGIN} element={<LoginPage />} /> */}
+        <Route path={ROUTE_PATH.LOGIN} element={<LoginPage />} />
       </Route>
-    {/* <Route path={ROUTE_PATH.LOGIN_OAUTH} element={<OauthRedirectPage />} /> */}
+      <Route path={ROUTE_PATH.LOGIN_OAUTH} element={<OauthRedirectPage />} />
 
       <Route element={<ModalLayout />}>
         <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} />
