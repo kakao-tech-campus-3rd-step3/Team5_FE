@@ -72,3 +72,44 @@ export const getAccessToken = (): string | null => {
 export const getRefreshToken = (): string | null => {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 };
+
+/**
+ * JWT 토큰의 만료 시간 확인 (exp 필드)
+ */
+export const getTokenExpiration = (token: string): number | null => {
+  try {
+    // JWT는 base64url 인코딩된 3부분으로 구성: header.payload.signature
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    // payload 디코딩
+    const payload = parts[1];
+    // base64url 디코딩 (base64와 약간 다름)
+    const decodedPayload = JSON.parse(
+      atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+    );
+
+    // exp는 Unix timestamp (초 단위)
+    return decodedPayload.exp ? decodedPayload.exp * 1000 : null; // 밀리초로 변환
+  } catch (error) {
+    console.warn('⚠️ 토큰 디코딩 실패:', error);
+    return null;
+  }
+};
+
+/**
+ * 토큰이 만료되었는지 확인
+ */
+export const isTokenExpired = (token: string | null): boolean => {
+  if (!token) return true;
+
+  const expiration = getTokenExpiration(token);
+  if (!expiration) return false; // 만료 시간을 알 수 없으면 false (유효한 것으로 간주)
+
+  // 현재 시간과 비교 (5분 여유를 둠)
+  const now = Date.now();
+  const bufferTime = 5 * 60 * 1000; // 5분
+  return now >= expiration - bufferTime;
+};
