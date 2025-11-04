@@ -9,41 +9,14 @@ interface QuestionCardSectionProps {
   question: Question | null;
 }
 
-interface Question {
-  questionId: number;
-  content: string;
-  category: string;
-  // questionType: string;
-  // flowPhase: string;
-  // questionText: string;
-  // jobId: number;
-}
-interface User {
-  userId: number;
-  name: string;
-  email: string;
-}
-
-interface QuestionCardSectionProps {
-  answerState: AnswerStateType;
-  user?: User | null;
-  question?: Question | null;
-}
-
-const QuestionCardSection = ({ answerState, user, question }: QuestionCardSectionProps) => {
-  // const { data: question } = useFetch<Question>('/api/questions/random');
-  const questionText =
-    answerState === 'before-answer'
-      ? '오늘의 질문을 확인하세요!'
-      : question?.content || '질문을 불러오는 중...';
-
-  const welcomeMessage = user ? `${user.name}님,` : '';
+const QuestionCardSection = ({ answerState, question }: QuestionCardSectionProps) => {
+  if (!question) return null;
 
   return (
     <section>
       <QuestionCard isStarted={answerState === 'answering'}>
         <GlassBackground>
-          {welcomeMessage} {questionText}
+          {answerState === 'before-answer' ? '오늘의 질문을 확인하세요!' : question.questionText}
         </GlassBackground>
       </QuestionCard>
     </section>
