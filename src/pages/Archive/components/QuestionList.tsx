@@ -4,11 +4,11 @@ import styled from '@emotion/styled';
 import { generatePath, useNavigate, useSearchParams } from 'react-router-dom';
 
 // import { ROUTE_PATH } from '../../../routes/routePath';
+import { ROUTE_PATH } from '../../../routes/routePath';
 import useFetch from '../../../shared/hooks/useFetch';
 
 // import InfiniteScrollList from './InfiniteScrollList';
 import type { AnswerItem, AnswersApiResponse } from '../Archive';
-import { ROUTE_PATH } from '../../../routes/routePath';
 
 // import type { AnswerItem, AnswersApiResponse } from '../Archive';
 

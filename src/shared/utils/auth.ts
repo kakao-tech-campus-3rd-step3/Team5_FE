@@ -87,9 +87,7 @@ export const getTokenExpiration = (token: string): number | null => {
     // payload 디코딩
     const payload = parts[1];
     // base64url 디코딩 (base64와 약간 다름)
-    const decodedPayload = JSON.parse(
-      atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
-    );
+    const decodedPayload = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
 
     // exp는 Unix timestamp (초 단위)
     return decodedPayload.exp ? decodedPayload.exp * 1000 : null; // 밀리초로 변환

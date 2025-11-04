@@ -19,12 +19,7 @@ export const extractTokensFromResponse = (
   response: RefreshTokenResponse
 ): { accessToken: string | null; refreshToken: string | null } => {
   // 가능한 액세스 토큰 필드명들 (우선순위 순)
-  const accessTokenKeys = [
-    'accessToken',
-    'access_token',
-    'token',
-    'authToken',
-  ];
+  const accessTokenKeys = ['accessToken', 'access_token', 'token', 'authToken'];
 
   let accessToken: string | null = null;
 
