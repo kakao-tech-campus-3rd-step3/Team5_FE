@@ -45,16 +45,29 @@ interface AnswerPayload {
   level?: number;
 }
 
+export interface FeedbackContent {
+  positivePoints: string[];
+  pointsForImprovement: string[];
+}
+
+export interface Feedback {
+  status: string; // "PENDING", "COMPLETED" 등
+  content: FeedbackContent;
+  updatedAt: string;
+}
+
 const FeedbackPage = () => {
   const navigate = useNavigate();
-  const { feedbackId } = useParams<{ feedbackId: string }>();
+  //const { feedbackId } = useParams<{ feedbackId: string }>();
+  const { id } = useParams();
 
-  const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${feedbackId}`);
-  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${feedbackId}`);
+  const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${id}`);
+  const { data: feedback } = useFetch<Feedback>(`/api/feedback/${id}`);
+  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
   console.log('FeedbackPage API 응답 데이터:', data);
 
   const question = data?.question;
-  const feedback = data?.feedback;
+  // const feedback = data?.feedback;
 
   const [memoContent, setMemoContent] = useState('');
   useEffect(() => {
@@ -110,18 +123,18 @@ const FeedbackPage = () => {
     }
   };
 
-  if (!data || !question || !feedback) return <div>데이터를 불러오는 중...</div>; // ★ null 대신 로딩 표시
+  // if (!data || !question || !feedback) return <div>데이터를 불러오는 중...</div>; // ★ null 대신 로딩 표시
 
   return (
     <Wrapper>
       <SectionContainer>
         {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결*/}
-        <QuestionText>{question.questionText}</QuestionText>
+        <QuestionText>{question?.questionText}</QuestionText>
       </SectionContainer>
 
       <SectionContainer>
         <InfoWrapper>
-          <FilterWrapper>{question.questionType}</FilterWrapper>
+          <FilterWrapper>{question?.questionType}</FilterWrapper>
           <FilterWrapper>
             {[1, 2, 3, 4, 5].map((starIndex) => (
               <StyledStar
@@ -141,7 +154,7 @@ const FeedbackPage = () => {
       <SectionContainer>
         <Title>나의 답변</Title>
         <Card>
-          <CardParagraph>{data.answerText}</CardParagraph>
+          <CardParagraph>{data?.answerText}</CardParagraph>
         </Card>
       </SectionContainer>
 
@@ -151,7 +164,7 @@ const FeedbackPage = () => {
         <Card>
           <CardTitle>좋은 점</CardTitle>
           <CardList>
-            {feedback.content.positivePoints.map((point, index) => (
+            {feedback?.content.positivePoints.map((point, index) => (
               <CardListItem key={index}>{point}</CardListItem>
             ))}
           </CardList>
@@ -160,7 +173,7 @@ const FeedbackPage = () => {
         <Card>
           <CardTitle>개선할 수 있는 점</CardTitle>
           <CardList>
-            {feedback.content.pointsForImprovement.map((point, index) => (
+            {feedback?.content.pointsForImprovement.map((point, index) => (
               <CardListItem key={index}>{point}</CardListItem>
             ))}
           </CardList>
