@@ -1,70 +1,147 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import styled from '@emotion/styled';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Heart, Star } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { ROUTE_PATH } from '../../routes/routePath';
+import useFetch from '../../shared/hooks/useFetch';
+import usePatch from '../../shared/hooks/usePatch';
 import SharedButton from '../../shared/ui/SharedButton';
 
 import Card from './components/Card';
 
-import type { GetFeedbackData } from '../../api/feedback';
+export interface Question {
+  questionId: number;
+  questionType: string;
+  questionText: string;
+}
 
-const questionData = {
-  text: 'Q. Cookie와 Local Storage의 차이점이 무엇인가요?',
-};
+export interface FeedbackContent {
+  positivePoints: string[];
+  pointsForImprovement: string[];
+}
 
-const answerData = {
-  title: '나의 답변',
-  content: ['내용'],
-};
+export interface Feedback {
+  status: string;
+  content: FeedbackContent;
+  updatedAt: string;
+}
+
+export interface FeedbackDetailResponse {
+  answerId: number;
+  question: Question;
+  answerText: string;
+  memo: string;
+  level: number;
+  starred: boolean;
+  createdAt: string;
+  feedback: Feedback;
+}
+
+interface AnswerPayload {
+  memo?: string;
+  starred?: boolean;
+  level?: number;
+}
 
 const FeedbackPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // const [memoContent, setMemoContent] = useState('');
-  // const feedbackResult = location.state as GetFeedbackData | undefined;
-  const { result: feedbackResult, answerId } = (location.state || {}) as {
-    result?: GetFeedbackData;
-    answerId?: number;
-  };
+  const { feedbackId } = useParams<{ feedbackId: string }>();
 
-  const [memoContent, setMemoContent] = useState(() => {
-    if (!answerId) return '';
-    return localStorage.getItem(`memo_${answerId}`) || '';
-  });
+  const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${feedbackId}`);
+  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${feedbackId}`);
+  console.log('FeedbackPage API 응답 데이터:', data);
+
+  const question = data?.question;
+  const feedback = data?.feedback;
+
+  const [memoContent, setMemoContent] = useState('');
+  useEffect(() => {
+    if (data?.memo !== undefined && data.memo !== memoContent) setMemoContent(data?.memo);
+  }, [data?.memo, memoContent]);
+
+  const [isStarred, setIsStarred] = useState<boolean | undefined>();
+  useEffect(() => {
+    setIsStarred(data?.starred);
+  }, [data?.starred]);
+
+  const [level, setLevel] = useState<number>(0);
+  useEffect(() => {
+    if (data?.level !== undefined) {
+      setLevel(data?.level);
+    }
+  }, [data?.level]);
 
   const handleArchiveClick = () => {
     navigate(ROUTE_PATH.ARCHIVE);
   };
 
-  const handleSaveMemo = () => {
-    if (!answerId) {
-      alert('메모를 저장하기 위한 답변 ID가 없습니다.');
-      return;
-    }
+  const handleSaveMemo = async () => {
+    const payload: AnswerPayload = { memo: memoContent };
     try {
-      localStorage.setItem(`memo_${answerId}`, memoContent);
-      alert('메모가 브라우저에 저장되었습니다!');
-    } catch (error) {
-      console.error('메모 저장 실패:', error);
-      alert('메모 저장에 실패했습니다.');
+      await patchData(payload);
+      alert('메모가 저장되었습니다.');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      alert('메모 저장에 실패했습니다. 다시 시도해주세요.');
     }
   };
+
+  const handleStarredChange = async (starred: boolean) => {
+    const payload: AnswerPayload = { starred: starred };
+    try {
+      await patchData(payload);
+      setIsStarred(starred);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      alert('오류가 발생했습니다.');
+    }
+  };
+
+  const handleLevelChange = async (level: number) => {
+    const payload: AnswerPayload = { level: level };
+    try {
+      await patchData(payload);
+      setLevel(level);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      alert('오류가 발생했습니다.');
+    }
+  };
+
+  if (!data || !question || !feedback) return <div>데이터를 불러오는 중...</div>; // ★ null 대신 로딩 표시
 
   return (
     <Wrapper>
       <SectionContainer>
         {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결*/}
-        <QuestionText>{questionData.text}</QuestionText>
+        <QuestionText>{question.questionText}</QuestionText>
+      </SectionContainer>
+
+      <SectionContainer>
+        <InfoWrapper>
+          <FilterWrapper>{question.questionType}</FilterWrapper>
+          <FilterWrapper>
+            {[1, 2, 3, 4, 5].map((starIndex) => (
+              <StyledStar
+                key={starIndex}
+                onClick={() => handleLevelChange(starIndex)}
+                fill={starIndex <= level ? '#FFD700' : 'none'}
+                color="#FFD700"
+              />
+            ))}
+          </FilterWrapper>
+          <FilterWrapper onClick={() => handleStarredChange(!isStarred)}>
+            <Heart />
+          </FilterWrapper>
+        </InfoWrapper>
       </SectionContainer>
 
       <SectionContainer>
         <Title>나의 답변</Title>
         <Card>
-          {answerData.content.map((paragraph, index) => (
-            <CardParagraph key={index}>{paragraph}</CardParagraph>
-          ))}
+          <CardParagraph>{data.answerText}</CardParagraph>
         </Card>
       </SectionContainer>
 
@@ -72,14 +149,9 @@ const FeedbackPage = () => {
         <Title>AI 피드백</Title>
 
         <Card>
-          <CardTitle>종합 평가</CardTitle>
-          <CardParagraph>{feedbackResult?.overallEvaluation}</CardParagraph>
-        </Card>
-
-        <Card>
           <CardTitle>좋은 점</CardTitle>
           <CardList>
-            {feedbackResult?.positivePoints.map((point, index) => (
+            {feedback.content.positivePoints.map((point, index) => (
               <CardListItem key={index}>{point}</CardListItem>
             ))}
           </CardList>
@@ -88,7 +160,7 @@ const FeedbackPage = () => {
         <Card>
           <CardTitle>개선할 수 있는 점</CardTitle>
           <CardList>
-            {feedbackResult?.pointsForImprovement.map((point, index) => (
+            {feedback.content.pointsForImprovement.map((point, index) => (
               <CardListItem key={index}>{point}</CardListItem>
             ))}
           </CardList>
@@ -186,6 +258,34 @@ const MemoTextArea = styled.textarea`
     outline: none;
     border-color: ${({ theme }) => theme.colors.text};
   }
+`;
+
+const FilterWrapper = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space.space8};
+
+  width: auto;
+  height: auto;
+  padding: ${({ theme }) => theme.space.space8} ${({ theme }) => theme.space.space12};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+
+  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
+  border-radius: ${({ theme }) => theme.radius.radius24};
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+`;
+
+const InfoWrapper = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space.space16};
+  align-items: center;
+  justify-content: center;
+`;
+
+const StyledStar = styled(Star)`
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
 `;
 
 export default FeedbackPage;

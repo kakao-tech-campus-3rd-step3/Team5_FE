@@ -8,9 +8,7 @@ Close #
 
 ### 📢 리뷰어에게 전달할 말 (Words for Reviewer)
 
--
-
----
+- ***
 
 <details>
 <summary><strong>👨‍👩‍👧‍👦 우리 팀 리뷰 규칙 (Review Rules)</strong></summary>
