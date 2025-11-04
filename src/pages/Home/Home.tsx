@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent } from 'react';
 
 import styled from '@emotion/styled';
-import { useNavigate } from 'react-router-dom';
+import { generatePath, useNavigate } from 'react-router-dom';
 
 import { type SubmitAnswerRequest, type SubmitAnswerResponse } from '../../api/answers';
 import { ROUTE_PATH } from '../../routes/routePath';
@@ -46,9 +46,9 @@ const HomePage = () => {
   const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
     onSuccess: (data) => {
       setAnswerState('answered');
-      navigate(`${ROUTE_PATH.FEEDBACK}/${data.feedbackId}`);
+      navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(data.feedbackId) }));
     },
-    onError: (_error) => {
+    onError: (_error: any) => {
       alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
     },
   });
