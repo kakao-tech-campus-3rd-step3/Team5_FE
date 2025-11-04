@@ -1,7 +1,8 @@
+// TODO: 동적 라우팅 적용 (예: /archive/:id, /user/:userId)
 export const ROUTE_PATH = {
   HOME: '/',
-  ARCHIVE: '/archive',
-  FEEDBACK: '/feedback',
+  ARCHIVE: '/archive', // :id 제거 (필요시 나중에 추가)
+  FEEDBACK: '/feedback/:id',
   FEEDBACK_DETAIL: '/feedbackDetail/:id',
   SUBSCRIBE: '/subscribe',
   LOGIN: '/login',
