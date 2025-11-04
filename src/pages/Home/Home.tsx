@@ -46,10 +46,8 @@ const HomePage = () => {
   const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
     onSuccess: (data) => {
       setAnswerState('answered');
-      //navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
       navigate(`${ROUTE_PATH.FEEDBACK}/${data.feedbackId}`);
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onError: (_error) => {
       alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
     },
