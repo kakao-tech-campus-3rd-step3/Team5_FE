@@ -1,12 +1,12 @@
 import styled from '@emotion/styled';
 
 import GlassBackground from '../../../../shared/components/GlassBackground/GlassBackground';
-//import useFetch from '../../../../shared/hooks/useFetch';
 
-import type { AnswerStateType } from '../../Home';
+import type { AnswerStateType, Question } from '../../Home';
 
 interface QuestionCardSectionProps {
   answerState: AnswerStateType;
+  question: Question | null;
 }
 
 interface Question {

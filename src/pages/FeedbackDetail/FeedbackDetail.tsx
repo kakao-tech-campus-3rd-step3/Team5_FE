@@ -52,7 +52,7 @@ const FeedbackDetailPage = () => {
 
   const question = data?.question;
   const feedback = data?.feedback;
-  console.log(data);
+  console.log(feedback);
 
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
 
@@ -61,7 +61,7 @@ const FeedbackDetailPage = () => {
   const [memoContent, setMemoContent] = useState('');
   useEffect(() => {
     if (data?.memo !== undefined && data.memo !== memoContent) setMemoContent(data?.memo);
-  }, [data?.memo]);
+  }, [data?.memo, memoContent]);
 
   const [isStarred, setIsStarred] = useState<boolean | undefined>();
   useEffect(() => {
@@ -80,8 +80,9 @@ const FeedbackDetailPage = () => {
     try {
       const responseData = await patchData(payload);
       alert(`수정 완료: ${responseData.memo}`);
-    } catch (e) {
-      alert;
+    } catch (error) {
+      alert('수정 실패');
+      console.error(error);
     }
   };
 
@@ -93,8 +94,9 @@ const FeedbackDetailPage = () => {
     try {
       await patchData(payload);
       setIsStarred(starred);
-    } catch (e) {
-      alert;
+    } catch (error) {
+      alert('저장 실패');
+      console.error(error);
     }
   };
 
@@ -112,8 +114,9 @@ const FeedbackDetailPage = () => {
     try {
       await patchData(payload);
       setLevel(level);
-    } catch (e) {
-      alert;
+    } catch (error) {
+      alert('저장 실패');
+      console.error(error);
     }
   };
 
@@ -152,11 +155,6 @@ const FeedbackDetailPage = () => {
 
       <SectionContainer>
         <Title>AI 피드백</Title>
-
-        <Card>
-          <CardTitle>종합 평가</CardTitle>
-          <CardParagraph>{feedback.content.overallEvaluation}</CardParagraph>
-        </Card>
 
         <Card>
           <CardTitle>좋은 점</CardTitle>
