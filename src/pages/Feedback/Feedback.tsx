@@ -4,10 +4,9 @@ import styled from '@emotion/styled';
 import { Heart, Star } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-//import { type ApiFeedbackResponse, type GetFeedbackData } from '../../api/feedback';
-import apiClient from '../../api/apiClient';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
+import usePatch from '../../shared/hooks/usePatch';
 import SharedButton from '../../shared/ui/SharedButton';
 
 import Card from './components/Card';
@@ -19,7 +18,6 @@ export interface Question {
 }
 
 export interface FeedbackContent {
-  overallEvaluation: string;
   positivePoints: string[];
   pointsForImprovement: string[];
 }
@@ -52,8 +50,11 @@ const FeedbackPage = () => {
   const { feedbackId } = useParams<{ feedbackId: string }>();
 
   const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${feedbackId}`);
-
+  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${feedbackId}`);
   console.log('FeedbackPage API 응답 데이터:', data);
+
+  const question = data?.question;
+  const feedback = data?.feedback;
 
   const [memoContent, setMemoContent] = useState('');
   useEffect(() => {
@@ -79,7 +80,7 @@ const FeedbackPage = () => {
   const handleSaveMemo = async () => {
     const payload: AnswerPayload = { memo: memoContent };
     try {
-      await apiClient.patch(`/api/answers/${feedbackId}`, payload);
+      await patchData(payload);
       alert('메모가 저장되었습니다.');
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
@@ -90,7 +91,7 @@ const FeedbackPage = () => {
   const handleStarredChange = async (starred: boolean) => {
     const payload: AnswerPayload = { starred: starred };
     try {
-      await apiClient.patch(`/api/answers/${feedbackId}`, payload);
+      await patchData(payload);
       setIsStarred(starred);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
@@ -101,7 +102,7 @@ const FeedbackPage = () => {
   const handleLevelChange = async (level: number) => {
     const payload: AnswerPayload = { level: level };
     try {
-      await apiClient.patch(`/api/answers/${feedbackId}`, payload);
+      await patchData(payload);
       setLevel(level);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
@@ -109,12 +110,7 @@ const FeedbackPage = () => {
     }
   };
 
-  if (!data) {
-    return null;
-  }
-
-  const question = data.question;
-  const feedback = data.feedback;
+  if (!data || !question || !feedback) return <div>데이터를 불러오는 중...</div>; // ★ null 대신 로딩 표시
 
   return (
     <Wrapper>
@@ -151,11 +147,6 @@ const FeedbackPage = () => {
 
       <SectionContainer>
         <Title>AI 피드백</Title>
-
-        <Card>
-          <CardTitle>종합 평가</CardTitle>
-          <CardParagraph>{feedback.content.overallEvaluation}</CardParagraph>
-        </Card>
 
         <Card>
           <CardTitle>좋은 점</CardTitle>

@@ -40,7 +40,8 @@ const HomePage = () => {
   const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
     onSuccess: (data) => {
       setAnswerState('answered');
-      navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
+      //navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
+      navigate(`${ROUTE_PATH.FEEDBACK}/${data.feedbackId}`);
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onError: (_error) => {

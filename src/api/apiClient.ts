@@ -37,35 +37,48 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
 apiClient.interceptors.request.use(
   (config) => {
     // localStorage에서 토큰을 먼저 확인
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    // const token = localStorage.getItem(ACCESS_TOKEN_KEY);
 
-    // 임시 토큰이 localStorage에 저장된 경우 자동으로 삭제
-    if (token === 'temp-token-for-development') {
-      console.warn('⚠️ [API 요청] 임시 토큰이 localStorage에 저장되어 있습니다. 삭제합니다.');
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
+    // // 임시 토큰이 localStorage에 저장된 경우 자동으로 삭제
+    // if (token === 'temp-token-for-development') {
+    //   console.warn('⚠️ [API 요청] 임시 토큰이 localStorage에 저장되어 있습니다. 삭제합니다.');
+    //   localStorage.removeItem(ACCESS_TOKEN_KEY);
+    //   localStorage.removeItem(REFRESH_TOKEN_KEY);
 
-      // 로그인 페이지로 리다이렉트 (현재 경로가 로그인 페이지가 아닐 때만)
-      if (!window.location.pathname.includes('/login')) {
-        console.warn('⚠️ [API 요청] 로그인 페이지로 이동합니다.');
-        window.location.href = '/login';
-        return Promise.reject(new Error('임시 토큰 감지 - 로그인 페이지로 이동합니다.'));
-      }
-    }
+    //   // 로그인 페이지로 리다이렉트 (현재 경로가 로그인 페이지가 아닐 때만)
+    //   if (!window.location.pathname.includes('/login')) {
+    //     console.warn('⚠️ [API 요청] 로그인 페이지로 이동합니다.');
+    //     window.location.href = '/login';
+    //     return Promise.reject(new Error('임시 토큰 감지 - 로그인 페이지로 이동합니다.'));
+    //   }
+    // }
 
-    if (token && token !== 'temp-token-for-development') {
-      // 실제 토큰이 있으면 사용
-      config.headers['Authorization'] = `Bearer ${token}`;
-    } else if (TEMP_TOKEN && !token) {
-      // 토큰이 전혀 없을 때만 임시 토큰 사용 (개발용)
+    // if (token && token !== 'temp-token-for-development') {
+    //   // 실제 토큰이 있으면 사용
+    //   //config.headers['Authorization'] = `Bearer ${token}`;
+    //   config.headers['Authorization'] = `Bearer ${TEMP_TOKEN}`;
+    // } else if (TEMP_TOKEN && !token) {
+    //   // 토큰이 전혀 없을 때만 임시 토큰 사용 (개발용)
+    //   config.headers['Authorization'] = `Bearer ${TEMP_TOKEN}`;
+    //   console.warn('⚠️ [API 요청] 실제 토큰 없음 - 임시 토큰 사용 (개발용)');
+    // } else if (!token) {
+    //   console.warn('⚠️ [API 요청] 토큰 없음 - 인증되지 않은 요청', {
+    //     url: config.url,
+    //     method: config.method,
+    //     baseURL: config.baseURL,
+    //   });
+    // }
+    if (TEMP_TOKEN) {
+      // .env에 임시 토큰이 있으면, localStorage 무시하고 무조건 임시 토큰 사용
       config.headers['Authorization'] = `Bearer ${TEMP_TOKEN}`;
-      console.warn('⚠️ [API 요청] 실제 토큰 없음 - 임시 토큰 사용 (개발용)');
-    } else if (!token) {
-      console.warn('⚠️ [API 요청] 토큰 없음 - 인증되지 않은 요청', {
-        url: config.url,
-        method: config.method,
-        baseURL: config.baseURL,
-      });
+      console.warn('⚠️ [API 요청] .env 임시 토큰 사용 시도:', TEMP_TOKEN);
+      console.warn('⚠️ [API 요청] .env 임시 토큰을 강제로 사용합니다.');
+    } else {
+      // .env에 임시 토큰이 없으면, (원래 로직) localStorage에서 토큰을 찾음
+      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
     }
 
     return config;
