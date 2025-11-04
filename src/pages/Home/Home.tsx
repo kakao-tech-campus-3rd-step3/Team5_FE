@@ -15,7 +15,6 @@ import QuestionCardSection from './components/sections/QuestionCardSection';
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
 
-// 사용자 정보 타입
 interface User {
   userId: number;
   name: string;
@@ -23,10 +22,15 @@ interface User {
 }
 
 // 질문 정보 타입
-interface Question {
+export interface Question {
   questionId: number;
-  content: string;
-  category?: string;
+  questionType: string;
+  flowPhase: string;
+  questionText: string;
+  jobId: number;
+  timeLimitSeconds: number;
+  followUp: boolean;
+  flowPhaseConsistent: boolean;
 }
 
 const HomePage = () => {
@@ -35,14 +39,15 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   // 사용자 정보는 현재 미사용이지만 향후 사용 예정
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: _user } = useFetch<User>('/api/user');
   const { data: question } = useFetch<Question>('/api/questions/random');
+  console.log(question);
 
   const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
     onSuccess: (data) => {
       setAnswerState('answered');
-      navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
+      //navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId: data.feedbackId } });
+      navigate(`${ROUTE_PATH.FEEDBACK}/${data.feedbackId}`);
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onError: (_error) => {
@@ -55,7 +60,7 @@ const HomePage = () => {
   };
 
   const handleAnswerDone = async (text: string, audioUrl?: string) => {
-    if (!question) {
+    if (!question || !_user) {
       alert('질문 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
       return;
     }
@@ -82,7 +87,7 @@ const HomePage = () => {
     return (
       <Wrapper>
         <span>DailyQ 모의 면접</span>
-        <QuestionCardSection answerState={answerState} />
+        <QuestionCardSection answerState={answerState} question={question} />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
       </Wrapper>
@@ -92,7 +97,7 @@ const HomePage = () => {
     <Wrapper>
       <h1>DailyQ 모의 면접</h1>
       {/* TODO: {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'} */}
-      <QuestionCardSection answerState={answerState} />
+      <QuestionCardSection answerState={answerState} question={question} />
 
       {answerState === 'before-answer' ? (
         <BeforeAnswerSection

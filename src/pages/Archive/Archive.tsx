@@ -10,11 +10,10 @@ import useSectionScroll from './hooks/useSectionScroll';
 
 export interface AnswerItem {
   answerId: number;
-  questionId?: number;
-  question_id?: number;
+  questionId: number;
   questionText: string;
-  question_type: string;
-  flow_phase: string | null;
+  questionType: string;
+  flowPhase: string | null;
   level: number;
   starred: boolean;
   createdAt?: string;
@@ -23,6 +22,8 @@ export interface AnswerItem {
 
 export interface AnswersApiResponse {
   items: AnswerItem[];
+  nextId: number | null;
+  nextCreatedAt: string | null;
   hasNext: boolean;
 }
 

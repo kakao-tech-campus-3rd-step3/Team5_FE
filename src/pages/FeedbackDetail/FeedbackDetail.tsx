@@ -52,7 +52,7 @@ const FeedbackDetailPage = () => {
 
   const question = data?.question;
   const feedback = data?.feedback;
-  console.log(data);
+  console.log(feedback);
 
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
 
@@ -155,11 +155,6 @@ const FeedbackDetailPage = () => {
 
       <SectionContainer>
         <Title>AI 피드백</Title>
-
-        <Card>
-          <CardTitle>종합 평가</CardTitle>
-          <CardParagraph>{feedback.content.overallEvaluation}</CardParagraph>
-        </Card>
 
         <Card>
           <CardTitle>좋은 점</CardTitle>

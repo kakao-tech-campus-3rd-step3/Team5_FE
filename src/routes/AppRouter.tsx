@@ -227,7 +227,8 @@ const AppRouter = () => {
       <Route path={ROUTE_PATH.LOGIN_OAUTH} element={<OauthRedirectPage />} />
 
       <Route element={<ModalLayout />}>
-        <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} />
+        <Route path={`${ROUTE_PATH.FEEDBACK}/:feedbackId`} element={<FeedbackPage />} />
+        {/* <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} /> */}
         <Route path={ROUTE_PATH.FEEDBACK_DETAIL} element={<FeedbackDetailPage />} />
       </Route>
 

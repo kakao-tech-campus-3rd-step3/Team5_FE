@@ -1,22 +1,11 @@
 import styled from '@emotion/styled';
-import { generatePath, useNavigate } from 'react-router-dom';
 
-import { ROUTE_PATH } from '../../../routes/routePath';
-import useFetch from '../../../shared/hooks/useFetch';
-import usePolygonAnimation from '../hooks/usePolygonAnimation';
+import usePinnedQuestions from '../hooks/usePinnedQuestions';
 
-import type { AnswerItem, AnswersApiResponse } from '../Archive';
+import type { AnswerItem } from '../Archive';
 
 const PinnedQuestionList = () => {
-  const navigate = useNavigate();
-  const { pinnedItemWrapperRef, pinnedItemRefs } = usePolygonAnimation();
-  const { data } = useFetch<AnswersApiResponse>('/api/answers', { params: { starred: true } });
-
-  const items = data?.items;
-
-  const handleItemClick = (id: number) => {
-    navigate(generatePath(ROUTE_PATH.FEEDBACK_DETAIL, { id: String(id) }));
-  };
+  const { items, pinnedItemWrapperRef, getItemRef, handleItemClick } = usePinnedQuestions();
 
   if (!items) return null;
   return (
@@ -24,9 +13,7 @@ const PinnedQuestionList = () => {
       {items.map((data: AnswerItem, i: number) => (
         <PinnedItem
           key={data.answerId}
-          ref={(pinnedItemRef: HTMLDivElement) => {
-            pinnedItemRefs.current[i] = pinnedItemRef;
-          }}
+          ref={getItemRef(i)}
           onClick={() => handleItemClick(data.answerId)}
         >
           <ItemText>{data.questionText}</ItemText>

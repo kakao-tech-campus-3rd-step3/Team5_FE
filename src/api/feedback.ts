@@ -12,11 +12,16 @@ export interface GetFeedbackData {
   pointsForImprovement: string[];
 }
 
-export const postAnswer = async (userId: number, questionId: number, answerText: string) => {
+export const postAnswer = async (
+  userId: number,
+  questionId: number,
+  answerText: string,
+  audioUrl?: string
+) => {
   const response = await apiClient.post<PostAnswerData>(`/answers?user_id=${userId}`, {
     questionId,
     answerText,
-    audioUrl: '',
+    audioUrl: audioUrl || '',
   });
   return response.data;
 };
