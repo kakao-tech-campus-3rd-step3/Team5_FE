@@ -23,10 +23,15 @@ interface User {
 }
 
 // 질문 정보 타입
-interface Question {
+export interface Question {
   questionId: number;
-  content: string;
-  category?: string;
+  questionType: string;
+  flowPhase: string;
+  questionText: string;
+  jobId: number;
+  timeLimitSeconds: number;
+  followUp: boolean;
+  flowPhaseConsistent: boolean;
 }
 
 const HomePage = () => {
@@ -38,6 +43,7 @@ const HomePage = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: _user } = useFetch<User>('/api/user');
   const { data: question } = useFetch<Question>('/api/questions/random');
+  console.log(question);
 
   const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
     onSuccess: (data) => {
@@ -82,7 +88,7 @@ const HomePage = () => {
     return (
       <Wrapper>
         <span>DailyQ 모의 면접</span>
-        <QuestionCardSection answerState={answerState} />
+        <QuestionCardSection answerState={answerState} question={question} />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
       </Wrapper>
@@ -92,7 +98,7 @@ const HomePage = () => {
     <Wrapper>
       <h1>DailyQ 모의 면접</h1>
       {/* TODO: {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'} */}
-      <QuestionCardSection answerState={answerState} />
+      <QuestionCardSection answerState={answerState} question={question} />
 
       {answerState === 'before-answer' ? (
         <BeforeAnswerSection
