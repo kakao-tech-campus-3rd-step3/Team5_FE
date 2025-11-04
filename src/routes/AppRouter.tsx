@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 
-import { refreshAccessToken } from '../api/auth';
+import { extractTokensFromResponse, refreshAccessToken } from '../api/auth';
 import ArchivePage from '../pages/Archive/Archive';
 import FeedbackPage from '../pages/Feedback/Feedback';
 import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
@@ -39,16 +39,12 @@ const AppRouter = () => {
     try {
       const response = await refreshAccessToken(refreshToken);
 
-      // 응답에서 토큰 추출 (필드명이 정확하지 않을 수 있으므로 유연하게 처리)
-      const newAccessToken = response.accessToken || response[Object.keys(response)[0]];
-      const newRefreshToken =
-        response.refreshToken || response[Object.keys(response)[1]] || refreshToken;
+      // 응답에서 토큰 추출 (백엔드 응답: { accessToken: "string" }만 반환)
+      const { accessToken: newAccessToken } = extractTokensFromResponse(response);
 
       if (newAccessToken) {
         localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
-        if (newRefreshToken !== refreshToken) {
-          localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-        }
+        // 리프레시 토큰은 새로 발급되지 않으므로 기존 것을 유지
         setIsAuthenticated(true);
         return true;
       }

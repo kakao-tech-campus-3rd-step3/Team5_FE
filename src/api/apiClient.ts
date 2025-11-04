@@ -1,6 +1,11 @@
 import axios, { AxiosError } from 'axios';
 
-import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../shared/utils/auth';
+import {
+  ACCESS_TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+  getTokenExpiration,
+  isTokenExpired,
+} from '../shared/utils/auth';
 
 import { refreshAccessToken } from './auth';
 
@@ -35,7 +40,7 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
 };
 
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // localStorage에서 토큰을 먼저 확인
     const token = localStorage.getItem(ACCESS_TOKEN_KEY);
 
@@ -54,6 +59,53 @@ apiClient.interceptors.request.use(
     }
 
     if (token && token !== 'temp-token-for-development') {
+      // 토큰이 만료되었거나 곧 만료될 경우 자동으로 갱신
+      if (isTokenExpired(token)) {
+        const expiration = getTokenExpiration(token);
+        const now = Date.now();
+        console.log('🔄 [API 요청] 토큰이 만료되었거나 곧 만료됩니다. 자동 갱신 시작...', {
+          tokenExpiration: expiration ? new Date(expiration).toISOString() : '알 수 없음',
+          currentTime: new Date(now).toISOString(),
+          timeUntilExpiration: expiration ? Math.floor((expiration - now) / 1000) : null,
+        });
+        const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+
+        if (refreshToken && !isRefreshing) {
+          try {
+            isRefreshing = true;
+            const response = await refreshAccessToken(refreshToken);
+            const { extractTokensFromResponse } = await import('./auth');
+            const { accessToken: newAccessToken } = extractTokensFromResponse(response);
+
+            if (newAccessToken) {
+              localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+              config.headers['Authorization'] = `Bearer ${newAccessToken}`;
+              console.log('✅ [API 요청] 토큰 갱신 완료');
+              isRefreshing = false;
+              return config;
+            } else {
+              throw new Error('토큰 갱신 실패: 새로운 액세스 토큰이 없습니다.');
+            }
+          } catch (refreshError) {
+            console.error('❌ [API 요청] 토큰 갱신 실패:', refreshError);
+            isRefreshing = false;
+            localStorage.removeItem(ACCESS_TOKEN_KEY);
+            localStorage.removeItem(REFRESH_TOKEN_KEY);
+
+            // 로그인 페이지로 리다이렉트
+            if (window.location.pathname !== '/login') {
+              window.location.href = '/login';
+            }
+            return Promise.reject(refreshError);
+          }
+        } else if (isRefreshing) {
+          // 이미 갱신 중이면 잠시 대기
+          console.log('⏳ [API 요청] 토큰 갱신 중... 잠시 대기');
+        } else {
+          console.warn('⚠️ [API 요청] 리프레시 토큰이 없어 자동 갱신 불가');
+        }
+      }
+
       // 실제 토큰이 있으면 사용
       config.headers['Authorization'] = `Bearer ${token}`;
 
@@ -107,60 +159,113 @@ apiClient.interceptors.response.use(
         errorMessage.includes('redirected') ||
         errorMessage.includes('Failed to fetch') ||
         errorMessage.includes('Network Error') ||
+        errorMessage.includes('ERR_FAILED') ||
         (error.stack && (error.stack.includes('CORS') || error.stack.includes('Network Error')));
 
-      console.log('🔍 [API 오류] CORS 에러 여부 확인:', {
+      // 토큰이 있는 경우, CORS 에러는 토큰 만료 가능성이 높음
+      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+      const hasToken = !!token && token !== 'temp-token-for-development';
+
+      console.log('🔍 [API 오류] 네트워크/CORS 에러 분석:', {
         isCorsError,
         errorMessage,
-        hasCorsInMessage: errorMessage.includes('CORS'),
-        hasRedirected: errorMessage.includes('redirected'),
-        hasFailedToFetch: errorMessage.includes('Failed to fetch'),
-        hasNetworkError: errorMessage.includes('Network Error'),
-        stackIncludesCors: error.stack?.includes('CORS'),
+        hasToken,
+        fullUrl,
         urlIncludesLogin: fullUrl.includes('/login'),
-        requestUrl: requestUrl,
+        tokenExpired: hasToken ? isTokenExpired(token) : null,
       });
 
-      if (isCorsError || fullUrl.includes('/login') || requestUrl.includes('/login')) {
-        console.warn('⚠️ [API 오류] CORS/리다이렉트/네트워크 에러 감지 - 인증 필요로 처리');
+      // CORS 에러이거나 토큰이 있는데 네트워크 에러가 발생한 경우
+      if (isCorsError || (hasToken && error.code === 'ERR_NETWORK')) {
+        console.warn('⚠️ [API 오류] CORS/네트워크 에러 감지 - 토큰 만료 가능성, 갱신 시도');
 
-        // 토큰 확인
-        const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-        console.log('🔑 [API 오류] 토큰 상태 확인:', {
-          hasToken: !!token,
-          tokenPreview: token ? token.substring(0, 20) + '...' : '없음',
-          currentPath: window.location.pathname,
-        });
-
-        if (!token) {
+        if (!hasToken) {
           console.warn('⚠️ [API 오류] 토큰이 없습니다. 로그인 페이지로 이동합니다.');
-
-          // 로그인 페이지가 아니면 리다이렉트
           if (!window.location.pathname.includes('/login')) {
-            console.warn('⚠️ [API 오류] 로그인 페이지로 리다이렉트');
             window.location.href = '/login';
           }
-        } else {
-          console.warn(
-            '⚠️ [API 오류] 토큰이 있지만 백엔드가 리다이렉트하고 있습니다. 토큰이 만료되었을 수 있습니다.'
+          return Promise.reject(
+            new AxiosError(
+              '인증이 필요합니다. 로그인 페이지로 이동합니다.',
+              'UNAUTHENTICATED',
+              originalRequest
+            )
           );
-          console.warn('⚠️ [API 오류] 토큰 갱신을 시도합니다.');
-
-          // 토큰 갱신 시도는 이미 apiClient의 다른 부분에서 처리됨
         }
 
-        const newError = new AxiosError(
-          '인증이 필요합니다. 로그인 페이지로 이동합니다.',
-          'UNAUTHENTICATED',
-          originalRequest,
-          undefined,
-          {
-            status: 401,
-            statusText: 'Unauthorized',
-            data: { message: 'Authentication required - redirect to login' },
-          } as AxiosError['response']
-        );
-        return Promise.reject(newError);
+        // 토큰이 있으면 만료되었을 가능성이 높으므로 무조건 갱신 시도
+        const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+        if (refreshToken && !isRefreshing) {
+          try {
+            isRefreshing = true;
+            console.log('🔄 [API 오류] 리프레시 토큰으로 새 액세스 토큰 발급 시도...');
+            const response = await refreshAccessToken(refreshToken);
+            const { extractTokensFromResponse } = await import('./auth');
+            const { accessToken: newAccessToken } = extractTokensFromResponse(response);
+
+            if (newAccessToken) {
+              localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+              console.log('✅ [API 오류] 토큰 갱신 완료, 원래 요청 재시도');
+              isRefreshing = false;
+
+              // 원래 요청을 새 토큰으로 재시도
+              if (originalRequest.headers) {
+                originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+              }
+              // _retry 플래그를 설정하여 무한 루프 방지
+              originalRequest._retry = true;
+              return apiClient(originalRequest);
+            } else {
+              throw new Error('토큰 갱신 실패: 새로운 액세스 토큰이 없습니다.');
+            }
+          } catch (refreshError) {
+            console.error('❌ [API 오류] 토큰 갱신 실패:', refreshError);
+            isRefreshing = false;
+            localStorage.removeItem(ACCESS_TOKEN_KEY);
+            localStorage.removeItem(REFRESH_TOKEN_KEY);
+
+            // 로그인 페이지로 리다이렉트
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = '/login';
+            }
+            return Promise.reject(refreshError);
+          }
+        } else if (isRefreshing) {
+          // 이미 갱신 중이면 대기
+          console.log('⏳ [API 오류] 토큰 갱신 중... 대기');
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              if (originalRequest.headers) {
+                originalRequest.headers['Authorization'] = `Bearer ${token}`;
+              }
+              originalRequest._retry = true;
+              return apiClient(originalRequest);
+            })
+            .catch((err) => {
+              return Promise.reject(err);
+            });
+        } else {
+          console.warn('⚠️ [API 오류] 리프레시 토큰이 없어 갱신 불가');
+          // 리프레시 토큰이 없으면 로그인 페이지로 리다이렉트
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
+          return Promise.reject(
+            new AxiosError(
+              '인증이 필요합니다. 로그인 페이지로 이동합니다.',
+              'UNAUTHENTICATED',
+              originalRequest,
+              undefined,
+              {
+                status: 401,
+                statusText: 'Unauthorized',
+                data: { message: 'Authentication required - redirect to login' },
+              } as AxiosError['response']
+            )
+          );
+        }
       }
 
       return Promise.reject(error);
@@ -266,16 +371,13 @@ apiClient.interceptors.response.use(
       try {
         const response = await refreshAccessToken(refreshToken);
 
-        // 응답에서 토큰 추출
-        const newAccessToken = response.accessToken || response[Object.keys(response)[0]];
-        const newRefreshToken =
-          response.refreshToken || response[Object.keys(response)[1]] || refreshToken;
+        // 응답에서 토큰 추출 (백엔드 응답: { accessToken: "string" }만 반환)
+        const { extractTokensFromResponse } = await import('./auth');
+        const { accessToken: newAccessToken } = extractTokensFromResponse(response);
 
         if (newAccessToken) {
           localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
-          if (newRefreshToken !== refreshToken) {
-            localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-          }
+          // 리프레시 토큰은 새로 발급되지 않으므로 기존 것을 유지
 
           if (originalRequest.headers) {
             originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
