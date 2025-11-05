@@ -1,7 +1,9 @@
 import styled from '@emotion/styled';
+
 import { theme } from '../../styles/theme';
-import PricingCard from './components/PricingCard';
+
 import BenefitsCard from './components/BenefitsCard';
+import PricingCard from './components/PricingCard';
 
 const SubscribePage = () => {
   const monthlyPrice = 15900;
@@ -30,10 +32,7 @@ const SubscribePage = () => {
           highlighted
         />
 
-        <BenefitsCard 
-          title="Premium 혜택" 
-          benefits={benefits}
-        />
+        <BenefitsCard title="Premium 혜택" benefits={benefits} />
       </CardSection>
 
       <ButtonSection>
@@ -109,4 +108,3 @@ const SubscribeButton = styled.button`
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 `;
-

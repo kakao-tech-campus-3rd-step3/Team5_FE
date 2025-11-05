@@ -34,7 +34,7 @@ export interface RivalListResponse {
 // 라이벌 검색
 export const searchRival = async (email: string): Promise<RivalSearchResponse> => {
   const response = await apiClient.get<RivalSearchResponse>('/api/rivals/search', {
-    params: { email }
+    params: { email },
   });
   return response.data;
 };
@@ -46,17 +46,23 @@ export const getRivalProfile = async (userId: number): Promise<RivalProfileRespo
 };
 
 // 팔로잉 목록 조회
-export const getFollowingList = async (lastId?: number, limit: number = 10): Promise<RivalListResponse> => {
+export const getFollowingList = async (
+  lastId?: number,
+  limit: number = 10
+): Promise<RivalListResponse> => {
   const response = await apiClient.get<RivalListResponse>('/api/rivals/following', {
-    params: { lastId, limit }
+    params: { lastId, limit },
   });
   return response.data;
 };
 
 // 팔로워 목록 조회
-export const getFollowerList = async (lastId?: number, limit: number = 10): Promise<RivalListResponse> => {
+export const getFollowerList = async (
+  lastId?: number,
+  limit: number = 10
+): Promise<RivalListResponse> => {
   const response = await apiClient.get<RivalListResponse>('/api/rivals/followed', {
-    params: { lastId, limit }
+    params: { lastId, limit },
   });
   return response.data;
 };

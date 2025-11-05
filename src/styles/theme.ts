@@ -6,5 +6,5 @@ export const theme = {
   space,
   radius,
   zIndex,
-  blurs
+  blurs,
 };
