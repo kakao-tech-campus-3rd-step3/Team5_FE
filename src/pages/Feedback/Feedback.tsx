@@ -184,7 +184,7 @@ const FeedbackPage = () => {
         <Title>메모</Title>
         <Card>
           <MemoTextArea
-            value={memoContent}
+            value={memoContent || ''}
             onChange={(e) => setMemoContent(e.target.value)}
             placeholder="메모를 작성해주세요."
           />

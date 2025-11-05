@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent } from 'react';
 
 import styled from '@emotion/styled';
-import { useNavigate } from 'react-router-dom';
+import { generatePath, useNavigate } from 'react-router-dom';
 
 import { ROUTE_PATH } from '../../../../routes/routePath';
 import AnswerButton from '../../../../shared/ui/SharedButton';
@@ -63,7 +63,7 @@ const AnsweringSection = ({
 
       // RecordAnswer에서 이미 제출했으므로 중복 제출 없이
       // feedbackId를 사용하여 피드백 페이지로 바로 이동
-      navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId } });
+      navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(feedbackId) }));
       return;
     }
 
