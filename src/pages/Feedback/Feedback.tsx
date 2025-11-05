@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 
 import styled from '@emotion/styled';
-import { Heart, Star } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
 import usePatch from '../../shared/hooks/usePatch';
 import SharedButton from '../../shared/ui/SharedButton';
+import { theme } from '../../styles/theme';
 
 import Card from './components/Card';
+import LevelModal from './components/LevelModal';
 
 export interface Question {
   questionId: number;
@@ -64,10 +66,10 @@ const FeedbackPage = () => {
   const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${id}`);
   const { data: feedback } = useFetch<Feedback>(`/api/feedback/${id}`);
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
+  const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
   console.log('FeedbackPage API 응답 데이터:', data);
 
   const question = data?.question;
-  // const feedback = data?.feedback;
 
   const [memoContent, setMemoContent] = useState('');
   useEffect(() => {
@@ -86,8 +88,28 @@ const FeedbackPage = () => {
     }
   }, [data?.level]);
 
-  const handleArchiveClick = () => {
-    navigate(ROUTE_PATH.ARCHIVE);
+  const handleModalClick = () => {
+    //navigate(ROUTE_PATH.ARCHIVE);
+    setIsLevelModalOpen(true);
+  };
+
+  const handleLevelSaveAndNavigate = async (newLevel: number) => {
+    const payload: AnswerPayload = { level: newLevel };
+
+    if (newLevel === level) {
+      navigate(ROUTE_PATH.ARCHIVE);
+      return; // 함수 종료
+    }
+    //레벨 새로 입력시
+    try {
+      await patchData(payload);
+      setLevel(newLevel);
+      navigate(ROUTE_PATH.ARCHIVE); // 저장 성공 시 아카이브로 이동
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      alert('난이도 저장에 실패했습니다.');
+      setIsLevelModalOpen(false);
+    }
   };
 
   const handleSaveMemo = async () => {
@@ -112,19 +134,6 @@ const FeedbackPage = () => {
     }
   };
 
-  const handleLevelChange = async (level: number) => {
-    const payload: AnswerPayload = { level: level };
-    try {
-      await patchData(payload);
-      setLevel(level);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
-      alert('오류가 발생했습니다.');
-    }
-  };
-
-  // if (!data || !question || !feedback) return <div>데이터를 불러오는 중...</div>; // ★ null 대신 로딩 표시
-
   return (
     <Wrapper>
       <SectionContainer>
@@ -135,18 +144,8 @@ const FeedbackPage = () => {
       <SectionContainer>
         <InfoWrapper>
           <FilterWrapper>{question?.questionType}</FilterWrapper>
-          <FilterWrapper>
-            {[1, 2, 3, 4, 5].map((starIndex) => (
-              <StyledStar
-                key={starIndex}
-                onClick={() => handleLevelChange(starIndex)}
-                fill={starIndex <= level ? '#FFD700' : 'none'}
-                color="#FFD700"
-              />
-            ))}
-          </FilterWrapper>
           <FilterWrapper onClick={() => handleStarredChange(!isStarred)}>
-            <Heart />
+            <Heart fill={isStarred ? theme.colors.secondary : 'none'} />
           </FilterWrapper>
         </InfoWrapper>
       </SectionContainer>
@@ -194,9 +193,16 @@ const FeedbackPage = () => {
         </Card>
       </SectionContainer>
 
-      <SharedButton type="button" onClick={handleArchiveClick} disabled={false}>
+      <SharedButton type="button" onClick={handleModalClick} disabled={false}>
         아카이브로 이동
       </SharedButton>
+      {isLevelModalOpen && (
+        <LevelModal
+          currentLevel={level}
+          onClose={() => setIsLevelModalOpen(false)}
+          onSave={handleLevelSaveAndNavigate}
+        />
+      )}
     </Wrapper>
   );
 };
@@ -294,11 +300,6 @@ const InfoWrapper = styled.div`
   gap: ${({ theme }) => theme.space.space16};
   align-items: center;
   justify-content: center;
-`;
-
-const StyledStar = styled(Star)`
-  cursor: pointer;
-  transition: all 0.1s ease-in-out;
 `;
 
 export default FeedbackPage;
