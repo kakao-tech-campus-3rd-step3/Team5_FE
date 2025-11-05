@@ -27,7 +27,7 @@ const SubscribePage = () => {
       <CardSection>
         <PricingCard
           title="Premium 요금제"
-          description="당신만을 위한 AI 면접 도우미를\n자유롭게 활용하세요."
+          description="당신만을 위한 AI 면접 도우미를<br/>자유롭게 활용하세요."
           price={monthlyPrice}
           highlighted
         />

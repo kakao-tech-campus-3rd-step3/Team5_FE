@@ -172,13 +172,29 @@ export const handlers = [
       '노하늘',
       '문지훈',
       '유나영',
+      '김태현',
+      '이서연',
+      '박민준',
+      '최예린',
+      '정도현',
+      '강하늘',
+      '윤서아',
+      '임준서',
+      '서유진',
+      '한도윤',
     ];
 
-    const mockItems = Array.from({ length: limit }, (_, i) => ({
-      userId: (lastId ? Number(lastId) : 0) + i + 1,
-      name: friendNames[i] || `친구 ${i + 1}`,
-      email: `friend${i + 1}@dailyq.com`,
-    }));
+    const mockItems = Array.from({ length: limit }, (_, i) => {
+      const index = (lastId ? Number(lastId) : 0) + i;
+      const name = friendNames[index] || `친구 ${index + 1}`;
+      // 더 현실적인 이메일 형식
+      const emailName = name.toLowerCase().replace(/\s+/g, '');
+      return {
+        userId: index + 1,
+        name: name,
+        email: `${emailName}@dailyq.com`,
+      };
+    });
 
     console.log('✅ [백엔드] 팔로잉 목록 반환:', mockItems);
 
