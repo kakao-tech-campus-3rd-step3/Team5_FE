@@ -11,16 +11,12 @@ import JobDetailSelectionPage from './pages/JobDetailSelection/JobDetailSelectio
 
 function App() {
   const [isInstalled, setIsInstalled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [selectedJobDetail, setSelectedJobDetail] = useState<string | null>(null);
+  const isAuthenticated = !!localStorage.getItem('accessToken');
 
   const handleInstall = () => {
     setIsInstalled(true);
-  };
-
-  const handleLogin = () => {
-    setIsLoggedIn(true);
   };
 
   const handleJobSelect = (job: string) => {
@@ -38,8 +34,8 @@ function App() {
       <GlobalStyle>
         {!isInstalled ? (
           <PluginInstallPage onInstall={handleInstall} />
-        ) : !isLoggedIn ? (
-          <LoginPage onLogin={handleLogin} />
+        ) : !isAuthenticated ? (
+          <LoginPage />
         ) : !selectedJob ? (
           <JobSelectionPage onNext={handleJobSelect} />
         ) : !selectedJobDetail ? (
