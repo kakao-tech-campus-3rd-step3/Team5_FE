@@ -117,7 +117,6 @@ const ButtonWrapper = styled.div`
   width: 100%;
 `;
 
-// SharedButton을 확장(extend)하여 스타일만 변경
 const CloseButton = styled(SharedButton)`
   flex: 1;
   background-color: ${({ theme }) => theme.colors.greyLighter};
