@@ -29,6 +29,9 @@ const AppRouter = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return !!localStorage.getItem(ACCESS_TOKEN_KEY);
   });
+  const [isJobSelected, setIsJobSelected] = useState<boolean>(() => {
+    return localStorage.getItem('isJobSelected') === 'true';
+  });
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // 토큰 갱신 함수
@@ -72,8 +75,6 @@ const AppRouter = () => {
     const checkAuth = async () => {
       setIsCheckingAuth(true);
 
-      // URL 파라미터에서 토큰이 있으면 즉시 파싱 및 저장 (OAuth 리다이렉트)
-      // window.location.search를 직접 사용하여 잘못된 URL 형식도 처리
       const searchParams = window.location.search;
       const urlParams = new URLSearchParams(searchParams);
       const tokenFromUrl = urlParams.get('token') || urlParams.get('accessToken');
@@ -118,14 +119,16 @@ const AppRouter = () => {
           window.history.replaceState({}, '', window.location.pathname);
         }
 
+        localStorage.setItem('isJobSelected', 'false');
+        setIsJobSelected(false); // state도 업데이트
+
         // 인증 상태 업데이트 및 홈으로 이동
         setIsAuthenticated(true);
         setIsCheckingAuth(false);
 
         // 홈이 아닌 경우에만 이동
-        if (location.pathname !== ROUTE_PATH.HOME) {
-          navigate(ROUTE_PATH.SELECT_WORK, { replace: true });
-        }
+        console.log('✅ [OAuth 리다이렉트] 직업 선택 페이지로 이동합니다.');
+        navigate(ROUTE_PATH.JOBSELECT, { replace: true });
         return;
       }
 
@@ -148,6 +151,14 @@ const AppRouter = () => {
       // 액세스 토큰이 있으면 인증 상태 업데이트
       if (accessToken) {
         setIsAuthenticated(true);
+        //const isJobSelected = false; // <-- (임시) 실제로는 API로 확인해야 함
+        const currentJobSelected = localStorage.getItem('isJobSelected') === 'true';
+        setIsJobSelected(currentJobSelected);
+
+        if (!isJobSelected && location.pathname !== ROUTE_PATH.JOBSELECT) {
+          console.warn('⚠️ [기존 로그인] 직업 선택이 필요합니다. 직업 선택 페이지로 이동합니다.');
+          navigate(ROUTE_PATH.JOBSELECT, { replace: true });
+        }
         setIsCheckingAuth(false);
         return;
       }
@@ -158,13 +169,21 @@ const AppRouter = () => {
       if (!refreshed && !isPublicRoute) {
         // 갱신 실패 시 로그인 페이지로 리다이렉트
         navigate(ROUTE_PATH.LOGIN, { replace: true });
+      } else if (refreshed) {
+        const currentJobSelected = localStorage.getItem('isJobSelected') === 'true';
+        setIsJobSelected(currentJobSelected); // 13. state에도 반영
+
+        if (!isJobSelected && location.pathname !== ROUTE_PATH.JOBSELECT) {
+          console.warn('⚠️ [토큰 갱신] 직업 선택이 필요합니다. 직업 선택 페이지로 이동합니다.');
+          navigate(ROUTE_PATH.JOBSELECT, { replace: true });
+        }
       }
 
       setIsCheckingAuth(false);
     };
 
     checkAuth();
-  }, [location.pathname, navigate]);
+  });
 
   // localStorage 변경 감지 (같은 탭에서 토큰이 변경된 경우)
   useEffect(() => {
@@ -217,7 +236,7 @@ const AppRouter = () => {
   }
   return (
     <Routes>
-      <Route element={<ProtectedRoute isAuth={isAuthenticated} />}>
+      <Route element={<ProtectedRoute isAuth={isAuthenticated} isJobSelected />}>
         <Route element={<MainLayout />}>
           <Route path={ROUTE_PATH.HOME} element={<HomePage />} />
           <Route path={ROUTE_PATH.ARCHIVE} element={<ArchivePage />} />

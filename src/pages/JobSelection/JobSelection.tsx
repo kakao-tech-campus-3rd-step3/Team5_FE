@@ -10,7 +10,7 @@ import JobDetailSelectionPage from '../JobDetailSelection/JobDetailSelection';
 // }
 
 const JobSelectionPage = () => {
-  const [selectedJob, setSelectedJob] = useState('IT');
+  const [selectedJob, setSelectedJob] = useState('');
   const [step, setStep] = useState(1);
 
   const jobs = [

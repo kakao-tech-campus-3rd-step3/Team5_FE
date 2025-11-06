@@ -48,48 +48,15 @@ interface AnswerPayload {
 
 const FeedbackDetailPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-
-  // id가 유효한지 엄격하게 확인
-  // :id, undefined, 빈 문자열, 숫자가 아닌 문자열 모두 제외
-  const isValidId =
-    id &&
-    id !== ':id' &&
-    id.trim() !== '' &&
-    !isNaN(Number(id)) &&
-    Number(id) > 0 &&
-    Number.isInteger(Number(id));
-
-  const answerId = isValidId ? String(id) : '';
-
-  console.log('📋 [FeedbackDetailPage] URL 파라미터 확인:', {
-    id,
-    isValidId,
-    answerId,
-    answerUrl: answerId ? `/api/answers/${answerId}` : '(호출 안함 - 유효하지 않은 ID)',
-    warning: !isValidId
-      ? '⚠️ 유효하지 않은 ID입니다. 페이지를 새로고침하거나 올바른 URL로 이동해주세요.'
-      : undefined,
-  });
-
-  // id가 유효하지 않으면 에러 메시지 표시 후 리다이렉트
-  if (!isValidId && id) {
-    console.error('❌ [FeedbackDetailPage] 유효하지 않은 ID:', id);
-    // 에러 페이지로 리다이렉트하거나 홈으로 이동
-    setTimeout(() => {
-      navigate('/');
-    }, 2000);
-  }
-
-  const { data } = useFetch<FeedbackDetailResponse>(answerId ? `/api/answers/${answerId}` : '');
+  const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${id}`);
 
   const question = data?.question;
   const feedback = data?.feedback;
-  console.log(feedback);
+  console.log(data);
 
-  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(
-    answerId ? `/api/answers/${answerId}` : ''
-  );
+  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
+
+  const navigate = useNavigate();
 
   const [memoContent, setMemoContent] = useState('');
   useEffect(() => {
@@ -188,6 +155,7 @@ const FeedbackDetailPage = () => {
 
       <SectionContainer>
         <Title>AI 분석 레포트</Title>
+
         <Card>
           <AIFeedbackWrapper>
             <div>
@@ -213,14 +181,16 @@ const FeedbackDetailPage = () => {
       <SectionContainer>
         <Title>메모</Title>
         <Card>
-          <MemoTextArea
-            value={memoContent}
-            onChange={(e) => setMemoContent(e.target.value)}
-            placeholder="메모를 작성해주세요."
-          />
-          <SharedButton type="button" onClick={handleSaveMemo} disabled={false}>
-            메모 저장
-          </SharedButton>
+          <MemoCardContent>
+            <MemoTextArea
+              value={memoContent}
+              onChange={(e) => setMemoContent(e.target.value)}
+              placeholder="메모를 작성해주세요."
+            />
+            <MemoSaveButton type="button" onClick={handleSaveMemo} disabled={false}>
+              메모 저장
+            </MemoSaveButton>
+          </MemoCardContent>
         </Card>
       </SectionContainer>
 
@@ -245,13 +215,6 @@ const Wrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 60px;
-
-  @media (max-width: 768px) {
-    gap: 32px;
-    width: 100%;
-    padding: 0 16px;
-    box-sizing: border-box;
-  }
 `;
 
 const Title = styled.h2`
@@ -259,22 +222,12 @@ const Title = styled.h2`
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   color: ${({ theme }) => theme.colors.black};
   margin-bottom: ${({ theme }) => theme.space.space24};
-
-  @media (max-width: 768px) {
-    font-size: ${({ theme }) => theme.typography.fontSizes.h3};
-    margin-bottom: ${({ theme }) => theme.space.space16};
-  }
 `;
 
 const QuestionText = styled.h1`
   padding: ${({ theme }) => theme.space.space40} ${({ theme }) => theme.space.space32};
   font-size: ${({ theme }) => theme.typography.fontSizes.h1};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-
-  @media (max-width: 768px) {
-    padding: ${({ theme }) => theme.space.space24} 0;
-    font-size: ${({ theme }) => theme.typography.fontSizes.h2};
-  }
 `;
 
 const CardParagraph = styled.p`
@@ -284,18 +237,6 @@ const CardParagraph = styled.p`
   &:not(:last-child) {
     margin-bottom: 1.5em;
   }
-
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  //띄어쓰기 기준으로 줄바꿈
-  white-space: normal;
-  //강제 줄바꿈
-  word-break: break-all;
-
-  @media (max-width: 768px) {
-    font-size: ${({ theme }) => theme.typography.fontSizes.small};
-    line-height: 1.7;
-  }
 `;
 
 const CardTitle = styled.h3`
@@ -304,52 +245,20 @@ const CardTitle = styled.h3`
   color: ${({ theme }) => theme.colors.text};
   margin-bottom: ${({ theme }) => theme.space.space20};
   text-align: center;
-
-  @media (max-width: 768px) {
-    font-size: ${({ theme }) => theme.typography.fontSizes.body};
-    margin-bottom: ${({ theme }) => theme.space.space12};
-  }
 `;
 
 const CardList = styled.ul`
   list-style-position: outside;
   padding-left: ${({ theme }) => theme.space.space20};
-
-  @media (max-width: 768px) {
-    padding-left: ${({ theme }) => theme.space.space16};
-  }
 `;
 
 const CardListItem = styled.li`
   font-size: ${({ theme }) => theme.typography.fontSizes.body};
   color: ${({ theme }) => theme.colors.textSecondary};
   line-height: 1.8;
+  //text-align: left;
   &:not(:last-child) {
     margin-bottom: ${({ theme }) => theme.space.space16};
-  }
-
-  position: relative; /* 1. ::before의 위치 기준점 설정 */
-
-  /* 2. 하이픈이 들어갈 공간(padding-left) 확보 */
-  padding-left: ${({ theme }) => theme.space.space16};
-
-  &::before {
-    content: '-'; /* 3. 내용으로 하이픈 문자 추가 */
-    position: absolute; /* 4. 텍스트 흐름과 관계없이 위치 고정 */
-    left: 0; /* 5. padding-left로 만든 공간의 맨 왼쪽에 배치 */
-    top: 0; /* 6. 줄의 맨 위에 배치 */
-  }
-
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-
-  @media (max-width: 768px) {
-    font-size: ${({ theme }) => theme.typography.fontSizes.small};
-    line-height: 1.7;
-    &:not(:last-child) {
-      margin-bottom: ${({ theme }) => theme.space.space12};
-    }
   }
 `;
 
@@ -364,13 +273,6 @@ const MemoTextArea = styled.textarea`
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.text};
-  }
-
-  @media (max-width: 768px) {
-    width: 100%; /* ◀ 카드 안쪽 꽉 채우기 */
-    box-sizing: border-box;
-    font-size: ${({ theme }) => theme.typography.fontSizes.small};
-    min-height: 100px;
   }
 `;
 
@@ -406,6 +308,26 @@ const InfoWrapper = styled.div`
 const StyledStar = styled(Star)`
   cursor: pointer;
   transition: all 0.1s ease-in-out;
+`;
+
+const MemoSaveButton = styled(SharedButton)`
+  width: 90%;
+  margin-top: ${({ theme }) => theme.space.space16};
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+`;
+
+const MemoCardContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 90%; /* ◀ Card의 높이를 꽉 채움 */
+
+  padding: ${({ theme }) => theme.space.space24};
+  box-sizing: border-box;
 `;
 
 const AIFeedbackWrapper = styled.div`
