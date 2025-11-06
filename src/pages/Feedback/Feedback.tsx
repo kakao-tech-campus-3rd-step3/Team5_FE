@@ -184,14 +184,16 @@ const FeedbackPage = () => {
       <SectionContainer>
         <Title>메모</Title>
         <Card>
-          <MemoTextArea
-            value={memoContent}
-            onChange={(e) => setMemoContent(e.target.value)}
-            placeholder="메모를 작성해주세요."
-          />
-          <SharedButton type="button" onClick={handleSaveMemo} disabled={false}>
-            메모 저장
-          </SharedButton>
+          <MemoCardContent>
+            <MemoTextArea
+              value={memoContent}
+              onChange={(e) => setMemoContent(e.target.value)}
+              placeholder="메모를 작성해주세요."
+            />
+            <MemoSaveButton type="button" onClick={handleSaveMemo} disabled={false}>
+              메모 저장
+            </MemoSaveButton>
+          </MemoCardContent>
         </Card>
       </SectionContainer>
 
@@ -359,6 +361,26 @@ const InfoWrapper = styled.div`
   gap: ${({ theme }) => theme.space.space16};
   align-items: center;
   justify-content: center;
+`;
+
+const MemoSaveButton = styled(SharedButton)`
+  width: 90%;
+  margin-top: ${({ theme }) => theme.space.space16};
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+`;
+
+const MemoCardContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 90%; /* ◀ Card의 높이를 꽉 채움 */
+
+  padding: ${({ theme }) => theme.space.space24};
+  box-sizing: border-box;
 `;
 
 export default FeedbackPage;
