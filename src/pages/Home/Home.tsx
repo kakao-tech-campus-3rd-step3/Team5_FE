@@ -284,14 +284,14 @@ const GlassBackground = styled.div`
 `;
 
 const ContentCard = styled.div`
-  // width: 100%;
-  // max-width: 650px;
+  width: 100%;
+  max-width: 650px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: ${({ theme }) => theme.space.space24};
 
-  // position: relative;
-  // z-index: 1;
+  position: relative;
+  z-index: 1;
 `;
