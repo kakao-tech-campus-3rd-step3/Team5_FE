@@ -40,7 +40,7 @@ const HomePage = () => {
 
   // 사용자 정보는 현재 미사용이지만 향후 사용 예정
   const { data: _user } = useFetch<User>('/api/user');
-  const { data: question } = useFetch<Question>('/api/questions/random');
+  const { data: question, loading: isLoadingQuestion } = useFetch<Question>('/api/questions/random');
   console.log(question);
 
   const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
@@ -85,7 +85,7 @@ const HomePage = () => {
     return (
       <Wrapper>
         <TitleSpan>DailyQ 모의 면접</TitleSpan>
-        <QuestionCardSection answerState={answerState} question={question} />
+        <QuestionCardSection answerState={answerState} question={question} isLoading={isLoadingQuestion} />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
       </Wrapper>
@@ -95,7 +95,7 @@ const HomePage = () => {
     <Wrapper>
       <h1>DailyQ 모의 면접</h1>
       {/* TODO: {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'} */}
-      <QuestionCardSection answerState={answerState} question={question} />
+      <QuestionCardSection answerState={answerState} question={question} isLoading={isLoadingQuestion} />
 
       {answerState === 'before-answer' ? (
         <BeforeAnswerSection
@@ -124,12 +124,23 @@ const Wrapper = styled.div`
   align-items: center;
   justify-content: flex-start;
   height: 100%;
+  min-height: 100vh;
   padding: 40px 20px;
-  gap: 10px;
+  gap: 16px;
+  background: ${({ theme }) => theme.colors.backgroundGradient};
+  
+  h1 {
+    font-size: ${({ theme }) => theme.typography.fontSizes.h1};
+    font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+    color: ${({ theme }) => theme.colors.textBrown};
+    margin: 0;
+    text-align: center;
+  }
 `;
 
 const TitleSpan = styled.span`
   margin-bottom: 32px;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: ${({ theme }) => theme.typography.fontSizes.h2};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.textBrown};
 `;

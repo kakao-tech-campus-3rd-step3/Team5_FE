@@ -6,15 +6,18 @@ import type { AxiosRequestConfig } from 'axios';
 
 const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
   const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const optionsString = JSON.stringify(options);
 
   useEffect(() => {
     // URL이 빈 문자열이면 요청하지 않음
     if (!url) {
+      setLoading(false);
       return;
     }
 
     const fetchData = async () => {
+      setLoading(true);
       try {
         console.log('📤 [useFetch] API 요청 시작:', {
           url,
@@ -52,12 +55,14 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
           stack: err.stack,
         });
         // TODO: 에러 핸들링 로직 추가
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, optionsString]);
-  return { data };
+  return { data, loading };
 };
 
 export default useFetch;
