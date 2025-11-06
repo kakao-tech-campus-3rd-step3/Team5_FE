@@ -23,4 +23,13 @@ const CardWrapper = styled.div`
   min-height: 150px;
 
   margin-bottom: ${({ theme }) => theme.space.space32};
+
+  @media (max-width: 768px) {
+    min-width: unset;
+    width: 100%;
+    height: auto;
+    min-height: auto;
+
+    margin-bottom: ${({ theme }) => theme.space.space20};
+  }
 `;

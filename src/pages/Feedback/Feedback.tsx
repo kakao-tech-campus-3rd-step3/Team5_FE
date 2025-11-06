@@ -153,7 +153,9 @@ const FeedbackPage = () => {
       <SectionContainer>
         <Title>나의 답변</Title>
         <Card>
-          <CardParagraph>{data?.answerText}</CardParagraph>
+          <CardList>
+            <CardParagraph>{data?.answerText}</CardParagraph>
+          </CardList>
         </Card>
       </SectionContainer>
 
@@ -219,6 +221,13 @@ const Wrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 60px;
+
+  @media (max-width: 768px) {
+    gap: 32px;
+    width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
 `;
 
 const Title = styled.h2`
@@ -226,12 +235,22 @@ const Title = styled.h2`
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   color: ${({ theme }) => theme.colors.black};
   margin-bottom: ${({ theme }) => theme.space.space24};
+
+  @media (max-width: 768px) {
+    font-size: ${({ theme }) => theme.typography.fontSizes.h3};
+    margin-bottom: ${({ theme }) => theme.space.space16};
+  }
 `;
 
 const QuestionText = styled.h1`
   padding: ${({ theme }) => theme.space.space40} ${({ theme }) => theme.space.space32};
   font-size: ${({ theme }) => theme.typography.fontSizes.h1};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+
+  @media (max-width: 768px) {
+    padding: ${({ theme }) => theme.space.space24} 0;
+    font-size: ${({ theme }) => theme.typography.fontSizes.h2};
+  }
 `;
 
 const CardParagraph = styled.p`
@@ -241,6 +260,18 @@ const CardParagraph = styled.p`
   &:not(:last-child) {
     margin-bottom: 1.5em;
   }
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  //띄어쓰기 기준으로 줄바꿈
+  white-space: normal;
+  //강제 줄바꿈
+  word-break: break-all;
+
+  @media (max-width: 768px) {
+    font-size: ${({ theme }) => theme.typography.fontSizes.small};
+    line-height: 1.7;
+  }
 `;
 
 const CardTitle = styled.h3`
@@ -249,11 +280,20 @@ const CardTitle = styled.h3`
   color: ${({ theme }) => theme.colors.text};
   margin-bottom: ${({ theme }) => theme.space.space20};
   text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: ${({ theme }) => theme.typography.fontSizes.body};
+    margin-bottom: ${({ theme }) => theme.space.space12};
+  }
 `;
 
 const CardList = styled.ul`
   list-style-position: outside;
   padding-left: ${({ theme }) => theme.space.space20};
+
+  @media (max-width: 768px) {
+    padding-left: ${({ theme }) => theme.space.space16};
+  }
 `;
 
 const CardListItem = styled.li`
@@ -262,6 +302,18 @@ const CardListItem = styled.li`
   line-height: 1.8;
   &:not(:last-child) {
     margin-bottom: ${({ theme }) => theme.space.space16};
+  }
+
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  @media (max-width: 768px) {
+    font-size: ${({ theme }) => theme.typography.fontSizes.small};
+    line-height: 1.7;
+    &:not(:last-child) {
+      margin-bottom: ${({ theme }) => theme.space.space12};
+    }
   }
 `;
 
@@ -276,6 +328,13 @@ const MemoTextArea = styled.textarea`
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.text};
+  }
+
+  @media (max-width: 768px) {
+    width: 100%; /* ◀ 카드 안쪽 꽉 채우기 */
+    box-sizing: border-box;
+    font-size: ${({ theme }) => theme.typography.fontSizes.small};
+    min-height: 100px;
   }
 `;
 
