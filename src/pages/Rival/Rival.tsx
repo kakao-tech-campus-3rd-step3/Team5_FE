@@ -94,7 +94,9 @@ const RivalPage = () => {
           myFollowingList.map((user) => (
             <FriendCard
               key={user.userId}
-              onClick={() => navigate(generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() }))}
+              onClick={() =>
+                navigate(generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() }))
+              }
             >
               <FriendIcon>👤</FriendIcon>
               <FriendInfo>
@@ -245,7 +247,11 @@ const FriendCard = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.secondary} 100%);
+    background: linear-gradient(
+      135deg,
+      ${({ theme }) => theme.colors.primary} 0%,
+      ${({ theme }) => theme.colors.secondary} 100%
+    );
     opacity: 0;
     transition: opacity 0.3s ease;
     border-radius: inherit;

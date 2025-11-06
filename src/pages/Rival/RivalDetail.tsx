@@ -3,7 +3,6 @@ import styled from '@emotion/styled';
 import { useParams } from 'react-router-dom';
 
 import useFetch from '../../shared/hooks/useFetch';
-
 import StreakSection from '../MyPage/StreakSection';
 
 export interface DailySolveCount {
@@ -184,4 +183,3 @@ const CheerButton = styled.button`
     background-color: #555;
   }
 `;
-

@@ -679,12 +679,12 @@ const RecordAnswer = ({
           }
 
           setConvertedText(sttResult.answerText);
-          setSTTStatus('COMPLETED');
-          setRecordingState('completed');
+        setSTTStatus('COMPLETED');
+        setRecordingState('completed');
 
-          if (sttTimeoutRef.current) {
-            clearTimeout(sttTimeoutRef.current);
-          }
+        if (sttTimeoutRef.current) {
+          clearTimeout(sttTimeoutRef.current);
+        }
 
           // ✅ STT 완료 후 SSE 연결 닫기 (더 이상 필요 없음)
           console.log('🔌 [SSE] STT 완료 - SSE 연결 종료');
@@ -702,7 +702,7 @@ const RecordAnswer = ({
           // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
           // 상위 컴포넌트가 중복 제출하지 않도록 함
           // ✅ 변환된 텍스트를 onAnswerComplete에 전달
-          if (onAnswerComplete) {
+        if (onAnswerComplete) {
             // ⚠️ 중요: 서버에 업로드된 실제 URL을 사용 (blob URL이 아님)
             const finalServerAudioUrl = serverAudioUrl || '';
             console.log('📤 [SSE] onAnswerComplete 호출 (sttCompleted):', {
@@ -963,7 +963,7 @@ const RecordAnswer = ({
         case 'COMPLETED':
           // STT 변환 성공 - SSE 알림만 놓친 상태
           if (data.text) {
-            setConvertedText(data.text);
+          setConvertedText(data.text);
           }
           setSTTStatus('COMPLETED');
           setRecordingState('completed');
@@ -1178,10 +1178,10 @@ const RecordAnswer = ({
 
           setAudioBlob(oggBlob);
           const url = URL.createObjectURL(oggBlob);
-          setAudioUrl(url);
+        setAudioUrl(url);
           // ⚠️ blob URL은 onAudioUrlChange로 전달하지 않음
           // 서버에 업로드된 실제 URL만 전달해야 함
-          setRecordingState('processing');
+        setRecordingState('processing');
 
           // ✅ 오디오 변환 완료 후 자동으로 업로드 및 제출 시작
           console.log('🚀 [녹음 완료] 오디오 변환 완료 - 업로드 및 제출 시작');

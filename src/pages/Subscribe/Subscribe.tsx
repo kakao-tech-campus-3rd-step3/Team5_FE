@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
 import styled from '@emotion/styled';
-import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { ROUTE_PATH } from '../../routes/routePath';
 import { theme } from '../../styles/theme';
@@ -88,7 +88,7 @@ export default SubscribePage;
 
 const Wrapper = styled.div`
   min-height: 100vh;
-  background: #FFFFFF;
+  background: #ffffff;
   padding: ${theme.space.space24};
   display: flex;
   flex-direction: column;

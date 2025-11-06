@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 
-import { refreshAccessToken } from '../api/auth';
+import { extractTokensFromResponse, refreshAccessToken } from '../api/auth';
 import ArchivePage from '../pages/Archive/Archive';
 import FeedbackPage from '../pages/Feedback/Feedback';
 import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
@@ -37,35 +37,44 @@ const AppRouter = () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
     if (!refreshToken) {
+      console.warn('⚠️ [AppRouter] 리프레시 토큰이 없습니다.');
       return false;
     }
 
     try {
+      console.log('🔄 [AppRouter] 토큰 갱신 시도...');
       const response = await refreshAccessToken(refreshToken);
 
-      // 응답에서 토큰 추출 (필드명이 정확하지 않을 수 있으므로 유연하게 처리)
-      const newAccessToken = response.accessToken || response[Object.keys(response)[0]];
-      const newRefreshToken =
-        response.refreshToken || response[Object.keys(response)[1]] || refreshToken;
+      // extractTokensFromResponse 함수를 사용하여 일관된 방식으로 토큰 추출
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+        extractTokensFromResponse(response);
 
       if (newAccessToken) {
         localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
-        if (newRefreshToken !== refreshToken) {
+        // 리프레시 토큰이 새로 발급된 경우에만 업데이트
+        if (newRefreshToken && newRefreshToken !== refreshToken) {
           localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+          console.log('✅ [AppRouter] 액세스 토큰 및 리프레시 토큰 갱신 완료');
+        } else {
+          console.log('✅ [AppRouter] 액세스 토큰 갱신 완료 (리프레시 토큰 유지)');
         }
         setIsAuthenticated(true);
         return true;
+      } else {
+        console.error('❌ [AppRouter] 토큰 갱신 실패: 새로운 액세스 토큰이 없습니다.', {
+          responseKeys: Object.keys(response),
+          responsePreview: JSON.stringify(response).substring(0, 100),
+        });
+        throw new Error('토큰 갱신 실패: 새로운 액세스 토큰이 없습니다.');
       }
     } catch (error) {
-      console.error('토큰 갱신 실패:', error);
+      console.error('❌ [AppRouter] 토큰 갱신 실패:', error);
       // 갱신 실패 시 토큰 삭제
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       setIsAuthenticated(false);
       return false;
     }
-
-    return false;
   };
 
   // 인증 상태 확인 및 자동 갱신
