@@ -49,7 +49,8 @@ const HomePage = () => {
       setAnswerState('answered');
       navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(data.feedbackId) }));
     },
-    onError: () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onError: (_error: unknown) => {
       alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
     },
   });
