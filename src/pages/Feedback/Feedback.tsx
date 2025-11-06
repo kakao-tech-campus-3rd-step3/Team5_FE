@@ -160,24 +160,26 @@ const FeedbackPage = () => {
       </SectionContainer>
 
       <SectionContainer>
-        <Title>AI 피드백</Title>
-
+        <Title>AI 분석 레포트</Title>
         <Card>
-          <CardTitle>좋은 점</CardTitle>
-          <CardList>
-            {feedback?.content.positivePoints.map((point, index) => (
-              <CardListItem key={index}>{point}</CardListItem>
-            ))}
-          </CardList>
-        </Card>
-
-        <Card>
-          <CardTitle>개선할 수 있는 점</CardTitle>
-          <CardList>
-            {feedback?.content.pointsForImprovement.map((point, index) => (
-              <CardListItem key={index}>{point}</CardListItem>
-            ))}
-          </CardList>
+          <AIFeedbackWrapper>
+            <div>
+              <CardTitle>좋은 점</CardTitle>
+              <CardList>
+                {feedback?.content.positivePoints.map((point, index) => (
+                  <CardListItem key={index}>{point}</CardListItem>
+                ))}
+              </CardList>
+            </div>
+            <div>
+              <CardTitle>개선 점</CardTitle>
+              <CardList>
+                {feedback?.content.pointsForImprovement.map((point, index) => (
+                  <CardListItem key={index}>{point}</CardListItem>
+                ))}
+              </CardList>
+            </div>
+          </AIFeedbackWrapper>
         </Card>
       </SectionContainer>
 
@@ -306,6 +308,18 @@ const CardListItem = styled.li`
     margin-bottom: ${({ theme }) => theme.space.space16};
   }
 
+  position: relative; /* 1. ::before의 위치 기준점 설정 */
+
+  /* 2. 하이픈이 들어갈 공간(padding-left) 확보 */
+  padding-left: ${({ theme }) => theme.space.space16};
+
+  &::before {
+    content: '-'; /* 3. 내용으로 하이픈 문자 추가 */
+    position: absolute; /* 4. 텍스트 흐름과 관계없이 위치 고정 */
+    left: 0; /* 5. padding-left로 만든 공간의 맨 왼쪽에 배치 */
+    top: 0; /* 6. 줄의 맨 위에 배치 */
+  }
+
   white-space: normal;
   overflow-wrap: break-word;
   word-wrap: break-word;
@@ -381,6 +395,17 @@ const MemoCardContent = styled.div`
 
   padding: ${({ theme }) => theme.space.space24};
   box-sizing: border-box;
+`;
+
+const AIFeedbackWrapper = styled.div`
+  display: flex;
+  flex-direction: column; /* ◀ 1. "좋은 점" 그룹과 "개선할 점" 그룹을 세로로 쌓음 */
+  width: 100%;
+  /* height: 100%; */
+  padding: ${({ theme }) => theme.space.space24};
+  box-sizing: border-box;
+
+  gap: ${({ theme }) => theme.space.space24};
 `;
 
 export default FeedbackPage;

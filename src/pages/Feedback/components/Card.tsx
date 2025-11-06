@@ -19,8 +19,8 @@ export default Card;
 const CardWrapper = styled.div`
   min-width: 700px;
   width: 80%;
-  height: 100px;
-  min-height: 150px;
+  height: auto;
+  min-height: auto;
 
   margin-bottom: ${({ theme }) => theme.space.space32};
 
