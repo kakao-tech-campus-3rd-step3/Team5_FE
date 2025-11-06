@@ -19,12 +19,12 @@ const RivalPage = () => {
   // 기본 목 데이터
   const defaultFriends: RivalUserItem[] = useMemo(
     () => [
-      { userId: 1, name: '박준희', email: '김민수@dailyq.com' },
-      { userId: 2, name: '김진현', email: '이지영@dailyq.com' },
-      { userId: 3, name: '김도현', email: '박준호@dailyq.com' },
-      { userId: 4, name: '박소현', email: '최수진@dailyq.com' },
-      { userId: 5, name: '이창목', email: '정현우@dailyq.com' },
-      { userId: 6, name: '윤자빈', email: '강소영@dailyq.com' },
+      { userId: 1, name: '박준희', email: 'junijuni@naver.com' },
+      { userId: 2, name: '김진현', email: 'kimmjinn0203@gmail.com' },
+      { userId: 3, name: '김도현', email: 'dozzang@gmail.com' },
+      { userId: 4, name: '박소현', email: 'studyhyeon1004@gmail.com' },
+      { userId: 5, name: '이창목', email: 'cmlee5075@gmail.com' },
+      { userId: 6, name: '윤자빈', email: 'allisa052453@gmail.com' },
     ],
     []
   );
