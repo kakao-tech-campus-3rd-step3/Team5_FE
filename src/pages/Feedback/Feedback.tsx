@@ -42,7 +42,7 @@ export interface FeedbackDetailResponse {
   starred: boolean;
   createdAt: string;
   feedback: Feedback;
-  isFollowUP: boolean;
+  followUp: boolean;
 }
 
 interface AnswerPayload {
@@ -130,7 +130,7 @@ const FeedbackPage = () => {
   const { data: feedback } = useFetch<Feedback>(feedbackUrl);
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerUrl);
   console.log('FeedbackPage API 응답 데이터:', data);
-  const followUp = data?.isFollowUP;
+  const followUp = data?.followUp;
   console.log('followUp 값:', followUp);
 
   // 꼬리 질문
