@@ -1,6 +1,9 @@
 import { useState, useRef } from 'react';
 
+import styled from '@emotion/styled';
 import { Mic, Square } from 'lucide-react';
+
+import { theme } from '../../../styles/theme';
 
 interface VoiceInputProps {
   onAudioUrlChange?: (url: string) => void;
@@ -88,38 +91,193 @@ const VoiceInput = ({ onAudioUrlChange }: VoiceInputProps) => {
   };
 
   return (
-    <div>
-      <h2>{isRecording ? '음성 녹음 중...' : '음성 답변'}</h2>
+    <Container>
+      <Title>{isRecording ? '음성 녹음 중...' : '음성 답변'}</Title>
 
-      {isRecording ? (
-        <Square size={40} onClick={stopRecording} style={{ cursor: 'pointer', color: 'red' }} />
-      ) : (
-        <Mic size={40} onClick={startRecording} style={{ cursor: 'pointer' }} />
-      )}
+      <ButtonWrapper>
+        <RecordButton
+          type="button"
+          onClick={isRecording ? stopRecording : startRecording}
+          $isRecording={isRecording}
+          disabled={false}
+        >
+          {isRecording ? (
+            <Square size={32} />
+          ) : (
+            <Mic size={32} />
+          )}
+        </RecordButton>
+        {isRecording && <PulseRing $isRecording={isRecording} />}
+      </ButtonWrapper>
 
-      <p>
+      <Description $isRecording={isRecording}>
         {isRecording
           ? '마이크에 답변을 말씀해주세요. 완료되면 정지 버튼을 누르세요.'
           : '마이크 버튼을 눌러 녹음을 시작하세요.'}
-      </p>
+      </Description>
 
       {/* 녹음 완료 후 미리보기 */}
       {audioUrl && (
-        <div style={{ marginTop: '20px' }}>
-          <h3>녹음 완료</h3>
-          <audio controls src={audioUrl} />
-          <br />
-          <button
-            type="button"
-            onClick={logAudioInfo}
-            style={{ marginTop: '10px', padding: '10px 20px' }}
-          >
+        <AudioPreview>
+          <PreviewTitle>녹음 완료</PreviewTitle>
+          <AudioPlayer controls src={audioUrl} />
+          <InfoButton type="button" onClick={logAudioInfo}>
             Console에 정보 출력
-          </button>
-        </div>
+          </InfoButton>
+        </AudioPreview>
       )}
-    </div>
+    </Container>
   );
 };
 
 export default VoiceInput;
+
+// Styled Components
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+  background: ${theme.colors.white};
+  border-radius: ${theme.radius.radius16};
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 400px;
+  width: 100%;
+`;
+
+const Title = styled.h2`
+  font-size: ${theme.typography.fontSizes.h3};
+  font-weight: ${theme.typography.fontWeights.bold};
+  color: ${theme.colors.text};
+  margin: 0;
+  text-align: center;
+`;
+
+const ButtonWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const RecordButton = styled.button<{ $isRecording: boolean }>`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+
+  background: ${(props) => (props.$isRecording ? '#ef4444' : theme.colors.primary)};
+  color: ${theme.colors.white};
+  box-shadow: ${(props) =>
+    props.$isRecording
+      ? '0 0 20px rgba(239, 68, 68, 0.4)'
+      : '0 4px 16px rgba(59, 130, 246, 0.3)'};
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: ${(props) =>
+      props.$isRecording
+        ? '0 0 30px rgba(239, 68, 68, 0.6)'
+        : '0 6px 20px rgba(59, 130, 246, 0.4)'};
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const PulseRing = styled.div<{ $isRecording: boolean }>`
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #ef4444;
+  animation: ${(props) => (props.$isRecording ? 'pulse 1.5s ease-in-out infinite' : 'none')};
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.3);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+`;
+
+const Description = styled.p<{ $isRecording: boolean }>`
+  font-size: ${theme.typography.fontSizes.body};
+  color: ${(props) => (props.$isRecording ? '#ef4444' : '#666666')};
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
+  transition: color 0.3s ease;
+`;
+
+const AudioPreview = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: ${theme.colors.background};
+  border-radius: ${theme.radius.radius8};
+  border: 1px solid #e5e7eb;
+`;
+
+const PreviewTitle = styled.h3`
+  font-size: ${theme.typography.fontSizes.h3};
+  font-weight: ${theme.typography.fontWeights.bold};
+  color: ${theme.colors.text};
+  margin: 0;
+  text-align: center;
+`;
+
+const AudioPlayer = styled.audio`
+  width: 100%;
+  outline: none;
+
+  &::-webkit-media-controls-panel {
+    background-color: ${theme.colors.white};
+  }
+`;
+
+const InfoButton = styled.button`
+  padding: 10px 20px;
+  background: ${theme.colors.primary};
+  color: ${theme.colors.white};
+  border: none;
+  border-radius: ${theme.radius.radius8};
+  font-size: ${theme.typography.fontSizes.body};
+  font-weight: ${theme.typography.fontWeights.bold};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;

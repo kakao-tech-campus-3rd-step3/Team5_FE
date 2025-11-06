@@ -24,6 +24,7 @@ const Wrapper = styled.button`
 
   background: #333333;
   border-radius: 8px;
+  border: none;
 
   width: 160px;
   height: 40px;
@@ -32,4 +33,26 @@ const Wrapper = styled.button`
   font-size: 18px;
 
   color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #444444;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  &:disabled {
+    background: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
+  }
 `;
