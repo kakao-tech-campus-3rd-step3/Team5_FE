@@ -15,6 +15,7 @@ interface AnsweringSectionProps {
   onAnswerDone: (answerText: string, audioUrl?: string) => void;
   isSubmitting?: boolean;
   questionId?: number;
+  userDefinedTime?: number;
 }
 
 const AnsweringSection = ({
@@ -23,6 +24,7 @@ const AnsweringSection = ({
   onAnswerDone,
   isSubmitting = false,
   questionId,
+  userDefinedTime,
 }: AnsweringSectionProps) => {
   const navigate = useNavigate();
   const [answerText, setAnswerText] = useState('');
@@ -95,6 +97,7 @@ const AnsweringSection = ({
           onError={handleError}
           questionId={questionId}
           answerText={answerText}
+          userDefinedTime={userDefinedTime}
         />
         <AnswerButton
           type="button"

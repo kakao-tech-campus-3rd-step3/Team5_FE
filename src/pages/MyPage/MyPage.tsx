@@ -1,14 +1,46 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 
-const rivalData = {
-  nickname: '닉네임',
-  intro: '한줄소개',
-  dailyQDays: 15,
-  answeredQuestions: 28,
-};
+import useFetch from '../../shared/hooks/useFetch';
 
-const RivalPage = () => {
+import StreakSection from './StreakSection';
+
+export interface DailySolveCount {
+  date: string;
+  count: number;
+}
+
+export interface UserSummary {
+  name: string;
+  streak: number;
+  totalAnswerCount: number;
+  dailySolveCounts: DailySolveCount[];
+  isMe: boolean;
+}
+
+interface User {
+  userId: number;
+  name: string;
+  email: string;
+}
+
+const MyPage = () => {
+  const { data: user } = useFetch<User>('/api/user');
+  const userId = user?.userId;
+  const { data } = useFetch<UserSummary>(`/api/rivals/${userId}/profile`);
+
+  const getTodayString = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  const todayString = getTodayString();
+  const todayData = data?.dailySolveCounts?.find((d) => d.date === todayString);
+  const todayCount = todayData?.count || 0;
+
+  if (!data) {
+    return null;
+  }
   return (
     <Wrapper>
       <SearchBar placeholder="🔍" />
@@ -16,25 +48,24 @@ const RivalPage = () => {
       <ProfileCard>
         <ProfileIcon>👤</ProfileIcon>
         <ProfileInfo>
-          <Nickname>{rivalData.nickname}</Nickname>
-          <Intro>{rivalData.intro}</Intro>
+          <Nickname>{data?.name}</Nickname>
+          <div>{todayCount} 개</div>
         </ProfileInfo>
       </ProfileCard>
 
       <StatsContainer>
         <StatCard>
-          <StatLabel>DailyQ</StatLabel>
-          <StatContent>Keep Going!!</StatContent>
-          <p style={{ color: '#777' }}>{rivalData.dailyQDays} days +</p>
+          <StatLabel>오늘의 답변</StatLabel>
+          <StatContent>{data?.streak} days +</StatContent>
         </StatCard>
         <StatCard>
           <StatLabel>답변한 질문 개수</StatLabel>
-          <StatContent>{rivalData.answeredQuestions}</StatContent>
+          <StatContent>{data?.totalAnswerCount}</StatContent>
         </StatCard>
       </StatsContainer>
 
       <StreakCard>
-        <p>스트릭</p>
+        <StreakSection data={data} />
       </StreakCard>
 
       <CheerButton type="button">응원하기</CheerButton>
@@ -42,7 +73,7 @@ const RivalPage = () => {
   );
 };
 
-export default RivalPage;
+export default MyPage;
 
 const Wrapper = styled.div`
   min-height: 100vh;
@@ -101,11 +132,6 @@ const Nickname = styled.p`
   color: #333;
 `;
 
-const Intro = styled.p`
-  font-size: 1rem;
-  color: #777;
-`;
-
 const StatsContainer = styled.div`
   display: flex;
   gap: 16px;
@@ -140,7 +166,7 @@ const StatContent = styled.p`
 const StreakCard = styled.div`
   ${cardBaseStyles};
   padding: 24px;
-  min-height: 200px;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;

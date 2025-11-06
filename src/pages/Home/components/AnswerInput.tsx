@@ -22,6 +22,7 @@ interface AnswerInputProps {
   onError?: (error: string) => void;
   questionId?: number;
   answerText?: string;
+  userDefinedTime?: number;
 }
 
 const AnswerInput = ({
@@ -35,6 +36,7 @@ const AnswerInput = ({
   onError,
   questionId,
   answerText,
+  userDefinedTime,
 }: AnswerInputProps) => {
   if (!isActive) return null;
 
@@ -57,10 +59,13 @@ const AnswerInput = ({
       onAnswerDone();
     }
   };
+  if (userDefinedTime === undefined) {
+    userDefinedTime = 120;
+  }
 
   return (
     <>
-      <Timer isActive={isActive} onAnswerDone={onAnswerDone} />
+      <Timer isActive={isActive} onAnswerDone={onAnswerDone} userDefinedTime={userDefinedTime} />
       {type === 'voice' && (
         <RecordAnswer
           questionId={questionId}

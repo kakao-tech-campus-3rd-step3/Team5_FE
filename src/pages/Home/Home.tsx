@@ -111,6 +111,7 @@ const HomePage = () => {
           onAnswerDone={handleAnswerDone}
           isSubmitting={isSubmitting}
           questionId={question?.questionId}
+          userDefinedTime={question?.timeLimitSeconds}
         />
       )}
     </Wrapper>

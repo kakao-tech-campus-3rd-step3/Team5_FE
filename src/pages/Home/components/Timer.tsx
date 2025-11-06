@@ -6,14 +6,10 @@ import formatTimeToMMSS from '../utils/formatTimeToMMSS';
 interface TimerProps {
   isActive: boolean;
   onAnswerDone: () => void;
+  userDefinedTime: number;
 }
 
-/**
- * 사용자가 설정 할 수 있는 답변 제한 시간 (단위: seconds)
- */
-const userDefinedTime = 120;
-
-const Timer = ({ isActive, onAnswerDone }: TimerProps) => {
+const Timer = ({ isActive, onAnswerDone, userDefinedTime }: TimerProps) => {
   const { remainingSeconds } = useTimer({ userDefinedTime, isActive, onAnswerDone });
 
   return <Wrapper>{formatTimeToMMSS(remainingSeconds)}</Wrapper>;
