@@ -2,7 +2,6 @@ import styled from '@emotion/styled';
 import Lottie from 'lottie-react';
 
 import LoadingAnimation from '../../../../assets/lottie/loading3.json';
-import GlassBackground from '../../../../shared/components/GlassBackground/GlassBackground';
 
 import type { AnswerStateType, Question } from '../../Home';
 
@@ -15,18 +14,18 @@ const QuestionCardSection = ({ answerState, question }: QuestionCardSectionProps
   if (!question)
     return (
       <QuestionCard>
-        <GlassBackground>
+        <QuestionGlassCard>
           <LottieWrapper>
             <Lottie animationData={LoadingAnimation} loop autoplay />
           </LottieWrapper>
-        </GlassBackground>
+        </QuestionGlassCard>
       </QuestionCard>
     );
 
   return (
     <section>
       <QuestionCard>
-        <GlassBackground>
+        <QuestionGlassCard>
           {answerState === 'before-answer'
             ? // 1. question.followUp이 null/undefined가 아니면 그 값을 사용하고,
               // 2. null/undefined라면 '오늘의 질문을 확인하세요!'를 사용합니다.
@@ -36,7 +35,7 @@ const QuestionCardSection = ({ answerState, question }: QuestionCardSectionProps
             : // answerState가 'before-answer'가 아니면(e.g., 'answering')
               // question.questionText를 보여줍니다.
               question.questionText}
-        </GlassBackground>
+        </QuestionGlassCard>
       </QuestionCard>
     </section>
   );
@@ -50,6 +49,54 @@ const QuestionCard = styled.div`
   margin-bottom: ${({ theme }) => theme.space.space16};
 
   transition: 0.3s ease-in-out;
+`;
+
+const QuestionGlassCard = styled.div`
+  /* 글래스모피즘 핵심 효과 */
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.primary} 0%,
+    ${({ theme }) => theme.colors.secondary} 100%
+  );
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+  /* 다층 그림자 효과 */
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+
+  /* 경계선 */
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+
+  /* 레이아웃 */
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+
+  /* 타이포그래피 */
+  font-size: ${({ theme }) => theme.typography.fontSizes.h3};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  text-align: center;
+  line-height: 1.6;
+
+  /* 호버 효과 */
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
 `;
 
 const LottieWrapper = styled.div`

@@ -316,7 +316,7 @@ const FeedbackPage = () => {
 
       {/* TODO: 테스트 해보기 */}
       {followUp ?? (
-        <QButton onClick={handleRequestFollowUp} disabled={followedQ}>
+        <QButton onClick={handleRequestFollowUp}>
           {followedQ === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
         </QButton>
       )}

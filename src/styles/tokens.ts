@@ -12,6 +12,8 @@ export const colors = {
 };
 
 export const typography = {
+  fontFamily:
+    "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif",
   fontSizes: {
     /** 36px */
     h1: '2.25rem',
