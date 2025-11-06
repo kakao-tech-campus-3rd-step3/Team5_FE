@@ -137,14 +137,15 @@ const HomePage = () => {
     setAnswerState('answering');
   };
 
-  if (answerState === 'answered')
+  if (user?.preferences?.dailyQuestionLimit === 0)
     return (
       <Wrapper>
+        <GridWrapper>
+          <GlassBackground>남은 질문: {user?.preferences?.dailyQuestionLimit} 개</GlassBackground>
+        </GridWrapper>
         <ContentCard>
           <span>DailyQ 모의 면접</span>
-          <QuestionCardSection answerState={answerState} question={question} />
-          {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
-          <h1>답변 후 메인 페이지</h1>
+          <GlassBackground>질문을 모두 소진하셨습니다</GlassBackground>
         </ContentCard>
       </Wrapper>
     );
@@ -152,7 +153,6 @@ const HomePage = () => {
   return (
     <Wrapper>
       <GridWrapper>
-        {user ? `${user.name}님, 안녕하세요!` : '안녕하세요!'}
         <GlassBackground>남은 질문: {user?.preferences?.dailyQuestionLimit} 개</GlassBackground>
       </GridWrapper>
 

@@ -26,8 +26,12 @@ interface User {
 
 const MyPage = () => {
   const { data: user } = useFetch<User>('/api/user');
+
   const userId = user?.userId;
-  const { data } = useFetch<UserSummary>(`/api/rivals/${userId}/profile`);
+
+  const profileApiUrl = userId ? `/api/rivals/${userId}/profile` : '';
+
+  const { data } = useFetch<UserSummary>(profileApiUrl);
 
   const getTodayString = () => {
     const today = new Date();
@@ -55,7 +59,7 @@ const MyPage = () => {
 
       <StatsContainer>
         <StatCard>
-          <StatLabel>오늘의 답변</StatLabel>
+          <StatLabel>현재 스트릭</StatLabel>
           <StatContent>{data?.streak} days +</StatContent>
         </StatCard>
         <StatCard>

@@ -52,7 +52,6 @@ const FeedbackDetailPage = () => {
 
   const question = data?.question;
   const feedback = data?.feedback;
-  console.log(data);
 
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
 

@@ -42,6 +42,7 @@ export interface FeedbackDetailResponse {
   starred: boolean;
   createdAt: string;
   feedback: Feedback;
+  isFollowUP: boolean;
 }
 
 interface AnswerPayload {
@@ -125,10 +126,12 @@ const FeedbackPage = () => {
       : '(호출 안함)',
   });
 
-  const { data } = useFetch<FeedbackDetailResponse>(answerUrl);
+  const { data } = useFetch<FeedbackDetailResponse>(answerId ? `/api/answers/${answerId}` : '');
   const { data: feedback } = useFetch<Feedback>(feedbackUrl);
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerUrl);
   console.log('FeedbackPage API 응답 데이터:', data);
+  const followUp = data?.isFollowUP;
+  console.log('followUp 값:', followUp);
 
   // 꼬리 질문
   const [followedQ, setFollowedQ] = useState<IFollowUpResponse | null>(null);
@@ -311,9 +314,12 @@ const FeedbackPage = () => {
         </Card>
       </SectionContainer>
 
-      <QButton onClick={handleRequestFollowUp} disabled={followedQLoading}>
-        {followedQ === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
-      </QButton>
+      {/* TODO: 테스트 해보기 */}
+      {followUp ?? (
+        <QButton onClick={handleRequestFollowUp}>
+          {followedQ === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
+        </QButton>
+      )}
 
       <SharedButton type="button" onClick={handleModalClick} disabled={false}>
         아카이브로 이동
