@@ -134,7 +134,7 @@ const AppRouter = () => {
 
         // 홈이 아닌 경우에만 이동
         if (location.pathname !== ROUTE_PATH.HOME) {
-          navigate(ROUTE_PATH.SELECT_WORK, { replace: true });
+          navigate(ROUTE_PATH.JOBSELECT, { replace: true });
         }
         return;
       }
