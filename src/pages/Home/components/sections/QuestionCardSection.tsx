@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import Lottie from 'lottie-react';
 
-import LoadingAnimation from '../../../../assets/lottie/loading.json';
+import LoadingAnimation from '../../../../assets/lottie/loading3.json';
 import GlassBackground from '../../../../shared/components/GlassBackground/GlassBackground';
 
 import type { AnswerStateType, Question } from '../../Home';
@@ -57,7 +57,7 @@ const LottieWrapper = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120px;
-  height: 120px;
+  width: 170px;
+  height: auto;
   pointer-events: none;
 `;

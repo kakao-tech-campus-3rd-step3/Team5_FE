@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 
 import styled from '@emotion/styled';
+import Lottie from 'lottie-react';
 import { generatePath, useNavigate, useSearchParams } from 'react-router-dom';
 
 import apiClient from '../../../api/apiClient';
+import LoadingAnimation from '../../../assets/lottie/loading3.json';
 import { ROUTE_PATH } from '../../../routes/routePath';
 import useFetch from '../../../shared/hooks/useFetch';
 
@@ -151,10 +153,8 @@ const QuestionList = () => {
         if (response.data) {
           const { items: newItems, ...newCursor } = response.data;
 
-          // 1단계(초기화)면 덮어쓰고, 2단계(다음)면 누적
           setItems((prevItems) => (isReset ? newItems : [...prevItems, ...newItems]));
 
-          // 새 커서 값으로 덮어쓰기
           setCursor(newCursor);
         }
       } catch (error) {
@@ -168,7 +168,6 @@ const QuestionList = () => {
     fetchAnswers();
   }, [isFetching, isLoading, searchParams, cursor, items.length]);
 
-  // ✦ 수정: occupations fetch에서 params 제거 (params 상태가 없어졌으므로)
   const { data: occupations } = useFetch<OccupationsApiResponse>('/api/occupations');
 
   const handleItemClick = (id: number) => {
@@ -223,14 +222,12 @@ const QuestionList = () => {
   };
 
   const handleOccupationClick = (occupationName: string) => {
-    // ... (기존과 동일)
     setSelectedOccupation(occupationName);
     setSearchParams({ jobId: occupationName }, { replace: true });
   };
 
   return (
     <Wrapper>
-      {/* ... (필터 UI 렌더링 코드는 기존과 동일) ... */}
       <FilterWrapper>
         {filters.map((filter) => (
           <FilterButton
@@ -293,47 +290,46 @@ const QuestionList = () => {
         </FilterWrapper>
       )}
 
-      {/* ✦ 수정: 렌더링 로직을 data.items 대신 state의 items로 변경 */}
-      {items.length > 0 ? (
-        <ListItemWrapper>
-          <ol>
-            {/* ✦ 수정: items?.map -> items.map */}
-            {items.map((q: AnswerItem, index: number) => {
-              // ✦ 추가: 마지막 아이템인지 확인
-              if (items.length === index + 1) {
+      <ListItemWrapper>
+        {items.length > 0 ? (
+          <>
+            <ol>
+              {items.map((q: AnswerItem, index: number) => {
+                if (items.length === index + 1) {
+                  return (
+                    <ListItem
+                      ref={lastItemRef}
+                      key={`${q.answerId}-${index}`}
+                      onClick={() => handleItemClick(q.answerId)}
+                    >
+                      {index + 1}. {q.questionText}
+                    </ListItem>
+                  );
+                }
                 return (
-                  // ✦ 추가: 마지막 아이템에 ref 할당
                   <ListItem
-                    ref={lastItemRef}
-                    key={`${q.answerId}-${index}`} // ✦ 수정: key를 더 고유하게 변경
+                    key={`${q.answerId}-${index}`}
                     onClick={() => handleItemClick(q.answerId)}
                   >
                     {index + 1}. {q.questionText}
                   </ListItem>
                 );
-              }
-              // ✦ 수정: 나머지 아이템
-              return (
-                <ListItem
-                  key={`${q.answerId}-${index}`} // ✦ 수정: key를 더 고유하게 변경
-                  onClick={() => handleItemClick(q.answerId)}
-                >
-                  {index + 1}. {q.questionText}
-                </ListItem>
-              );
-            })}
-          </ol>
-          {/* ✦ 추가: 로딩 스피너 */}
-          {isLoading && <LoadingSpinner>Loading...</LoadingSpinner>}
-        </ListItemWrapper>
-      ) : (
-        // ✦ 수정: 로딩 중이 아닐 때만 "EMPTY" 표시
-        !isLoading && (
-          <ListItemWrapper>
-            <Wrapper>EMPTY</Wrapper>
-          </ListItemWrapper>
-        )
-      )}
+              })}
+            </ol>
+            {isLoading && (
+              <LottieWrapper>
+                <Lottie animationData={LoadingAnimation} loop autoplay />
+              </LottieWrapper>
+            )}
+          </>
+        ) : isLoading ? (
+          <LottieWrapper>
+            <Lottie animationData={LoadingAnimation} loop autoplay />
+          </LottieWrapper>
+        ) : (
+          <Wrapper>EMPTY</Wrapper>
+        )}
+      </ListItemWrapper>
     </Wrapper>
   );
 };
@@ -398,9 +394,12 @@ const ListItem = styled.li`
   margin: ${({ theme }) => theme.space.space12};
 `;
 
-const LoadingSpinner = styled.div`
-  text-align: center;
-  padding: 20px;
-  font-style: italic;
-  color: #888;
+const LottieWrapper = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 170px;
+  height: auto;
+  pointer-events: none;
 `;
