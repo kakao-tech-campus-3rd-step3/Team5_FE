@@ -1,6 +1,9 @@
 import { useState } from 'react';
 
 import styled from '@emotion/styled';
+import { useNavigate } from 'react-router-dom';
+
+import { ROUTE_PATH } from '../../routes/routePath';
 
 const workOptions = [
   { id: 'it', label: 'IT', color: '#e98b8b' },
@@ -10,6 +13,7 @@ const workOptions = [
 
 const SelectWorkPage = () => {
   const [selectedWork, setSelectedWork] = useState('it');
+  const navigate = useNavigate();
 
   const handleWorkSelect = (workId: string) => {
     setSelectedWork(workId);
@@ -17,6 +21,7 @@ const SelectWorkPage = () => {
 
   const handleNext = () => {
     console.log('선택된 직업:', selectedWork);
+    navigate(ROUTE_PATH.HOME);
     // TODO: 다음 페이지로 이동 로직 구현
   };
 

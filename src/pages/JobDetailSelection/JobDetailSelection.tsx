@@ -1,6 +1,9 @@
 import { useState } from 'react';
 
 import styled from '@emotion/styled';
+import { useNavigate } from 'react-router-dom';
+
+import { ROUTE_PATH } from '../../routes/routePath';
 
 interface JobDetailSelectionPageProps {
   selectedJob: string;
@@ -8,7 +11,8 @@ interface JobDetailSelectionPageProps {
 }
 
 const JobDetailSelectionPage = ({ selectedJob, onNext }: JobDetailSelectionPageProps) => {
-  const [selectedDetail, setSelectedDetail] = useState('프론트엔드');
+  const [selectedDetail, setSelectedDetail] = useState('');
+  const navigate = useNavigate();
 
   // 직군별 세부 직무 목록
   const jobDetails = {
@@ -46,6 +50,8 @@ const JobDetailSelectionPage = ({ selectedJob, onNext }: JobDetailSelectionPageP
 
   const handleNext = () => {
     onNext(selectedDetail);
+    localStorage.setItem('isJobSelected', 'true');
+    navigate(ROUTE_PATH.HOME);
   };
 
   const getJobTitle = (job: string) => {

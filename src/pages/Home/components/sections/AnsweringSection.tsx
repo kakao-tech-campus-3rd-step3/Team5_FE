@@ -31,13 +31,26 @@ const AnsweringSection = ({
   const navigate = useNavigate();
   const [answerText, setAnswerText] = useState('');
   const [audioUrl, setAudioUrl] = useState<string>('');
-  const [convertedText, setConvertedText] = useState<string>('');
+  const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false); // 이미 제출되었는지 추적
+  const [submittedFeedbackId, setSubmittedFeedbackId] = useState<number | null>(null); // 제출된 feedbackId 저장
 
   const handleAnswerDone = () => {
-    // 음성 답변인 경우
-    if (type === 'voice' && audioUrl) {
-      // audioUrl이 없거나 빈 문자열이면 아직 녹음/업로드가 완료되지 않은 상태
-      if (!audioUrl || audioUrl.trim() === '') {
+    // ⚠️ 이미 제출된 경우: 피드백 페이지로 이동
+    if (isAlreadySubmitted && submittedFeedbackId) {
+      console.log('✅ [AnsweringSection] 이미 제출 완료 - 피드백 페이지로 이동:', {
+        feedbackId: submittedFeedbackId,
+        type,
+      });
+      navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(submittedFeedbackId) }));
+      return;
+    }
+
+    // ⚠️ 음성 답변인 경우: RecordAnswer에서 자동으로 제출하므로 버튼에서는 제출하지 않음
+    // SSE 연결 후 제출이 완료되면 handleAnswerComplete에서 feedbackId를 받아서
+    // 버튼이 "피드백 확인"으로 변경되고 클릭 시 피드백으로 이동
+    if (type === 'voice') {
+      // audioUrl이 없는 경우
+      if (!audioUrl) {
         console.warn('⚠️ [AnsweringSection] 음성 답변인데 audioUrl이 없습니다:', {
           audioUrl,
           type,
@@ -47,63 +60,53 @@ const AnsweringSection = ({
         return;
       }
 
-      // 음성 답변의 경우 변환된 텍스트 또는 기본 텍스트 사용
-      // STT 변환이 완료되기 전에는 convertedText가 비어있을 수 있음
-      const finalText = convertedText || answerText || '';
-      console.log('📤 [AnsweringSection] 음성 답변 제출:', {
-        finalText,
-        audioUrl,
-        convertedText,
-        answerText,
-        type,
-        note: 'STT 변환이 완료되기 전에는 answerText가 비어있을 수 있습니다. 백엔드가 처리합니다.',
-      });
-      // 음성 답변인 경우 answerText가 비어있어도 괜찮음 (백엔드가 STT 처리)
-      onAnswerDone(finalText, audioUrl);
-    } else {
-      // 텍스트 답변인 경우
-      if (!answerText || answerText.trim() === '') {
-        console.error('❌ [AnsweringSection] 텍스트 답변인데 answerText가 비어있습니다:', {
-          answerText,
-          type,
-        });
-        alert('답변을 입력해주세요.');
-        return;
-      }
-      console.log('📤 [AnsweringSection] 텍스트 답변 제출:', {
-        answerText,
-        type,
-      });
-      onAnswerDone(answerText);
+      // audioUrl이 있지만 아직 제출이 완료되지 않은 경우 (SSE 대기 중)
+      // RecordAnswer에서 자동으로 제출되므로 여기서는 아무것도 하지 않음
+      // 로그는 최소화 (이미 제출된 경우는 위에서 처리됨)
+      return;
     }
+
+    // 텍스트 답변인 경우에만 제출
+    if (!answerText || answerText.trim() === '') {
+      console.error('❌ [AnsweringSection] 텍스트 답변인데 answerText가 비어있습니다:', {
+        answerText,
+        type,
+      });
+      alert('답변을 입력해주세요.');
+      return;
+    }
+    console.log('📤 [AnsweringSection] 텍스트 답변 제출:', {
+      answerText,
+      type,
+    });
+    onAnswerDone(answerText);
   };
 
   // RecordAnswer에서 완료된 답변 처리
-  const handleAnswerComplete = (
-    audioUrl: string,
-    text?: string,
-    alreadySubmitted?: boolean,
-    feedbackId?: number
-  ) => {
-    setAudioUrl(audioUrl);
-    if (text) {
-      setConvertedText(text);
-    }
+          const handleAnswerComplete = (
+            audioUrl: string,
+            text?: string,
+            alreadySubmitted?: boolean,
+            feedbackId?: number
+          ) => {
+            setAudioUrl(audioUrl);
+            // convertedText는 사용하지 않으므로 제거
 
     // ⚠️ 중요: alreadySubmitted가 true이면 이미 제출된 상태이므로
-    // feedbackId가 있으면 피드백 페이지로 이동, 없어도 중복 제출하지 않음
+    // feedbackId를 저장하고 버튼을 활성화 상태로 유지 (피드백으로 이동 가능하도록)
     if (alreadySubmitted) {
+      setIsAlreadySubmitted(true); // 제출 상태 플래그 설정
       if (feedbackId) {
-        console.log('✅ [AnsweringSection] 이미 제출 완료 - 피드백 페이지로 이동', {
+        setSubmittedFeedbackId(feedbackId); // feedbackId 저장
+        console.log('✅ [AnsweringSection] 이미 제출 완료 - feedbackId 저장:', {
           audioUrl,
           text,
           alreadySubmitted,
           feedbackId,
+          note: '버튼 클릭 시 피드백 페이지로 이동할 수 있습니다.',
         });
-
-        // RecordAnswer에서 이미 제출했으므로 중복 제출 없이
-        // feedbackId를 사용하여 피드백 페이지로 바로 이동
-        navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(feedbackId) }));
+        // 자동으로 피드백 페이지로 이동하지 않고, 버튼 클릭 시 이동하도록 함
+        // navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(feedbackId) }));
       } else {
         console.warn(
           '⚠️ [AnsweringSection] alreadySubmitted=true이지만 feedbackId가 없습니다. 중복 제출 방지:',
@@ -118,12 +121,9 @@ const AnsweringSection = ({
       return; // 이미 제출된 경우 항상 return (중복 제출 방지)
     }
 
-    // 아직 제출되지 않은 경우에만 제출
-    // 음성 답변 완료 시 자동으로 제출
-    setTimeout(() => {
-      const finalText = text || '음성 답변';
-      onAnswerDone(finalText, audioUrl);
-    }, 500);
+    // ⚠️ 음성 답변은 RecordAnswer에서 이미 제출했으므로 여기서는 제출하지 않음
+    // handleAnswerComplete는 RecordAnswer에서 이미 제출된 경우에만 호출되므로
+    // 여기서 추가 제출을 하지 않음
   };
 
   // 에러 처리
@@ -153,12 +153,21 @@ const AnsweringSection = ({
           type="button"
           onClick={handleAnswerDone}
           disabled={
-            isSubmitting ||
-            (type === 'text' && answerText.trim() === '') ||
-            (type === 'voice' && (!audioUrl || audioUrl.trim() === ''))
+            // 이미 제출된 경우 버튼 활성화 (피드백으로 이동 가능)
+            isAlreadySubmitted && submittedFeedbackId
+              ? false
+              : isSubmitting ||
+                (type === 'text' && answerText.trim() === '') ||
+                (type === 'voice' && (!audioUrl || audioUrl.trim() === '')) // 음성 답변은 audioUrl이 있어야 활성화
           }
         >
-          {isSubmitting ? '제출 중...' : '답변 완료'}
+          {isAlreadySubmitted && submittedFeedbackId
+            ? '피드백 확인' // 이미 제출된 경우 피드백 확인 버튼
+            : type === 'voice' && audioUrl
+              ? '피드백 확인' // 음성 답변 업로드 완료 후 피드백 확인 버튼 (제출 대기 중)
+              : isSubmitting
+                ? '제출 중...'
+                : '답변 완료'}
         </AnswerButton>
       </Wrapper>
     </section>

@@ -28,9 +28,6 @@ export const makePolygon = ({ state, pinnedItemRefs, pinnedItemWrapperRef }: Pro
   pinnedItemWrapper.style.transform = `translate(${x}px, ${y}px) rotate(${state.rotate}rad)`;
 
   pinnedItems.forEach((pinnedItem, i) => {
-    // const px = radius * Math.cos(angle * i);
-    // const py = radius * Math.sin(angle * i);
-    // const itemRotation = angle * i;
     const rotationOffset = -Math.PI / 2;
     const currentAngle = angle * i + rotationOffset;
     const px = radius * Math.cos(currentAngle);

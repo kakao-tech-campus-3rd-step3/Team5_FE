@@ -2,12 +2,16 @@ import { useState } from 'react';
 
 import styled from '@emotion/styled';
 
-interface JobSelectionPageProps {
-  onNext: (selectedJob: string) => void;
-}
+//import { useNavigate } from 'react-router-dom';
+import JobDetailSelectionPage from '../JobDetailSelection/JobDetailSelection';
 
-const JobSelectionPage = ({ onNext }: JobSelectionPageProps) => {
-  const [selectedJob, setSelectedJob] = useState('IT');
+// interface JobSelectionPageProps {
+//   onNext: (selectedJob: string) => void;
+// }
+
+const JobSelectionPage = () => {
+  const [selectedJob, setSelectedJob] = useState('');
+  const [step, setStep] = useState(1);
 
   const jobs = [
     { id: 'IT', label: 'IT' },
@@ -17,11 +21,26 @@ const JobSelectionPage = ({ onNext }: JobSelectionPageProps) => {
 
   const handleJobSelect = (jobId: string) => {
     setSelectedJob(jobId);
+    setStep(2);
   };
 
-  const handleNext = () => {
-    onNext(selectedJob);
+  const handleDetailNext = (selectedDetail: string) => {
+    // 6. JobDetailSelectionPage가 'navigate('/home')'을 스스로 처리하므로
+    //    이 부모 컴포넌트는 콘솔에 로그만 남깁니다.
+    console.log('최종 선택된 직군:', selectedJob);
+    console.log('최종 선택된 상세 직군:', selectedDetail);
   };
+
+  // const handleNext = () => {
+  //   onNext(selectedJob);
+  //   navigate('/jobdetailselection');
+  // };
+
+  if (step === 2) {
+    // 1. 직업이 선택되면,
+    // 2. JobDetailSelectionPage를 렌더링하면서 필요한 props를 전달합니다.
+    return <JobDetailSelectionPage selectedJob={selectedJob} onNext={handleDetailNext} />;
+  }
 
   return (
     <Wrapper>
@@ -43,8 +62,6 @@ const JobSelectionPage = ({ onNext }: JobSelectionPageProps) => {
           ))}
         </JobList>
       </Card>
-
-      <NextButton onClick={handleNext}>다음</NextButton>
     </Wrapper>
   );
 };
@@ -118,27 +135,5 @@ const JobButton = styled.button<{ isSelected: boolean }>`
 
   &:active {
     transform: translateY(1px);
-  }
-`;
-
-const NextButton = styled.button`
-  background-color: #333333;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 16px 32px;
-  font-size: 18px;
-  font-weight: 700;
-  width: 100%;
-  max-width: 320px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #444444;
-  }
-
-  &:active {
-    background-color: #222222;
   }
 `;

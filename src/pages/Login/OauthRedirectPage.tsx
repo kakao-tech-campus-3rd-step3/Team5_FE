@@ -54,7 +54,7 @@ const OauthRedirectPage = () => {
       }
 
       console.log('홈으로 이동 시도:', ROUTE_PATH.HOME);
-      navigate(ROUTE_PATH.HOME, { replace: true });
+      navigate(ROUTE_PATH.JOBSELECT, { replace: true });
     } else {
       console.log('❌ 토큰 없음 - 로그인 실패');
       console.log('에러 정보:', { error, errorDescription });

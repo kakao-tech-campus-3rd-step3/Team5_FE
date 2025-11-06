@@ -19,6 +19,8 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const timestamp = new Date().toISOString();
+        const callStack = new Error().stack;
         console.log('📤 [useFetch] API 요청 시작:', {
           url,
           fullUrl: url.startsWith('http')
@@ -26,6 +28,8 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
             : `${import.meta.env.VITE_API_BASE_URL || ''}${url}`,
           method: 'GET',
           options: options || {},
+          timestamp,
+          callStack: callStack?.split('\n').slice(0, 10).join('\n'), // 상위 10줄만
         });
 
         const response = await apiClient.get<T>(url, options);
@@ -35,6 +39,7 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
           status: response.status,
           statusText: response.statusText,
           data: response.data,
+          timestamp: new Date().toISOString(),
         });
 
         setData(response.data);

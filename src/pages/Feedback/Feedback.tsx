@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import styled from '@emotion/styled';
+import Lottie from 'lottie-react';
 import { Heart } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import apiClient from '../../api/apiClient';
+import LoadingAnimation from '../../assets/lottie/loading3.json';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
 import usePatch from '../../shared/hooks/usePatch';
@@ -127,7 +129,7 @@ const FeedbackPage = () => {
   const { data: feedback } = useFetch<Feedback>(feedbackUrl);
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerUrl);
   console.log('FeedbackPage API 응답 데이터:', data);
-  const followUp = data?.followUP;
+  // const followUp = data?.followUP;
 
   // 꼬리 질문
   const [followedQ, setFollowedQ] = useState<IFollowUpResponse | null>(null);
@@ -186,6 +188,7 @@ const FeedbackPage = () => {
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
 
   const handleModalClick = () => {
+    //navigate(ROUTE_PATH.ARCHIVE);
     setIsLevelModalOpen(true);
   };
 
@@ -229,6 +232,7 @@ const FeedbackPage = () => {
       alert('오류가 발생했습니다.');
     }
   };
+  console.log(question);
 
   return (
     <Wrapper>
@@ -236,7 +240,6 @@ const FeedbackPage = () => {
         {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결*/}
         <QuestionText>{question?.questionText}</QuestionText>
       </SectionContainer>
-
       <SectionContainer>
         <InfoWrapper>
           <FilterWrapper>{question?.questionType}</FilterWrapper>
@@ -249,33 +252,47 @@ const FeedbackPage = () => {
       <SectionContainer>
         <Title>나의 답변</Title>
         <Card>
-          <CardList>
-            <CardParagraph>{data?.answerText}</CardParagraph>
-          </CardList>
+          {!data ? (
+            <LottieWrapper>
+              <Lottie animationData={LoadingAnimation} loop autoplay />
+            </LottieWrapper>
+          ) : (
+            <CardParagraph>{data.answerText}</CardParagraph>
+          )}
         </Card>
       </SectionContainer>
 
       <SectionContainer>
         <Title>AI 분석 레포트</Title>
         <Card>
-          <AIFeedbackWrapper>
-            <div>
-              <CardTitle>좋은 점</CardTitle>
-              <CardList>
-                {feedback?.content.positivePoints.map((point, index) => (
-                  <CardListItem key={index}>{point}</CardListItem>
-                ))}
-              </CardList>
-            </div>
-            <div>
-              <CardTitle>개선 점</CardTitle>
-              <CardList>
-                {feedback?.content.pointsForImprovement.map((point, index) => (
-                  <CardListItem key={index}>{point}</CardListItem>
-                ))}
-              </CardList>
-            </div>
-          </AIFeedbackWrapper>
+          {!feedback || feedback.status === 'PENDING' ? (
+            <LottieWrapper>
+              <Lottie animationData={LoadingAnimation} loop autoplay />
+            </LottieWrapper>
+          ) : (
+            <AIFeedbackWrapper>
+              {feedback.content.positivePoints.length > 0 && (
+                <div>
+                  <CardTitle>좋은 점</CardTitle>
+                  <CardList>
+                    {feedback.content.positivePoints.map((point, index) => (
+                      <CardListItem key={index}>{point}</CardListItem>
+                    ))}
+                  </CardList>
+                </div>
+              )}
+              {feedback.content.pointsForImprovement.length > 0 && (
+                <div>
+                  <CardTitle>개선 점</CardTitle>
+                  <CardList>
+                    {feedback.content.pointsForImprovement.map((point, index) => (
+                      <CardListItem key={index}>{point}</CardListItem>
+                    ))}
+                  </CardList>
+                </div>
+              )}
+            </AIFeedbackWrapper>
+          )}
         </Card>
       </SectionContainer>
 
@@ -295,11 +312,9 @@ const FeedbackPage = () => {
         </Card>
       </SectionContainer>
 
-      {/* {followUp && ( */}
-      <button onClick={handleRequestFollowUp} disabled={followedQLoading}>
+      <QButton onClick={handleRequestFollowUp} disabled={followedQLoading}>
         {followedQ === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
-      </button>
-      {/* )} */}
+      </QButton>
 
       <SharedButton type="button" onClick={handleModalClick} disabled={false}>
         아카이브로 이동
@@ -396,6 +411,7 @@ const CardTitle = styled.h3`
 const CardList = styled.ul`
   list-style-position: outside;
   padding-left: ${({ theme }) => theme.space.space20};
+  //text-align: left;
 
   @media (max-width: 768px) {
     padding-left: ${({ theme }) => theme.space.space16};
@@ -408,18 +424,6 @@ const CardListItem = styled.li`
   line-height: 1.8;
   &:not(:last-child) {
     margin-bottom: ${({ theme }) => theme.space.space16};
-  }
-
-  position: relative; /* 1. ::before의 위치 기준점 설정 */
-
-  /* 2. 하이픈이 들어갈 공간(padding-left) 확보 */
-  padding-left: ${({ theme }) => theme.space.space16};
-
-  &::before {
-    content: '-'; /* 3. 내용으로 하이픈 문자 추가 */
-    position: absolute; /* 4. 텍스트 흐름과 관계없이 위치 고정 */
-    left: 0; /* 5. padding-left로 만든 공간의 맨 왼쪽에 배치 */
-    top: 0; /* 6. 줄의 맨 위에 배치 */
   }
 
   white-space: normal;
@@ -508,6 +512,54 @@ const AIFeedbackWrapper = styled.div`
   box-sizing: border-box;
 
   gap: ${({ theme }) => theme.space.space24};
+`;
+
+const LottieWrapper = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 170px;
+  height: auto;
+  pointer-events: none;
+`;
+
+const QButton = styled.button`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+
+  width: 160px;
+  height: 40px;
+
+  font-weight: 700;
+  font-size: 18px;
+
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 142, 142, 0.4);
+  border-radius: 8px;
+
+  &:hover:not(:disabled) {
+    //background: ${({ theme }) => theme.colors.pointCoral || '#ffffff'};
+    opacity: 0.9;
+    //transform: translateY(-1px);
+    //box-shadow: 0 4px 12px rgba(255, 142, 142, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(255, 142, 142, 0.3);
+  }
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 export default FeedbackPage;

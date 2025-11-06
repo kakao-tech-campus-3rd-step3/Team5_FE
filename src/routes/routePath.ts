@@ -10,4 +10,6 @@ export const ROUTE_PATH = {
   RIVAL: '/rival',
   MYPAGE: '/myPage',
   NOTFOUND: '*',
+  SELECT_WORK: '/selectwork',
+  JOBSELECT: '/jobselection',
 };
