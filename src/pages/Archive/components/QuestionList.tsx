@@ -142,7 +142,6 @@ const QuestionList = () => {
       }
 
       try {
-        // API 호출
         console.log('📤 [QuestionList] GET /api/answers 요청:', {
           url: '/api/answers',
           params,
@@ -160,8 +159,8 @@ const QuestionList = () => {
       } catch (error) {
         console.error('Failed to fetch answers:', error);
       } finally {
-        setIsLoading(false); // 로딩 종료
-        setIsFetching(false); // 트리거 끄기 (중요: 루프 방지)
+        setIsLoading(false);
+        setIsFetching(false);
       }
     };
 

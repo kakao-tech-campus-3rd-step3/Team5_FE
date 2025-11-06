@@ -140,7 +140,7 @@ const HomePage = () => {
   return (
     <Wrapper>
       <GridWrapper>
-        {user ? `${user.name}님, 안녕하세요!` : '안녕하세요!'}
+        {/* {user ? `${user.name}님, 안녕하세요!` : '안녕하세요!'} */}
         <GlassBackground>남은 질문: {user?.preferences?.dailyQuestionLimit} 개</GlassBackground>
       </GridWrapper>
 
@@ -189,33 +189,6 @@ const Wrapper = styled.div`
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
     sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-
-  /* 배경 그라데이션 (유지) */
-  &::before {
-    content: '';
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(147, 51, 234, 0.3));
-    top: -10%;
-    left: -20%;
-    filter: blur(120px);
-    z-index: 0;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(245, 158, 11, 0.3));
-    bottom: -10%;
-    right: -10%;
-    filter: blur(100px);
-    z-index: 0;
-  }
 `;
 
 const GridWrapper = styled.div`
@@ -268,28 +241,28 @@ const GlassBackground = styled.div`
 `;
 
 const ContentCard = styled.div`
-  width: 100%;
-  max-width: 650px;
+  // width: 100%;
+  // max-width: 650px;
 
-  /* 👈 Apple-Style: 메인 카드는 15% 투명도로 계층 구분 */
-  background-color: hsla(0, 0%, 100%, 0.15);
-  backdrop-filter: ${({ theme }) => theme.blurs.blur8};
+  // /* 👈 Apple-Style: 메인 카드는 15% 투명도로 계층 구분 */
+  // background-color: hsla(0, 0%, 100%, 0.15);
+  // backdrop-filter: ${({ theme }) => theme.blurs.blur8};
 
-  /* 👈 Apple-Style: 24px -> 20px로 변경 */
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  // /* 👈 Apple-Style: 24px -> 20px로 변경 */
+  // border-radius: 20px;
+  // border: 1px solid rgba(255, 255, 255, 0.2);
 
-  /* 👈 Apple-Style: 더 부드러운 그림자 */
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+  // /* 👈 Apple-Style: 더 부드러운 그림자 */
+  // box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
 
-  /* 👈 Apple-Style: 넉넉한 내부 여백 (space24 -> space32 가정) */
-  padding: ${({ theme }) => theme.space.space32 || '2rem'};
+  // /* 👈 Apple-Style: 넉넉한 내부 여백 (space24 -> space32 가정) */
+  // padding: ${({ theme }) => theme.space.space32 || '2rem'};
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${({ theme }) => theme.space.space24};
+  // display: flex;
+  // flex-direction: column;
+  // align-items: center;
+  // gap: ${({ theme }) => theme.space.space24};
 
-  position: relative;
-  z-index: 1;
+  // position: relative;
+  // z-index: 1;
 `;

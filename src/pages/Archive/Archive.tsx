@@ -33,6 +33,8 @@ const ArchivePage = () => {
     handlers: { handleDownClick, handleUpClick },
   } = useSectionScroll();
 
+  // const [showMode, setShowMode] = useState(false);
+
   return (
     <Wrapper>
       <SectionFirst ref={sectionFirstRef}>
@@ -48,6 +50,7 @@ const ArchivePage = () => {
             <Lottie animationData={clickAnimation} loop autoplay />
           </LottieWrapper>
         </ButtonWrapper>
+
         <PinnedQuestionList />
       </SectionFirst>
 
