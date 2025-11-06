@@ -41,24 +41,6 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
 
 apiClient.interceptors.request.use(
   async (config) => {
-    // GET /api/answers 요청 로그
-    if (config.method === 'get' && config.url === '/api/answers') {
-      console.log('📤 [GET /api/answers] Request 정보:', {
-        url: config.url,
-        method: config.method,
-        baseURL: config.baseURL,
-        fullUrl: `${config.baseURL}${config.url}`,
-        params: config.params,
-        headers: {
-          Authorization: config.headers['Authorization'] ? 'Bearer ***' : '없음',
-          'Content-Type': config.headers['Content-Type'],
-          Accept: config.headers['Accept'],
-        },
-        timeout: config.timeout,
-        전체Config: config,
-      });
-    }
-
     // localStorage에서 토큰을 먼저 확인
     const token = localStorage.getItem(ACCESS_TOKEN_KEY);
 
@@ -137,31 +119,6 @@ apiClient.interceptors.request.use(
         url: config.url,
         method: config.method,
         baseURL: config.baseURL,
-      });
-    }
-
-    // POST /api/answers 요청 로그 (토큰 설정 후)
-    if (config.method === 'post' && config.url === '/api/answers') {
-      console.log('📤 [POST /api/answers] Request 정보 (토큰 설정 후):', {
-        url: config.url,
-        method: config.method,
-        baseURL: config.baseURL,
-        fullUrl: `${config.baseURL}${config.url}`,
-        data: config.data,
-        dataType: typeof config.data,
-        dataKeys: config.data ? Object.keys(config.data) : [],
-        headers: {
-          Authorization: config.headers['Authorization'] ? 'Bearer ***' : '없음',
-          'Content-Type': config.headers['Content-Type'],
-          Accept: config.headers['Accept'],
-        },
-        timeout: config.timeout,
-        JSON형식: config.data ? JSON.stringify(config.data, null, 2) : '없음',
-        토큰상태: {
-          localStorage에토큰있음: !!token,
-          토큰미리보기: token ? token.substring(0, 20) + '...' : '없음',
-          최종Authorization헤더: config.headers['Authorization'] ? '설정됨' : '없음',
-        },
       });
     }
 

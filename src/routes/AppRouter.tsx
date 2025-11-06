@@ -7,11 +7,13 @@ import ArchivePage from '../pages/Archive/Archive';
 import FeedbackPage from '../pages/Feedback/Feedback';
 import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
 import HomePage from '../pages/Home/Home';
+import JobSelectionPage from '../pages/JobSelection/JobSelection';
 import LoginPage from '../pages/Login/Login';
 import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
 import MyPage from '../pages/MyPage/MyPage';
 import NotFound from '../pages/NotFound/NotFound';
 import RivalPage from '../pages/Rival/Rival';
+import SelectWorkPage from '../pages/SelectWork/SelectWork';
 import SubscribePage from '../pages/Subscribe/Subscribe';
 import AuthLayout from '../shared/layouts/AuthLayout';
 import MainLayout from '../shared/layouts/MainLayout';
@@ -122,7 +124,7 @@ const AppRouter = () => {
 
         // 홈이 아닌 경우에만 이동
         if (location.pathname !== ROUTE_PATH.HOME) {
-          navigate(ROUTE_PATH.HOME, { replace: true });
+          navigate(ROUTE_PATH.SELECT_WORK, { replace: true });
         }
         return;
       }
@@ -229,6 +231,8 @@ const AppRouter = () => {
       <Route element={<AuthLayout />}>
         {/* TODO: LOGINPAGE 등 네비, 푸터 없이 콘텐츠만 보여줘야 하는 레이아웃 추가 */}
         <Route path={ROUTE_PATH.LOGIN} element={<LoginPage />} />
+        <Route path={ROUTE_PATH.SELECT_WORK} element={<SelectWorkPage />} />
+        <Route path={ROUTE_PATH.JOBSELECT} element={<JobSelectionPage />} />
       </Route>
       <Route path={ROUTE_PATH.LOGIN_OAUTH} element={<OauthRedirectPage />} />
 

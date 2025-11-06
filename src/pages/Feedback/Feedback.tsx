@@ -4,7 +4,6 @@ import styled from '@emotion/styled';
 import { Heart } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import apiClient from '../../api/apiClient';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
 import usePatch from '../../shared/hooks/usePatch';
@@ -57,16 +56,6 @@ export interface Feedback {
   status: string; // "PENDING", "COMPLETED" 등
   content: FeedbackContent;
   updatedAt: string;
-}
-
-interface IFollowUpPayload {
-  message: string;
-  generatedCount: number;
-}
-interface IFollowUpResponse {
-  nextQuestionId: number;
-  questionText: string;
-  // ... 기타 응답 필드
 }
 
 const FeedbackPage = () => {
@@ -128,39 +117,6 @@ const FeedbackPage = () => {
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerUrl);
   console.log('FeedbackPage API 응답 데이터:', data);
 
-  // 꼬리 질문
-  const [followedQ, setFollowedQ] = useState<IFollowUpResponse | null>(null);
-  const [followedQLoading, setFollowedQLoading] = useState(false);
-  console.log(followedQ);
-  console.log(followedQLoading);
-
-  const [answer, setAnswer] = useState('');
-
-  const handleRequestFollowUp = async () => {
-    const payload: IFollowUpPayload = {
-      message: answer,
-      generatedCount: 1,
-    };
-
-    setFollowedQLoading(true);
-
-    try {
-      const response = await apiClient.post<IFollowUpResponse>(
-        `api/questions/followUp/${id}`,
-        payload
-      );
-
-      setFollowedQ(response.data);
-      console.log('요청 성공:', response.data);
-      setAnswer('');
-    } catch (err) {
-      console.error('요청 실패:', err);
-    } finally {
-      setFollowedQLoading(false);
-    }
-  };
-  // handleRequestFollowUp();
-
   const question = data?.question;
 
   const [memoContent, setMemoContent] = useState('');
@@ -185,6 +141,7 @@ const FeedbackPage = () => {
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
 
   const handleModalClick = () => {
+    //navigate(ROUTE_PATH.ARCHIVE);
     setIsLevelModalOpen(true);
   };
 
@@ -294,10 +251,6 @@ const FeedbackPage = () => {
         </Card>
       </SectionContainer>
 
-      <button onClick={handleRequestFollowUp} disabled={followedQLoading}>
-        {followedQ === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
-      </button>
-
       <SharedButton type="button" onClick={handleModalClick} disabled={false}>
         아카이브로 이동
       </SharedButton>
@@ -393,6 +346,7 @@ const CardTitle = styled.h3`
 const CardList = styled.ul`
   list-style-position: outside;
   padding-left: ${({ theme }) => theme.space.space20};
+  text-align: left;
 
   @media (max-width: 768px) {
     padding-left: ${({ theme }) => theme.space.space16};
