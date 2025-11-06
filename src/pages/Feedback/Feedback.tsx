@@ -62,12 +62,12 @@ const FeedbackPage = () => {
 
   // id가 유효한지 엄격하게 확인
   // :id, undefined, 빈 문자열, 숫자가 아닌 문자열 모두 제외
-  const isValidId = 
-    id && 
-    id !== ':id' && 
-    id.trim() !== '' && 
-    !isNaN(Number(id)) && 
-    Number(id) > 0 && 
+  const isValidId =
+    id &&
+    id !== ':id' &&
+    id.trim() !== '' &&
+    !isNaN(Number(id)) &&
+    Number(id) > 0 &&
     Number.isInteger(Number(id));
 
   const answerId = isValidId ? String(id) : '';
@@ -80,7 +80,9 @@ const FeedbackPage = () => {
     feedbackId,
     answerUrl: answerId ? `/api/answers/${answerId}` : '(호출 안함 - 유효하지 않은 ID)',
     feedbackUrl: feedbackId ? `/api/feedback/${feedbackId}` : '(호출 안함 - 유효하지 않은 ID)',
-    warning: !isValidId ? '⚠️ 유효하지 않은 ID입니다. 페이지를 새로고침하거나 올바른 URL로 이동해주세요.' : undefined,
+    warning: !isValidId
+      ? '⚠️ 유효하지 않은 ID입니다. 페이지를 새로고침하거나 올바른 URL로 이동해주세요.'
+      : undefined,
   });
 
   // id가 유효하지 않으면 에러 메시지 표시 후 리다이렉트
@@ -100,8 +102,12 @@ const FeedbackPage = () => {
     answerUrl: answerUrl || '(호출 안함 - id 없음)',
     feedbackUrl: feedbackUrl || '(호출 안함 - id 없음)',
     baseURL: import.meta.env.VITE_API_BASE_URL || '기본값',
-    fullAnswerUrl: answerUrl ? `${import.meta.env.VITE_API_BASE_URL || ''}${answerUrl}` : '(호출 안함)',
-    fullFeedbackUrl: feedbackUrl ? `${import.meta.env.VITE_API_BASE_URL || ''}${feedbackUrl}` : '(호출 안함)',
+    fullAnswerUrl: answerUrl
+      ? `${import.meta.env.VITE_API_BASE_URL || ''}${answerUrl}`
+      : '(호출 안함)',
+    fullFeedbackUrl: feedbackUrl
+      ? `${import.meta.env.VITE_API_BASE_URL || ''}${feedbackUrl}`
+      : '(호출 안함)',
   });
 
   const { data } = useFetch<FeedbackDetailResponse>(answerUrl);

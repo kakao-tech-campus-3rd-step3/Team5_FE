@@ -49,7 +49,7 @@ const Wrapper = styled.button`
     transform: translateY(0);
     box-shadow: 0 2px 6px rgba(255, 142, 142, 0.3);
   }
-  
+
   /* Ripple effect */
   &::before {
     content: '';
@@ -61,7 +61,9 @@ const Wrapper = styled.button`
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.5);
     transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
+    transition:
+      width 0.6s,
+      height 0.6s;
   }
 
   &:active:not(:disabled)::before {

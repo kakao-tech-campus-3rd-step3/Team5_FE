@@ -151,14 +151,7 @@ export const handlers = [
     const limit = Number(url.searchParams.get('limit')) || 10;
 
     // 실제 친구 이름과 이메일 데이터
-    const friendNames = [
-      '박준희',
-      '김진현',
-      '김도현',
-      '박소현',
-      '이창목',
-      '윤자빈',
-    ];
+    const friendNames = ['박준희', '김진현', '김도현', '박소현', '이창목', '윤자빈'];
 
     const mockItems = Array.from({ length: limit }, (_, i) => {
       const index = (lastId ? Number(lastId) : 0) + i;
@@ -187,14 +180,7 @@ export const handlers = [
     const limit = Number(url.searchParams.get('limit')) || 10;
 
     // 실제 팔로워 이름과 이메일 데이터
-    const followerNames = [
-      '박준희',
-      '김진현',
-      '김도현',
-      '박소현',
-      '이창목',
-      '윤자빈',
-    ];
+    const followerNames = ['박준희', '김진현', '김도현', '박소현', '이창목', '윤자빈'];
 
     const mockItems = Array.from({ length: limit }, (_, i) => ({
       userId: (lastId ? Number(lastId) : 0) + i + 1,

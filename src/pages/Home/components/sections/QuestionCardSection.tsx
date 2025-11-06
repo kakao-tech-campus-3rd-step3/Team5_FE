@@ -11,7 +11,11 @@ interface QuestionCardSectionProps {
   isLoading?: boolean;
 }
 
-const QuestionCardSection = ({ answerState, question, isLoading = false }: QuestionCardSectionProps) => {
+const QuestionCardSection = ({
+  answerState,
+  question,
+  isLoading = false,
+}: QuestionCardSectionProps) => {
   return (
     <section>
       <QuestionCard isStarted={answerState === 'answering'}>
@@ -22,7 +26,11 @@ const QuestionCardSection = ({ answerState, question, isLoading = false }: Quest
               <LoadingText>질문을 불러오는 중...</LoadingText>
             </LoadingContainer>
           ) : question ? (
-            answerState === 'before-answer' ? '오늘의 질문을 확인하세요!' : question.questionText
+            answerState === 'before-answer' ? (
+              '오늘의 질문을 확인하세요!'
+            ) : (
+              question.questionText
+            )
           ) : (
             <ErrorText>질문을 불러올 수 없습니다.</ErrorText>
           )}
@@ -41,7 +49,7 @@ const QuestionCard = styled.div<{ isStarted: boolean }>`
 
   transition: 0.3s ease-in-out;
   animation: fadeInUp 0.6s ease-out;
-  
+
   @keyframes fadeInUp {
     from {
       opacity: 0;

@@ -101,11 +101,7 @@ const VoiceInput = ({ onAudioUrlChange }: VoiceInputProps) => {
           $isRecording={isRecording}
           disabled={false}
         >
-          {isRecording ? (
-            <Square size={32} />
-          ) : (
-            <Mic size={32} />
-          )}
+          {isRecording ? <Square size={32} /> : <Mic size={32} />}
         </RecordButton>
         {isRecording && <PulseRing $isRecording={isRecording} />}
       </ButtonWrapper>
@@ -177,9 +173,7 @@ const RecordButton = styled.button<{ $isRecording: boolean }>`
   background: ${(props) => (props.$isRecording ? '#ef4444' : theme.colors.primary)};
   color: ${theme.colors.white};
   box-shadow: ${(props) =>
-    props.$isRecording
-      ? '0 0 20px rgba(239, 68, 68, 0.4)'
-      : '0 4px 16px rgba(59, 130, 246, 0.3)'};
+    props.$isRecording ? '0 0 20px rgba(239, 68, 68, 0.4)' : '0 4px 16px rgba(59, 130, 246, 0.3)'};
 
   &:hover {
     transform: scale(1.05);

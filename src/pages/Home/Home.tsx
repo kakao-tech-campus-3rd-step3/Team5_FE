@@ -40,7 +40,8 @@ const HomePage = () => {
 
   // 사용자 정보는 현재 미사용이지만 향후 사용 예정
   const { data: _user } = useFetch<User>('/api/user');
-  const { data: question, loading: isLoadingQuestion } = useFetch<Question>('/api/questions/random');
+  const { data: question, loading: isLoadingQuestion } =
+    useFetch<Question>('/api/questions/random');
   console.log(question);
 
   const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
@@ -48,7 +49,7 @@ const HomePage = () => {
       setAnswerState('answered');
       navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(data.feedbackId) }));
     },
-    onError: (_error: any) => {
+    onError: () => {
       alert('답변 제출에 실패했습니다. 다시 시도해주세요.');
     },
   });
@@ -110,7 +111,11 @@ const HomePage = () => {
     return (
       <Wrapper>
         <TitleSpan>DailyQ 모의 면접</TitleSpan>
-        <QuestionCardSection answerState={answerState} question={question} isLoading={isLoadingQuestion} />
+        <QuestionCardSection
+          answerState={answerState}
+          question={question}
+          isLoading={isLoadingQuestion}
+        />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
       </Wrapper>
@@ -120,7 +125,11 @@ const HomePage = () => {
     <Wrapper>
       <h1>DailyQ 모의 면접</h1>
       {/* TODO: {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'} */}
-      <QuestionCardSection answerState={answerState} question={question} isLoading={isLoadingQuestion} />
+      <QuestionCardSection
+        answerState={answerState}
+        question={question}
+        isLoading={isLoadingQuestion}
+      />
 
       {answerState === 'before-answer' ? (
         <BeforeAnswerSection
@@ -154,7 +163,7 @@ const Wrapper = styled.div`
   padding: 40px 20px;
   gap: 16px;
   background: ${({ theme }) => theme.colors.backgroundGradient};
-  
+
   h1 {
     font-size: ${({ theme }) => theme.typography.fontSizes.h1};
     font-weight: ${({ theme }) => theme.typography.fontWeights.bold};

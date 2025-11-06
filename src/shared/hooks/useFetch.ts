@@ -21,7 +21,9 @@ const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
       try {
         console.log('📤 [useFetch] API 요청 시작:', {
           url,
-          fullUrl: url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL || ''}${url}`,
+          fullUrl: url.startsWith('http')
+            ? url
+            : `${import.meta.env.VITE_API_BASE_URL || ''}${url}`,
           method: 'GET',
           options: options || {},
         });

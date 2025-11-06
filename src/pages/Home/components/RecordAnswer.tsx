@@ -3,8 +3,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
 import { Mic, Square, Upload, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 
-import apiClient, { API_BASE_URL } from '../../../api/apiClient';
 import { getSSEToken } from '../../../api/answers';
+import apiClient, { API_BASE_URL } from '../../../api/apiClient';
 import { ACCESS_TOKEN_KEY, isTokenExpired } from '../../../shared/utils/auth';
 
 // Web Audio API를 사용하여 webm을 OGG로 변환하는 함수
@@ -12,7 +12,8 @@ import { ACCESS_TOKEN_KEY, isTokenExpired } from '../../../shared/utils/auth';
 const convertWebmToOgg = async (webmBlob: Blob): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioContext = new AudioContextClass();
       const fileReader = new FileReader();
 
       fileReader.onload = async (e) => {
@@ -23,14 +24,14 @@ const convertWebmToOgg = async (webmBlob: Blob): Promise<Blob> => {
           // AudioBuffer를 OGG로 변환
           // MediaRecorder를 사용하여 OGG 형식으로 인코딩
           const oggBlob = await audioBufferToOgg(audioBuffer);
-          
+
           console.log('✅ [오디오 변환] OGG 변환 완료:', {
             원본크기: webmBlob.size,
             변환크기: oggBlob.size,
             원본타입: webmBlob.type,
             변환타입: oggBlob.type,
           });
-          
+
           resolve(oggBlob);
         } catch (error) {
           reject(error);
@@ -51,16 +52,17 @@ const audioBufferToOgg = async (buffer: AudioBuffer): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     try {
       // AudioContext를 사용하여 MediaStream 생성
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioContext = new AudioContextClass();
+
       // MediaStreamDestination 생성 (실시간 오디오 스트림)
       const destination = audioContext.createMediaStreamDestination();
-      
+
       // AudioBufferSourceNode 생성
       const source = audioContext.createBufferSource();
       source.buffer = buffer;
       source.connect(destination);
-      
+
       // MediaRecorder로 OGG 형식 인코딩
       const mimeType = 'audio/ogg; codecs=opus';
       if (!MediaRecorder.isTypeSupported(mimeType)) {
@@ -69,36 +71,36 @@ const audioBufferToOgg = async (buffer: AudioBuffer): Promise<Blob> => {
         resolve(wavBlob);
         return;
       }
-      
+
       const mediaRecorder = new MediaRecorder(destination.stream, {
         mimeType: mimeType,
       });
-      
+
       const chunks: Blob[] = [];
-      
+
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           chunks.push(event.data);
         }
       };
-      
+
       mediaRecorder.onstop = () => {
         const oggBlob = new Blob(chunks, { type: mimeType });
         audioContext.close();
         resolve(oggBlob);
       };
-      
+
       mediaRecorder.onerror = () => {
         audioContext.close();
         reject(new Error('MediaRecorder 오류'));
       };
-      
+
       // 녹음 시작
       mediaRecorder.start();
-      
+
       // 오디오 재생 시작
       source.start(0);
-      
+
       // 오디오 재생 완료 후 녹음 중지
       source.onended = () => {
         if (mediaRecorder.state !== 'inactive') {
@@ -106,7 +108,6 @@ const audioBufferToOgg = async (buffer: AudioBuffer): Promise<Blob> => {
         }
         audioContext.close();
       };
-      
     } catch (error) {
       // OGG 변환 실패 시 WAV로 폴백
       console.warn('⚠️ [OGG 변환 실패] WAV로 변환합니다:', error);
@@ -186,7 +187,7 @@ const getSSEUrl = (sseToken: string): string => {
   const baseUrl = API_BASE_URL || window.location.origin;
   const ssePath = `/api/sse/connect?token=${encodeURIComponent(sseToken)}`;
   const fullUrl = baseUrl + ssePath;
-  
+
   console.log('🔗 [SSE URL 생성]:', {
     baseUrl,
     ssePath,
@@ -194,7 +195,7 @@ const getSSEUrl = (sseToken: string): string => {
     sseTokenPreview: sseToken.substring(0, 20) + '...',
     note: '쿼리 파라미터로 sseToken 전달 (일회성 토큰)',
   });
-  
+
   return fullUrl;
 };
 
@@ -234,7 +235,14 @@ type RecordingState =
 type NetworkState = 'online' | 'offline' | 'checking';
 type STTStatus = 'PENDING_STT' | 'COMPLETED' | 'FAILED_STT';
 
-const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAudioUrlChange, followUp }: RecordAnswerProps) => {
+const RecordAnswer = ({
+  questionId,
+  answerText,
+  onAnswerComplete,
+  onError,
+  onAudioUrlChange,
+  followUp,
+}: RecordAnswerProps) => {
   // 상태 관리
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [networkState, setNetworkState] = useState<NetworkState>('online');
@@ -273,7 +281,9 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
       console.log('🔍 [SSE] 토큰 상태 확인:', {
         tokenPreview: token.substring(0, 20) + '...',
         isExpired: tokenExpired,
-        note: tokenExpired ? '⚠️ 토큰이 만료되었습니다. 토큰 갱신이 필요합니다.' : '✅ 토큰이 유효합니다.',
+        note: tokenExpired
+          ? '⚠️ 토큰이 만료되었습니다. 토큰 갱신이 필요합니다.'
+          : '✅ 토큰이 유효합니다.',
       });
 
       if (tokenExpired) {
@@ -292,7 +302,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
       try {
         const sseTokenResponse = await getSSEToken();
         sseToken = sseTokenResponse.sseToken;
-        
+
         console.log('✅ [SSE] 일회성 SSE 토큰 수신 성공:', {
           sseTokenPreview: sseToken.substring(0, 20) + '...',
           sseTokenLength: sseToken.length,
@@ -307,7 +317,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
 
       // 2단계: 받은 sseToken으로 SSE 연결
       const sseUrl = getSSEUrl(sseToken);
-      
+
       console.log('🔗 [SSE] 연결 시도:', {
         url: sseUrl,
         baseURL: API_BASE_URL,
@@ -317,17 +327,17 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
       });
 
       logInfo('SSE 연결 시도 시작', { url: sseUrl, baseURL: API_BASE_URL });
-      
+
       // ✅ 백엔드 요구사항: EventSource 사용 (쿼리 파라미터로 sseToken 전달)
       console.log('🔧 [SSE] EventSource 사용 (백엔드 요구사항):', {
         url: sseUrl,
         note: 'EventSource는 헤더를 설정할 수 없지만, 쿼리 파라미터로 sseToken 전달',
       });
-      
+
       // EventSource 생성 (백엔드 예시 코드와 동일)
       const eventSource = new EventSource(sseUrl);
-      sseRef.current = eventSource as any;
-      
+      sseRef.current = eventSource;
+
       console.log('📡 [SSE] EventSource 생성 완료:', {
         url: eventSource.url,
         readyState: eventSource.readyState,
@@ -338,7 +348,14 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
           2: 'CLOSED - 연결 종료',
         }[eventSource.readyState],
         note: 'EventSource는 쿼리 파라미터로 토큰을 전달합니다. 백엔드가 "connect" 이벤트를 보내면 연결 성공입니다.',
-        대기중인이벤트: ['connect', 'message', 'sttCompleted', 'sttFailed', 'stt-completed', 'stt_completed'],
+        대기중인이벤트: [
+          'connect',
+          'message',
+          'sttCompleted',
+          'sttFailed',
+          'stt-completed',
+          'stt_completed',
+        ],
       });
 
       // 모든 이벤트를 로깅하기 위한 범용 리스너 (디버깅용)
@@ -366,9 +383,9 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
       eventSource.addEventListener('connect', (event) => {
         try {
           // 백엔드가 JSON이 아닌 단순 문자열("connected")을 보낼 수 있음
-          let data: any;
+          let data: string | Record<string, unknown>;
           const rawData = event.data;
-          
+
           if (rawData && typeof rawData === 'string') {
             // JSON 형식인지 확인
             if (rawData.trim().startsWith('{') || rawData.trim().startsWith('[')) {
@@ -391,7 +408,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
             note: '백엔드에서 SSE 연결 성공을 확인했습니다.',
           });
           logInfo('SSE connect 이벤트 수신', { rawData, parsedData: data });
-        } catch (error) {
+        } catch {
           // 파싱 실패해도 연결 성공으로 간주 (백엔드가 단순 문자열을 보낸 경우)
           console.log('✅ [SSE] 백엔드 connect 이벤트 수신 (단순 문자열):', {
             eventType: 'connect',
@@ -413,9 +430,9 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
             timestamp: new Date().toISOString(),
           });
 
-          let data: any;
+          let data: Record<string, unknown> | string;
           try {
-            data = JSON.parse(event.data);
+            data = JSON.parse(event.data) as Record<string, unknown>;
             console.log('✅ [SSE] message JSON 파싱 성공:', data);
           } catch (parseError) {
             console.warn('⚠️ [SSE] message JSON 파싱 실패:', parseError, { rawData: event.data });
@@ -434,7 +451,8 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
           }
 
           // STT 텍스트가 message 이벤트로 올 수도 있음
-          const text = data.text || data.transcript || data.result || data.content || data.message || '';
+          const text =
+            data.text || data.transcript || data.result || data.content || data.message || '';
           if (text && text.trim() !== '' && text !== 'connected') {
             console.log('✅ [SSE] message 이벤트에서 STT 텍스트 발견:', {
               text: text,
@@ -483,9 +501,9 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
           });
 
           // JSON 파싱 시도
-          let data: any;
+          let data: Record<string, unknown> | string;
           try {
-            data = JSON.parse(event.data);
+            data = JSON.parse(event.data) as Record<string, unknown>;
             console.log('✅ [SSE] sttCompleted JSON 파싱 성공:', data);
           } catch (parseError) {
             console.error('❌ [SSE] sttCompleted JSON 파싱 실패:', parseError, {
@@ -496,7 +514,8 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
           }
 
           // 텍스트 추출 (여러 가능한 필드명 확인)
-          const text = data.text || data.transcript || data.result || data.content || data.message || '';
+          const text =
+            data.text || data.transcript || data.result || data.content || data.message || '';
           const audioUrl = data.audioUrl || data.audio_url || data.url || '';
 
           console.log('✅ [SSE] STT 완료 - 변환된 텍스트 수신:', {
@@ -614,9 +633,12 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
                 '2. 백엔드 인증 필터가 SSE 엔드포인트를 제외하지 않음',
                 '3. sseToken 파싱 오류',
               ],
-              해결방법: '백엔드에서 SSE 엔드포인트의 쿼리 파라미터 sseToken을 올바르게 처리하는지 확인 필요',
+              해결방법:
+                '백엔드에서 SSE 엔드포인트의 쿼리 파라미터 sseToken을 올바르게 처리하는지 확인 필요',
             });
-            setErrorMessage('인증이 실패했습니다. 백엔드가 쿼리 파라미터 토큰을 인식하지 못하는 것 같습니다.');
+            setErrorMessage(
+              '인증이 실패했습니다. 백엔드가 쿼리 파라미터 토큰을 인식하지 못하는 것 같습니다.'
+            );
           } else {
             console.error('❌ [SSE] 다른 원인으로 연결 실패:', {
               최종URL: eventSource.url,
@@ -668,7 +690,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
     try {
       const statusUrl = `/api/answers/${answerIdToCheck}/status`;
       const fullStatusUrl = `${API_BASE_URL}${statusUrl}`;
-      
+
       console.log('📡 [상태 조회] API 요청:', {
         url: statusUrl,
         fullUrl: fullStatusUrl,
@@ -877,9 +899,9 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
         // 오디오 변환 시도 (OGG 형식으로 변환)
         try {
           console.log('🔄 [오디오 변환] webm → ogg 변환 시작...');
-          
+
           const oggBlob = await convertWebmToOgg(webmBlob);
-          
+
           console.log('✅ [오디오 변환] OGG 변환 완료:', {
             원본크기: webmBlob.size,
             변환크기: oggBlob.size,
@@ -1077,11 +1099,11 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
       // 파일명 생성 (timestamp 기반)
       // 실제 파일 형식에 맞는 확장자 사용
       const timestamp = Date.now();
-      
+
       // audioBlob의 실제 타입 확인
       const actualFileType = audioBlob.type;
       let extension = '.ogg'; // 기본값 (OGG 형식)
-      
+
       if (actualFileType.includes('ogg')) {
         extension = '.ogg';
       } else if (actualFileType.includes('wav')) {
@@ -1089,9 +1111,9 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
       } else if (actualFileType.includes('webm')) {
         extension = '.webm';
       }
-      
-      let fileName = `audio_${timestamp}${extension}`;
-      
+
+      const fileName = `audio_${timestamp}${extension}`;
+
       console.log('📝 [파일명 생성] 실제 파일 타입 기반:', {
         audioBlobType: actualFileType,
         선택된확장자: extension,
@@ -1222,7 +1244,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
 
         // answerText 처리: 음성 답변의 경우 STT 변환이 완료되기 전에는 비어있을 수 있음
         const finalAnswerText = convertedText || answerText || '';
-        
+
         // 음성 답변의 경우: STT 변환이 완료되기 전에는 answerText가 비어있을 수 있음
         // 백엔드가 audioUrl이 있으면 answerText를 선택적으로 처리하는지 확인 필요
         if (!finalAnswerText || finalAnswerText.trim() === '') {

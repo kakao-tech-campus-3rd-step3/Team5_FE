@@ -52,7 +52,10 @@ export const convertAudioToOgg = async (audioBlob: Blob): Promise<Blob> => {
     });
     return response.data;
   } catch (error) {
-    console.warn('⚠️ [오디오 변환 API] 백엔드 변환 API가 없거나 실패했습니다. 브라우저 변환을 사용합니다.', error);
+    console.warn(
+      '⚠️ [오디오 변환 API] 백엔드 변환 API가 없거나 실패했습니다. 브라우저 변환을 사용합니다.',
+      error
+    );
     throw error;
   }
 };
