@@ -84,7 +84,7 @@ const HomePage = () => {
   if (answerState === 'answered')
     return (
       <Wrapper>
-        <span>DailyQ 모의 면접</span>
+        <TitleSpan>DailyQ 모의 면접</TitleSpan>
         <QuestionCardSection answerState={answerState} question={question} />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
@@ -122,6 +122,14 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 100%;
+  padding: 40px 20px;
+  gap: 10px;
+`;
+
+const TitleSpan = styled.span`
+  margin-bottom: 32px;
+  font-size: 20px;
+  font-weight: 600;
 `;

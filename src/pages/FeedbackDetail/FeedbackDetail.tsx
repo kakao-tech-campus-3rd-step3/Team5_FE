@@ -48,13 +48,25 @@ interface AnswerPayload {
 
 const FeedbackDetailPage = () => {
   const { id } = useParams();
-  const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${id}`);
+
+  // id가 유효한지 확인 (숫자 또는 문자열 형태의 숫자)
+  const isValidId = id && id !== ':id' && !isNaN(Number(id));
+  const answerId = isValidId ? String(id) : '';
+
+  console.log('📋 [FeedbackDetailPage] URL 파라미터 확인:', {
+    id,
+    isValidId,
+    answerId,
+    answerUrl: answerId ? `/api/answers/${answerId}` : '(호출 안함)',
+  });
+
+  const { data } = useFetch<FeedbackDetailResponse>(answerId ? `/api/answers/${answerId}` : '');
 
   const question = data?.question;
   const feedback = data?.feedback;
   console.log(feedback);
 
-  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
+  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerId ? `/api/answers/${answerId}` : '');
 
   const navigate = useNavigate();
 

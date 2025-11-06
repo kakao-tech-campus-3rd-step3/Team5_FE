@@ -11,7 +11,22 @@ const usePatch = <T, U>(url: string, options?: AxiosRequestConfig) => {
   const patchData = async (payload: U) => {
     setError(null);
     try {
+      console.log('📤 [usePatch] API 요청 시작:', {
+        url,
+        fullUrl: url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL || ''}${url}`,
+        method: 'PATCH',
+        payload,
+        options: options || {},
+      });
+
       const response = await apiClient.patch<T>(url, payload, options);
+
+      console.log('✅ [usePatch] API 응답 성공:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data,
+      });
 
       setData(response.data);
       return response.data;

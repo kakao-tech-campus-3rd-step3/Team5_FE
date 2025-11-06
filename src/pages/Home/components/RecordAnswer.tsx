@@ -666,7 +666,8 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
 
         const requestBody = {
           questionId,
-          answerText: answerText || '음성 답변',
+          // STT 변환이 완료된 경우 convertedText 사용, 없으면 answerText prop 사용, 둘 다 없으면 빈 문자열
+          answerText: convertedText || answerText || '',
           audioUrl: serverAudioUrl,
           followUp: false,
         };
@@ -716,10 +717,19 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
 
           const result = submitResponse.data;
 
+          // 백엔드 응답에 변환된 텍스트가 포함되어 있으면 사용
+          if (result.answerText && result.answerText !== '음성 답변') {
+            setConvertedText(result.answerText);
+            console.log('✅ [백엔드 응답에서 변환된 텍스트 발견]', {
+              answerText: result.answerText,
+            });
+          }
+
           console.log('✅ [POST /api/answers 응답 성공]', {
             answerId: result.answerId,
             feedbackId: result.feedbackId,
             status: result.status,
+            answerText: result.answerText,
             전체응답: result,
           });
 

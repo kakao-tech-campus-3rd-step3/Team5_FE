@@ -16,6 +16,16 @@ const RivalPage = () => {
   const [activeTab, setActiveTab] = useState<'following' | 'follower'>('following');
   const [isLoading, setIsLoading] = useState(false);
 
+  // 기본 목 데이터
+  const defaultFriends: RivalUserItem[] = [
+    { userId: 1, name: '박준희', email: '김민수@dailyq.com' },
+    { userId: 2, name: '김진현', email: '이지영@dailyq.com' },
+    { userId: 3, name: '김도현', email: '박준호@dailyq.com' },
+    { userId: 4, name: '박소현', email: '최수진@dailyq.com' },
+    { userId: 5, name: '이창목', email: '정현우@dailyq.com' },
+    { userId: 6, name: '윤자빈', email: '강소영@dailyq.com' },
+  ];
+
   // 페이지 로드 시 내 팔로잉 목록 불러오기
   useEffect(() => {
     const loadMyFollowing = async () => {
@@ -24,8 +34,15 @@ const RivalPage = () => {
         const following = await getFollowingList(undefined, 20);
         console.log('📦 받아온 팔로잉 데이터:', following);
         console.log('📦 following.items:', following.items);
-        setMyFollowingList(following.items);
-        console.log('✅ 팔로잉 목록 상태 업데이트 완료');
+        
+        // API 호출은 성공했지만 데이터가 비어있으면 목 데이터 사용
+        if (!following.items || following.items.length === 0) {
+          console.log('⚠️ API 응답 데이터가 비어있음 - 목 데이터 사용');
+          setMyFollowingList(defaultFriends);
+        } else {
+          setMyFollowingList(following.items);
+          console.log('✅ 팔로잉 목록 상태 업데이트 완료');
+        }
       } catch (error) {
         console.error('❌ 팔로잉 목록 로드 실패:', error);
       }

@@ -61,9 +61,35 @@ const FeedbackPage = () => {
   //const { feedbackId } = useParams<{ feedbackId: string }>();
   const { id } = useParams();
 
-  const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${id}`);
-  const { data: feedback } = useFetch<Feedback>(`/api/feedback/${id}`);
-  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
+  // id가 유효한지 확인 (숫자 또는 문자열 형태의 숫자)
+  const isValidId = id && id !== ':id' && !isNaN(Number(id));
+  const answerId = isValidId ? String(id) : '';
+  const feedbackId = isValidId ? String(id) : '';
+
+  console.log('📋 [FeedbackPage] URL 파라미터 확인:', {
+    id,
+    isValidId,
+    answerId,
+    feedbackId,
+    answerUrl: answerId ? `/api/answers/${answerId}` : '(호출 안함)',
+    feedbackUrl: feedbackId ? `/api/feedback/${feedbackId}` : '(호출 안함)',
+  });
+
+  // id가 유효할 때만 API 호출
+  const answerUrl = answerId ? `/api/answers/${answerId}` : '';
+  const feedbackUrl = feedbackId ? `/api/feedback/${feedbackId}` : '';
+
+  console.log('🚀 [FeedbackPage] API 엔드포인트:', {
+    answerUrl: answerUrl || '(호출 안함 - id 없음)',
+    feedbackUrl: feedbackUrl || '(호출 안함 - id 없음)',
+    baseURL: import.meta.env.VITE_API_BASE_URL || '기본값',
+    fullAnswerUrl: answerUrl ? `${import.meta.env.VITE_API_BASE_URL || ''}${answerUrl}` : '(호출 안함)',
+    fullFeedbackUrl: feedbackUrl ? `${import.meta.env.VITE_API_BASE_URL || ''}${feedbackUrl}` : '(호출 안함)',
+  });
+
+  const { data } = useFetch<FeedbackDetailResponse>(answerUrl);
+  const { data: feedback } = useFetch<Feedback>(feedbackUrl);
+  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerUrl);
   console.log('FeedbackPage API 응답 데이터:', data);
 
   const question = data?.question;
