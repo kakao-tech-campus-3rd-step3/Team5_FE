@@ -83,14 +83,14 @@ const AnsweringSection = ({
   };
 
   // RecordAnswer에서 완료된 답변 처리
-          const handleAnswerComplete = (
-            audioUrl: string,
-            text?: string,
-            alreadySubmitted?: boolean,
-            feedbackId?: number
-          ) => {
-            setAudioUrl(audioUrl);
-            // convertedText는 사용하지 않으므로 제거
+  const handleAnswerComplete = (
+    audioUrl: string,
+    text?: string,
+    alreadySubmitted?: boolean,
+    feedbackId?: number
+  ) => {
+    setAudioUrl(audioUrl);
+    // convertedText는 사용하지 않으므로 제거
 
     // ⚠️ 중요: alreadySubmitted가 true이면 이미 제출된 상태이므로
     // feedbackId를 저장하고 버튼을 활성화 상태로 유지 (피드백으로 이동 가능하도록)

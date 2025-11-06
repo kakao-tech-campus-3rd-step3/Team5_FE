@@ -191,16 +191,14 @@ const Wrapper = styled.div`
   padding: ${({ theme }) => theme.space.space24};
   gap: ${({ theme }) => theme.space.space24};
 
-  background-color: #333333;
-  color: #f5f5f5;
+  background-color: #ffffff;
+  color: #333333;
 
   position: relative;
   overflow: hidden;
 
-  /* 👈 Apple-Style: 시스템 폰트 스택 적용 */
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
-    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  /* Pretendard 폰트 적용 */
+  font-family: ${({ theme }) => theme.typography.fontFamily};
 
   /* 배경 그라데이션 (유지) */
   &::before {
@@ -240,6 +238,12 @@ const GridWrapper = styled.div`
   max-width: 650px;
   position: relative;
   z-index: 1;
+
+  /* Pretendard 폰트 적용 */
+  font-family: ${({ theme }) => theme.typography.fontFamily};
+  font-size: ${({ theme }) => theme.typography.fontSizes.h2}; /* 24px */
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.textBrown};
 `;
 
 const GlassBackground = styled.div`
@@ -254,7 +258,7 @@ const GlassBackground = styled.div`
   /* 👈 Apple-Style: 더 부드러운 그림자 */
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
 
-  color: #f5f5f5;
+  color: ${({ theme }) => theme.colors.textBrown};
   height: auto;
   padding: ${({ theme }) => theme.space.space16};
 
@@ -282,20 +286,6 @@ const GlassBackground = styled.div`
 const ContentCard = styled.div`
   width: 100%;
   max-width: 650px;
-
-  /* 👈 Apple-Style: 메인 카드는 15% 투명도로 계층 구분 */
-  background-color: hsla(0, 0%, 100%, 0.15);
-  backdrop-filter: ${({ theme }) => theme.blurs.blur8};
-
-  /* 👈 Apple-Style: 24px -> 20px로 변경 */
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-  /* 👈 Apple-Style: 더 부드러운 그림자 */
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
-
-  /* 👈 Apple-Style: 넉넉한 내부 여백 (space24 -> space32 가정) */
-  padding: ${({ theme }) => theme.space.space32 || '2rem'};
 
   display: flex;
   flex-direction: column;

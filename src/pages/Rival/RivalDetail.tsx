@@ -1,9 +1,9 @@
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
+import { useParams } from 'react-router-dom';
 
 import useFetch from '../../shared/hooks/useFetch';
-
-import StreakSection from './StreakSection';
+import StreakSection from '../MyPage/StreakSection';
 
 export interface DailySolveCount {
   date: string;
@@ -18,15 +18,8 @@ export interface UserSummary {
   isMe: boolean;
 }
 
-interface User {
-  userId: number;
-  name: string;
-  email: string;
-}
-
-const MyPage = () => {
-  const { data: user } = useFetch<User>('/api/user');
-  const userId = user?.userId;
+const RivalDetail = () => {
+  const { userId } = useParams<{ userId: string }>();
   const { data } = useFetch<UserSummary>(`/api/rivals/${userId}/profile`);
 
   const getTodayString = () => {
@@ -73,7 +66,7 @@ const MyPage = () => {
   );
 };
 
-export default MyPage;
+export default RivalDetail;
 
 const Wrapper = styled.div`
   min-height: 100vh;
