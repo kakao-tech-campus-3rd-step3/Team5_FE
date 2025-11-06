@@ -48,17 +48,36 @@ interface AnswerPayload {
 
 const FeedbackDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  // id가 유효한지 확인 (숫자 또는 문자열 형태의 숫자)
-  const isValidId = id && id !== ':id' && !isNaN(Number(id));
+  // id가 유효한지 엄격하게 확인
+  // :id, undefined, 빈 문자열, 숫자가 아닌 문자열 모두 제외
+  const isValidId = 
+    id && 
+    id !== ':id' && 
+    id.trim() !== '' && 
+    !isNaN(Number(id)) && 
+    Number(id) > 0 && 
+    Number.isInteger(Number(id));
+
   const answerId = isValidId ? String(id) : '';
 
   console.log('📋 [FeedbackDetailPage] URL 파라미터 확인:', {
     id,
     isValidId,
     answerId,
-    answerUrl: answerId ? `/api/answers/${answerId}` : '(호출 안함)',
+    answerUrl: answerId ? `/api/answers/${answerId}` : '(호출 안함 - 유효하지 않은 ID)',
+    warning: !isValidId ? '⚠️ 유효하지 않은 ID입니다. 페이지를 새로고침하거나 올바른 URL로 이동해주세요.' : undefined,
   });
+
+  // id가 유효하지 않으면 에러 메시지 표시 후 리다이렉트
+  if (!isValidId && id) {
+    console.error('❌ [FeedbackDetailPage] 유효하지 않은 ID:', id);
+    // 에러 페이지로 리다이렉트하거나 홈으로 이동
+    setTimeout(() => {
+      navigate('/');
+    }, 2000);
+  }
 
   const { data } = useFetch<FeedbackDetailResponse>(answerId ? `/api/answers/${answerId}` : '');
 
@@ -67,8 +86,6 @@ const FeedbackDetailPage = () => {
   console.log(feedback);
 
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerId ? `/api/answers/${answerId}` : '');
-
-  const navigate = useNavigate();
 
   const [memoContent, setMemoContent] = useState('');
   useEffect(() => {

@@ -30,11 +30,46 @@ const AnsweringSection = ({
   const [convertedText, setConvertedText] = useState<string>('');
 
   const handleAnswerDone = () => {
-    if (type === 'voice' && audioUrl) {
+    // 음성 답변인 경우
+    if (type === 'voice') {
+      // audioUrl이 없거나 빈 문자열이면 아직 녹음/업로드가 완료되지 않은 상태
+      if (!audioUrl || audioUrl.trim() === '') {
+        console.warn('⚠️ [AnsweringSection] 음성 답변인데 audioUrl이 없습니다:', {
+          audioUrl,
+          type,
+          note: '녹음 및 업로드가 완료될 때까지 기다려주세요.',
+        });
+        alert('녹음 및 업로드가 완료될 때까지 기다려주세요.');
+        return;
+      }
+
       // 음성 답변의 경우 변환된 텍스트 또는 기본 텍스트 사용
-      const finalText = convertedText || answerText || '음성 답변';
+      // STT 변환이 완료되기 전에는 convertedText가 비어있을 수 있음
+      const finalText = convertedText || answerText || '';
+      console.log('📤 [AnsweringSection] 음성 답변 제출:', {
+        finalText,
+        audioUrl,
+        convertedText,
+        answerText,
+        type,
+        note: 'STT 변환이 완료되기 전에는 answerText가 비어있을 수 있습니다. 백엔드가 처리합니다.',
+      });
+      // 음성 답변인 경우 answerText가 비어있어도 괜찮음 (백엔드가 STT 처리)
       onAnswerDone(finalText, audioUrl);
     } else {
+      // 텍스트 답변인 경우
+      if (!answerText || answerText.trim() === '') {
+        console.error('❌ [AnsweringSection] 텍스트 답변인데 answerText가 비어있습니다:', {
+          answerText,
+          type,
+        });
+        alert('답변을 입력해주세요.');
+        return;
+      }
+      console.log('📤 [AnsweringSection] 텍스트 답변 제출:', {
+        answerText,
+        type,
+      });
       onAnswerDone(answerText);
     }
   };
@@ -99,7 +134,11 @@ const AnsweringSection = ({
         <AnswerButton
           type="button"
           onClick={handleAnswerDone}
-          disabled={isSubmitting || (type === 'text' && answerText.trim() === '')}
+          disabled={
+            isSubmitting ||
+            (type === 'text' && answerText.trim() === '') ||
+            (type === 'voice' && (!audioUrl || audioUrl.trim() === ''))
+          }
         >
           {isSubmitting ? '제출 중...' : '답변 완료'}
         </AnswerButton>

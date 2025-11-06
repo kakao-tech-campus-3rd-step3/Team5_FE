@@ -67,6 +67,7 @@ const AnswerInput = ({
           answerText={answerText || value}
           onAnswerComplete={handleAnswerComplete}
           onError={onError}
+          onAudioUrlChange={onAudioUrlChange}
         />
       )}
       {type === 'text' && <TextInput value={value} onChange={onChange} />}
