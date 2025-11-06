@@ -269,6 +269,8 @@ const RecordAnswer = ({
   const sttTimeoutRef = useRef<number | null>(null);
   const sseRef = useRef<EventSource | null>(null);
   const reconnectAttemptsRef = useRef(0);
+  const isConnectingSSERef = useRef(false); // SSE 연결 중복 방지
+  const sseTokenRequestRef = useRef(false); // SSE 토큰 요청 중복 방지
 
   // 오디오 데이터
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -276,7 +278,22 @@ const RecordAnswer = ({
 
   // SSE 연결 설정
   const connectSSE = async () => {
+    // ⚠️ 중복 호출 방지: 이미 연결 중이거나 연결되어 있으면 무시
+    if (isConnectingSSERef.current) {
+      console.warn('⚠️ [SSE] 이미 연결 중입니다. 중복 호출을 무시합니다.');
+      return;
+    }
+
+    if (sseRef.current && sseRef.current.readyState !== EventSource.CLOSED) {
+      console.warn('⚠️ [SSE] 이미 연결되어 있습니다. 중복 호출을 무시합니다.', {
+        readyState: sseRef.current.readyState,
+      });
+      return;
+    }
+
     try {
+      isConnectingSSERef.current = true; // 연결 시작 플래그 설정
+
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
       if (!token) {
         throw new Error('인증 토큰이 없습니다.');
@@ -295,10 +312,18 @@ const RecordAnswer = ({
       if (tokenExpired) {
         console.warn('⚠️ [SSE] 토큰이 만료되어 SSE 연결을 시도하지 않습니다.');
         setErrorMessage('인증 토큰이 만료되었습니다. 페이지를 새로고침해주세요.');
+        isConnectingSSERef.current = false; // 연결 실패 시 플래그 해제
         return;
       }
 
       // 1단계: GET /api/sse/token으로 일회성 sseToken 받기
+      // ⚠️ 중복 요청 방지: 이미 토큰 요청 중이면 무시
+      if (sseTokenRequestRef.current) {
+        console.warn('⚠️ [SSE] SSE 토큰 요청이 이미 진행 중입니다. 중복 요청을 무시합니다.');
+        isConnectingSSERef.current = false;
+        return;
+      }
+
       console.log('🔑 [SSE] 일회성 SSE 토큰 요청 시작:', {
         apiEndpoint: '/api/sse/token',
         note: '헤더에 Authorization 토큰이 자동으로 포함됩니다.',
@@ -306,8 +331,10 @@ const RecordAnswer = ({
 
       let sseToken: string;
       try {
+        sseTokenRequestRef.current = true; // 토큰 요청 시작 플래그 설정
         const sseTokenResponse = await getSSEToken();
         sseToken = sseTokenResponse.sseToken;
+        sseTokenRequestRef.current = false; // 토큰 요청 완료 플래그 해제
 
         console.log('✅ [SSE] 일회성 SSE 토큰 수신 성공:', {
           sseTokenPreview: sseToken.substring(0, 20) + '...',
@@ -316,6 +343,8 @@ const RecordAnswer = ({
         });
         logInfo('SSE 토큰 수신 성공', { sseTokenPreview: sseToken.substring(0, 20) + '...' });
       } catch (error) {
+        sseTokenRequestRef.current = false; // 토큰 요청 실패 시 플래그 해제
+        isConnectingSSERef.current = false; // 연결 실패 시 플래그 해제
         logError('SSE 토큰 요청 실패', error, {});
         setErrorMessage('SSE 토큰을 받아오는데 실패했습니다. 다시 시도해주세요.');
         return;
@@ -383,6 +412,7 @@ const RecordAnswer = ({
         console.log('✅ [SSE] EventSource.onopen 호출 - 연결 성공!');
         logInfo('SSE 연결 성공');
         reconnectAttemptsRef.current = 0;
+        isConnectingSSERef.current = false; // 연결 성공 시 플래그 해제
       };
 
       // ✅ 백엔드가 보내는 "connect" 이벤트 리스닝 (연결 성공 확인용)
@@ -490,6 +520,8 @@ const RecordAnswer = ({
                 sseRef.current.close();
                 sseRef.current = null;
               }
+              sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+              isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
 
               // ✅ 변환된 텍스트를 onAnswerComplete에 전달
               const audioUrl =
@@ -590,6 +622,8 @@ const RecordAnswer = ({
             console.log('🔌 [SSE] STT 완료 - SSE 연결 종료');
             eventSource.close();
             sseRef.current = null;
+            sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+            isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
 
             // ⚠️ 중요: SSE sttCompleted 이벤트는 이미 제출된 답변의 STT 완료를 알리는 것이므로
             // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
@@ -638,6 +672,8 @@ const RecordAnswer = ({
         console.log('🔌 [SSE] STT 실패 - SSE 연결 종료');
         eventSource.close();
         sseRef.current = null;
+        sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+        isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
       });
 
       // SSE 에러 처리
@@ -714,6 +750,8 @@ const RecordAnswer = ({
           url: eventSource.url,
         });
         eventSource.close();
+        sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+        isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
 
         // 재연결 시도 (최대 2회로 제한하여 서버가 없을 때 무한 재시도 방지)
         const maxSSERetryCount = 2;
@@ -735,6 +773,8 @@ const RecordAnswer = ({
         }
       };
     } catch (error) {
+      sseTokenRequestRef.current = false; // 에러 발생 시 플래그 해제
+      isConnectingSSERef.current = false; // 연결 실패 시 플래그 해제
       logError('SSE 연결 실패', error, {});
       setErrorMessage('실시간 연결에 실패했습니다.');
     }
@@ -797,6 +837,8 @@ const RecordAnswer = ({
             sseRef.current.close();
             sseRef.current = null;
           }
+          sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+          isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
 
           // ⚠️ 중요: checkAnswerStatus는 이미 제출된 답변의 상태를 확인하는 것이므로
           // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
@@ -1030,6 +1072,8 @@ const RecordAnswer = ({
         sseRef.current.close();
         sseRef.current = null;
       }
+      sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+      isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
 
       // 스트림 정리
       if (audioStreamRef.current) {

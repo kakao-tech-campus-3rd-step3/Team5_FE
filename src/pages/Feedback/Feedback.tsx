@@ -121,7 +121,9 @@ const FeedbackPage = () => {
 
   const [memoContent, setMemoContent] = useState('');
   useEffect(() => {
-    if (data?.memo !== undefined && data.memo !== memoContent) setMemoContent(data?.memo);
+    if (data?.memo !== undefined && data.memo !== memoContent) {
+      setMemoContent(data.memo || ''); // null이면 빈 문자열로 처리
+    }
   }, [data?.memo, memoContent]);
 
   const [isStarred, setIsStarred] = useState<boolean | undefined>();
@@ -135,6 +137,8 @@ const FeedbackPage = () => {
       setLevel(data?.level);
     }
   }, [data?.level]);
+
+  const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
 
   const handleModalClick = () => {
     //navigate(ROUTE_PATH.ARCHIVE);
