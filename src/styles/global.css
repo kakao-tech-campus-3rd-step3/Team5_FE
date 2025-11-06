@@ -19,3 +19,22 @@ body {
     'Segoe UI Symbol',
     sans-serif;
 }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 150, 150, 0.7) rgba(240, 240, 240, 0.3);
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #a9a9a9;
+  border-radius: 10px;
+  border: 2px solid #f1f1f1;
+}
