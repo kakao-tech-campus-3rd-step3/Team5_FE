@@ -12,7 +12,9 @@ import { ACCESS_TOKEN_KEY, isTokenExpired } from '../../../shared/utils/auth';
 const convertWebmToOgg = async (webmBlob: Blob): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const audioContext = new AudioContextClass();
       const fileReader = new FileReader();
 
@@ -52,7 +54,9 @@ const audioBufferToOgg = async (buffer: AudioBuffer): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     try {
       // AudioContext를 사용하여 MediaStream 생성
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const audioContext = new AudioContextClass();
 
       // MediaStreamDestination 생성 (실시간 오디오 스트림)
@@ -450,7 +454,8 @@ const RecordAnswer = ({
             if (dataObj.timeout !== undefined) {
               console.log('⏱️ [SSE] 타임아웃 설정:', {
                 timeout: dataObj.timeout,
-                timeoutInSeconds: typeof dataObj.timeout === 'number' ? dataObj.timeout / 1000 : undefined,
+                timeoutInSeconds:
+                  typeof dataObj.timeout === 'number' ? dataObj.timeout / 1000 : undefined,
                 note: '백엔드에서 설정한 SSE 연결 타임아웃',
               });
               logInfo('SSE 타임아웃 설정', dataObj);

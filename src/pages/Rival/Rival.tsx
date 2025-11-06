@@ -51,7 +51,7 @@ const RivalPage = () => {
       }
     };
     loadMyFollowing();
-  }, []);
+  }, [defaultFriends]); // defaultFriends를 의존성 배열에 추가
 
   const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchEmail.trim()) {

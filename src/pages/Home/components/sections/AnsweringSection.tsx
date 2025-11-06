@@ -103,12 +103,15 @@ const AnsweringSection = ({
         // feedbackId를 사용하여 피드백 페이지로 바로 이동
         navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(feedbackId) }));
       } else {
-        console.warn('⚠️ [AnsweringSection] alreadySubmitted=true이지만 feedbackId가 없습니다. 중복 제출 방지:', {
-          audioUrl,
-          text,
-          alreadySubmitted,
-          note: '이미 제출된 상태이므로 추가 제출하지 않습니다.',
-        });
+        console.warn(
+          '⚠️ [AnsweringSection] alreadySubmitted=true이지만 feedbackId가 없습니다. 중복 제출 방지:',
+          {
+            audioUrl,
+            text,
+            alreadySubmitted,
+            note: '이미 제출된 상태이므로 추가 제출하지 않습니다.',
+          }
+        );
       }
       return; // 이미 제출된 경우 항상 return (중복 제출 방지)
     }
