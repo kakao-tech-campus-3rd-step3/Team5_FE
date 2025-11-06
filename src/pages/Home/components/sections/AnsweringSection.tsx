@@ -33,7 +33,7 @@ const AnsweringSection = ({
 
   const handleAnswerDone = () => {
     // 음성 답변인 경우
-    if (type === 'voice') {
+    if (type === 'voice' && audioUrl) {
       // audioUrl이 없거나 빈 문자열이면 아직 녹음/업로드가 완료되지 않은 상태
       if (!audioUrl || audioUrl.trim() === '') {
         console.warn('⚠️ [AnsweringSection] 음성 답변인데 audioUrl이 없습니다:', {
@@ -88,20 +88,29 @@ const AnsweringSection = ({
       setConvertedText(text);
     }
 
-    // 이미 제출된 경우 (RecordAnswer에서 이미 POST 완료)
-    // feedbackId가 있으면 피드백 페이지로 바로 이동, 추가 제출하지 않음
-    if (alreadySubmitted && feedbackId) {
-      console.log('✅ [AnsweringSection] 이미 제출 완료 - 피드백 페이지로 이동', {
-        audioUrl,
-        text,
-        alreadySubmitted,
-        feedbackId,
-      });
+    // ⚠️ 중요: alreadySubmitted가 true이면 이미 제출된 상태이므로
+    // feedbackId가 있으면 피드백 페이지로 이동, 없어도 중복 제출하지 않음
+    if (alreadySubmitted) {
+      if (feedbackId) {
+        console.log('✅ [AnsweringSection] 이미 제출 완료 - 피드백 페이지로 이동', {
+          audioUrl,
+          text,
+          alreadySubmitted,
+          feedbackId,
+        });
 
-      // RecordAnswer에서 이미 제출했으므로 중복 제출 없이
-      // feedbackId를 사용하여 피드백 페이지로 바로 이동
-      navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(feedbackId) }));
-      return;
+        // RecordAnswer에서 이미 제출했으므로 중복 제출 없이
+        // feedbackId를 사용하여 피드백 페이지로 바로 이동
+        navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(feedbackId) }));
+      } else {
+        console.warn('⚠️ [AnsweringSection] alreadySubmitted=true이지만 feedbackId가 없습니다. 중복 제출 방지:', {
+          audioUrl,
+          text,
+          alreadySubmitted,
+          note: '이미 제출된 상태이므로 추가 제출하지 않습니다.',
+        });
+      }
+      return; // 이미 제출된 경우 항상 return (중복 제출 방지)
     }
 
     // 아직 제출되지 않은 경우에만 제출

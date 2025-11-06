@@ -251,8 +251,10 @@ const RecordAnswer = ({
   const [retryCount, setRetryCount] = useState(0);
   const [recordingTime, setRecordingTime] = useState(0);
   const [answerId, setAnswerId] = useState<number | null>(null);
+  const [feedbackId, setFeedbackId] = useState<number | null>(null); // POST 응답에서 받은 feedbackId 저장
   const [convertedText, setConvertedText] = useState<string>('');
   const [sttStatus, setSTTStatus] = useState<STTStatus | null>(null);
+  const [isUploading, setIsUploading] = useState(false); // 업로드 중복 호출 방지
 
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -490,12 +492,22 @@ const RecordAnswer = ({
                 (typeof dataObj.audio_url === 'string' ? dataObj.audio_url : '') ||
                 (typeof dataObj.url === 'string' ? dataObj.url : '') ||
                 '';
+              // ⚠️ 중요: SSE message 이벤트는 이미 제출된 답변의 STT 완료를 알리는 것이므로
+              // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
+              // 상위 컴포넌트가 중복 제출하지 않도록 함
               if (onAnswerComplete) {
                 console.log('📤 [SSE] onAnswerComplete 호출 (message 이벤트):', {
                   audioUrl: audioUrl,
                   text: text,
+                  alreadySubmitted: true,
+                  note: '이미 제출된 답변의 STT 완료 알림',
                 });
-                onAnswerComplete(audioUrl, text);
+                onAnswerComplete(
+                  audioUrl,
+                  text,
+                  true, // alreadySubmitted = true (이미 제출된 상태)
+                  feedbackId || answerId || undefined // 저장된 feedbackId 우선 사용
+                );
               }
             }
           }
@@ -574,13 +586,23 @@ const RecordAnswer = ({
             eventSource.close();
             sseRef.current = null;
 
+            // ⚠️ 중요: SSE sttCompleted 이벤트는 이미 제출된 답변의 STT 완료를 알리는 것이므로
+            // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
+            // 상위 컴포넌트가 중복 제출하지 않도록 함
             // ✅ 변환된 텍스트를 onAnswerComplete에 전달
             if (onAnswerComplete) {
               console.log('📤 [SSE] onAnswerComplete 호출:', {
                 audioUrl: audioUrl,
                 text: text,
+                alreadySubmitted: true,
+                note: '이미 제출된 답변의 STT 완료 알림',
               });
-              onAnswerComplete(audioUrl, text);
+              onAnswerComplete(
+                audioUrl,
+                text,
+                true, // alreadySubmitted = true (이미 제출된 상태)
+                feedbackId || answerId || undefined // 저장된 feedbackId 우선 사용
+              );
             } else {
               console.warn('⚠️ [SSE] onAnswerComplete가 정의되지 않았습니다.');
             }
@@ -771,8 +793,17 @@ const RecordAnswer = ({
             sseRef.current = null;
           }
 
+          // ⚠️ 중요: checkAnswerStatus는 이미 제출된 답변의 상태를 확인하는 것이므로
+          // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
+          // 상위 컴포넌트가 중복 제출하지 않도록 함
+          // answerId와 feedbackId는 동일한 값으로 사용됨
           if (onAnswerComplete && data.audioUrl) {
-            onAnswerComplete(data.audioUrl);
+            onAnswerComplete(
+              data.audioUrl,
+              data.text,
+              true, // alreadySubmitted = true (이미 제출된 상태)
+              feedbackId || answerIdToCheck || undefined // 저장된 feedbackId 우선 사용
+            );
           }
           break;
 
@@ -1117,7 +1148,14 @@ const RecordAnswer = ({
   const uploadToServer = async () => {
     if (!audioBlob) return;
 
+    // ⚠️ 중복 호출 방지: 이미 업로드 중이면 무시
+    if (isUploading) {
+      console.warn('⚠️ [업로드] 이미 업로드 중입니다. 중복 호출을 무시합니다.');
+      return;
+    }
+
     try {
+      setIsUploading(true); // 업로드 시작 플래그 설정
       setRecordingState('uploading');
       setUploadProgress(0);
 
@@ -1190,7 +1228,7 @@ const RecordAnswer = ({
           note: 'fileName과 file_name 둘 다 포함하여 전송 (백엔드가 snake_case를 선호할 수 있음)',
         });
 
-        // 먼저 fileName만으로 시도
+        // 먼저 fileName으로 시도 (원래 로직 유지)
         let response;
         try {
           console.log('🔄 [Pre-signed URL 요청 시도 1] fileName 사용:', fileName);
@@ -1200,6 +1238,7 @@ const RecordAnswer = ({
               params: { fileName },
             }
           );
+          // ✅ 성공하면 여기서 끝 (두 번째 시도 없음)
         } catch (firstError: unknown) {
           const error = firstError as {
             response?: { status?: number; statusText?: string; data?: unknown };
@@ -1213,7 +1252,7 @@ const RecordAnswer = ({
             fileName,
           });
 
-          // 400 또는 404 에러인 경우 file_name으로 재시도
+          // 400 또는 404 에러인 경우에만 file_name으로 재시도
           if (error.response?.status === 400 || error.response?.status === 404) {
             console.log('⚠️ [재시도] fileName으로 실패, file_name으로 재시도');
             try {
@@ -1238,6 +1277,7 @@ const RecordAnswer = ({
               throw secondError;
             }
           } else {
+            // 400/404가 아닌 다른 에러는 바로 throw (재시도 안 함)
             throw firstError;
           }
         }
@@ -1386,8 +1426,9 @@ const RecordAnswer = ({
             status: result.status,
           });
 
-          // 답변 ID 저장
+          // 답변 ID 및 피드백 ID 저장
           setAnswerId(result.answerId);
+          setFeedbackId(result.feedbackId); // feedbackId 저장 (SSE 이벤트에서 사용)
 
           // 응답 상태 확인
           if (result.status === 'PENDING_STT') {
@@ -1577,6 +1618,9 @@ const RecordAnswer = ({
       if (onError) {
         onError(error instanceof Error ? error.message : '업로드 실패');
       }
+    } finally {
+      // ⚠️ 중요: 업로드 완료(성공/실패 모두) 후 플래그 리셋
+      setIsUploading(false);
     }
   };
 
