@@ -188,6 +188,8 @@ const audioBufferToWav = (buffer: AudioBuffer): Blob => {
 // 초기 응답: { "timeout": 9007199254740991 }
 // 쿼리 파라미터로 sseToken 전달 (일회성 토큰)
 const getSSEUrl = (sseToken: string): string => {
+  // 실제 서버에서는 API_BASE_URL이 설정되어 있어야 함
+  // 없으면 window.location.origin 사용 (같은 도메인)
   const baseUrl = API_BASE_URL || window.location.origin;
   const ssePath = `/api/sse/connect?token=${encodeURIComponent(sseToken)}`;
   const fullUrl = baseUrl + ssePath;
@@ -197,7 +199,14 @@ const getSSEUrl = (sseToken: string): string => {
     ssePath,
     fullUrl,
     sseTokenPreview: sseToken.substring(0, 20) + '...',
+    protocol: window.location.protocol,
+    hostname: window.location.hostname,
+    isHTTPS: window.location.protocol === 'https:',
+    apiBaseUrl설정여부: !!API_BASE_URL,
     note: '쿼리 파라미터로 sseToken 전달 (일회성 토큰)',
+    warning: !API_BASE_URL
+      ? '⚠️ API_BASE_URL이 설정되지 않아 window.location.origin을 사용합니다. 실제 서버에서는 환경 변수를 설정해주세요.'
+      : undefined,
   });
 
   return fullUrl;
@@ -679,12 +688,12 @@ const RecordAnswer = ({
           }
 
           setConvertedText(sttResult.answerText);
-        setSTTStatus('COMPLETED');
-        setRecordingState('completed');
+          setSTTStatus('COMPLETED');
+          setRecordingState('completed');
 
-        if (sttTimeoutRef.current) {
-          clearTimeout(sttTimeoutRef.current);
-        }
+          if (sttTimeoutRef.current) {
+            clearTimeout(sttTimeoutRef.current);
+          }
 
           // ✅ STT 완료 후 SSE 연결 닫기 (더 이상 필요 없음)
           console.log('🔌 [SSE] STT 완료 - SSE 연결 종료');
@@ -702,7 +711,7 @@ const RecordAnswer = ({
           // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
           // 상위 컴포넌트가 중복 제출하지 않도록 함
           // ✅ 변환된 텍스트를 onAnswerComplete에 전달
-        if (onAnswerComplete) {
+          if (onAnswerComplete) {
             // ⚠️ 중요: 서버에 업로드된 실제 URL을 사용 (blob URL이 아님)
             const finalServerAudioUrl = serverAudioUrl || '';
             console.log('📤 [SSE] onAnswerComplete 호출 (sttCompleted):', {
@@ -764,21 +773,28 @@ const RecordAnswer = ({
         const sttError = JSON.parse(event.data) as {
           answerId: number;
           userId: number;
-          errorMessage: string;
+          errorMessage?: string; // errorMessage는 선택적일 수 있음
         };
+
+        // errorMessage가 없을 경우 기본 메시지 사용
+        const errorMsg = sttError.errorMessage || 'STT 변환 중 오류가 발생했습니다.';
 
         console.error('❌ [SSE] STT 실패 (백엔드 스펙: SttFailedEvent):', {
           answerId: sttError.answerId,
           userId: sttError.userId,
           errorMessage: sttError.errorMessage,
+          사용된에러메시지: errorMsg,
           전체데이터: sttError,
+          note: sttError.errorMessage
+            ? '백엔드에서 errorMessage를 제공했습니다.'
+            : '⚠️ 백엔드에서 errorMessage가 없습니다. 기본 메시지를 사용합니다.',
         });
 
-        logError('STT 변환 실패', new Error(sttError.errorMessage), sttError);
+        logError('STT 변환 실패', new Error(errorMsg), sttError);
 
         setSTTStatus('FAILED_STT');
         setRecordingState('error');
-        setErrorMessage('음성을 텍스트로 변환하는데 실패했습니다.');
+        setErrorMessage(errorMsg || '음성을 텍스트로 변환하는데 실패했습니다.');
 
         if (sttTimeoutRef.current) {
           clearTimeout(sttTimeoutRef.current);
@@ -963,7 +979,7 @@ const RecordAnswer = ({
         case 'COMPLETED':
           // STT 변환 성공 - SSE 알림만 놓친 상태
           if (data.text) {
-          setConvertedText(data.text);
+            setConvertedText(data.text);
           }
           setSTTStatus('COMPLETED');
           setRecordingState('completed');
@@ -1118,11 +1134,40 @@ const RecordAnswer = ({
       return;
     }
 
+    // getUserMedia 사용 가능 여부 확인
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      const errorMsg =
+        window.location.protocol === 'https:' || window.location.hostname === 'localhost'
+          ? '브라우저가 마이크 접근을 지원하지 않습니다. 다른 브라우저를 시도해주세요.'
+          : '마이크 접근은 HTTPS 연결에서만 가능합니다. HTTPS로 접속해주세요.';
+      console.error('❌ [getUserMedia] 사용 불가:', {
+        hasMediaDevices: !!navigator.mediaDevices,
+        hasGetUserMedia: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+        protocol: window.location.protocol,
+        hostname: window.location.hostname,
+        isHTTPS: window.location.protocol === 'https:',
+        isLocalhost: window.location.hostname === 'localhost',
+        errorMsg,
+      });
+      setErrorMessage(errorMsg);
+      setRecordingState('error');
+      return;
+    }
+
     try {
       setRecordingState('recording');
       setErrorMessage('');
       setRecordingTime(0);
       audioChunksRef.current = [];
+
+      console.log('🎤 [녹음 시작] getUserMedia 호출:', {
+        protocol: window.location.protocol,
+        hostname: window.location.hostname,
+        isHTTPS: window.location.protocol === 'https:',
+        isLocalhost: window.location.hostname === 'localhost',
+        apiBaseUrl: API_BASE_URL,
+        note: 'getUserMedia는 HTTPS 또는 localhost에서만 작동합니다.',
+      });
 
       // 마이크 접근
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -1178,10 +1223,10 @@ const RecordAnswer = ({
 
           setAudioBlob(oggBlob);
           const url = URL.createObjectURL(oggBlob);
-        setAudioUrl(url);
+          setAudioUrl(url);
           // ⚠️ blob URL은 onAudioUrlChange로 전달하지 않음
           // 서버에 업로드된 실제 URL만 전달해야 함
-        setRecordingState('processing');
+          setRecordingState('processing');
 
           // ✅ 오디오 변환 완료 후 자동으로 업로드 및 제출 시작
           console.log('🚀 [녹음 완료] 오디오 변환 완료 - 업로드 및 제출 시작');
@@ -1218,9 +1263,46 @@ const RecordAnswer = ({
 
       logInfo('녹음 시작');
     } catch (error) {
-      logError('녹음 시작 실패', error, { networkState });
+      const err = error as { name?: string; message?: string };
+      let errorMsg = '마이크 접근 권한이 필요합니다.';
+
+      // 에러 타입별 상세 메시지
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        errorMsg = '마이크 접근 권한이 거부되었습니다. 브라우저 설정에서 마이크 권한을 허용해주세요.';
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        errorMsg = '마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.';
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        errorMsg = '마이크에 접근할 수 없습니다. 다른 애플리케이션에서 사용 중일 수 있습니다.';
+      } else if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+        errorMsg = '요청한 오디오 설정을 지원하지 않습니다.';
+      } else if (err.name === 'SecurityError') {
+        errorMsg =
+          '보안 오류가 발생했습니다. HTTPS 연결이 필요하거나 브라우저 설정을 확인해주세요.';
+      } else if (err.message) {
+        errorMsg = `마이크 접근 실패: ${err.message}`;
+      }
+
+      console.error('❌ [녹음 시작 실패] 상세 정보:', {
+        errorName: err.name,
+        errorMessage: err.message,
+        protocol: window.location.protocol,
+        hostname: window.location.hostname,
+        isHTTPS: window.location.protocol === 'https:',
+        isLocalhost: window.location.hostname === 'localhost',
+        apiBaseUrl: API_BASE_URL,
+        networkState,
+        전체에러: err,
+      });
+
+      logError('녹음 시작 실패', error, {
+        networkState,
+        protocol: window.location.protocol,
+        hostname: window.location.hostname,
+        isHTTPS: window.location.protocol === 'https:',
+        errorName: err.name,
+      });
       setRecordingState('error');
-      setErrorMessage('마이크 접근 권한이 필요합니다.');
+      setErrorMessage(errorMsg);
     }
   };
 

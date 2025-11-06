@@ -137,8 +137,9 @@ const AppRouter = () => {
         setIsCheckingAuth(false);
 
         // 홈이 아닌 경우에만 이동
-        console.log('✅ [OAuth 리다이렉트] 직업 선택 페이지로 이동합니다.');
-        navigate(ROUTE_PATH.JOBSELECT, { replace: true });
+        if (location.pathname !== ROUTE_PATH.HOME) {
+          navigate(ROUTE_PATH.JOBSELECT, { replace: true });
+        }
         return;
       }
 
