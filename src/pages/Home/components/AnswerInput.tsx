@@ -22,6 +22,7 @@ interface AnswerInputProps {
   onError?: (error: string) => void;
   questionId?: number;
   answerText?: string;
+  followUp?: boolean;
 }
 
 const AnswerInput = ({
@@ -35,6 +36,7 @@ const AnswerInput = ({
   onError,
   questionId,
   answerText,
+  followUp,
 }: AnswerInputProps) => {
   if (!isActive) return null;
 
@@ -68,6 +70,7 @@ const AnswerInput = ({
           onAnswerComplete={handleAnswerComplete}
           onError={onError}
           onAudioUrlChange={onAudioUrlChange}
+          followUp={followUp}
         />
       )}
       {type === 'text' && <TextInput value={value} onChange={onChange} />}

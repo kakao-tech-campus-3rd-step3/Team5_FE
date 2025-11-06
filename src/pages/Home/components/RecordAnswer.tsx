@@ -209,6 +209,7 @@ interface RecordAnswerProps {
   ) => void;
   onError?: (error: string) => void;
   onAudioUrlChange?: (url: string) => void; // audioUrl이 변경될 때 호출
+  followUp?: boolean; // 질문 응답의 followUp 값
 }
 
 // 설정 상수
@@ -233,7 +234,7 @@ type RecordingState =
 type NetworkState = 'online' | 'offline' | 'checking';
 type STTStatus = 'PENDING_STT' | 'COMPLETED' | 'FAILED_STT';
 
-const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAudioUrlChange }: RecordAnswerProps) => {
+const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAudioUrlChange, followUp }: RecordAnswerProps) => {
   // 상태 관리
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [networkState, setNetworkState] = useState<NetworkState>('online');
@@ -1249,7 +1250,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError, onAud
           questionId,
           answerText: finalAnswerText, // 빈 문자열이어도 전송 (백엔드가 처리)
           audioUrl: serverAudioUrl,
-          followUp: false,
+          followUp: followUp ?? false, // 질문 응답의 followUp 값 사용
         };
 
         // ✅ POST /api/answers 요청 Body 로그 (백엔드 요구사항 확인용)

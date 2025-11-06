@@ -79,7 +79,7 @@ const HomePage = () => {
     const submitData: SubmitAnswerRequest = {
       questionId: question.questionId,
       answerText: text || '', // 빈 문자열이어도 전송 (음성 답변의 경우)
-      followUp: false, // 기본값: 추가 질문 없음
+      followUp: question.followUp, // 질문 응답의 followUp 값 사용
     };
 
     // audioUrl이 있으면 반드시 포함
@@ -135,6 +135,7 @@ const HomePage = () => {
           onAnswerDone={handleAnswerDone}
           isSubmitting={isSubmitting}
           questionId={question?.questionId}
+          followUp={question?.followUp}
         />
       )}
     </Wrapper>
