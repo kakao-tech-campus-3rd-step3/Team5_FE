@@ -40,7 +40,8 @@ const HomePage = () => {
 
   // 사용자 정보는 현재 미사용이지만 향후 사용 예정
   const { data: _user } = useFetch<User>('/api/user');
-  const { data: question } = useFetch<Question>('/api/questions/random');
+  const { data: question, loading: isLoadingQuestion } =
+    useFetch<Question>('/api/questions/random');
   console.log(question);
 
   const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
@@ -64,12 +65,37 @@ const HomePage = () => {
       return;
     }
 
+    // audioUrl이 없거나 빈 문자열인 경우 (텍스트 답변)
+    // answerText가 비어있으면 안 됨
+    const hasAudioUrl = audioUrl && audioUrl.trim() !== '';
+    if (!hasAudioUrl && (!text || text.trim() === '')) {
+      alert('답변을 입력해주세요.');
+      console.error('❌ [답변 제출 실패] 텍스트 답변인데 answerText가 비어있습니다:', {
+        text,
+        audioUrl,
+        questionId: question.questionId,
+      });
+      return;
+    }
+
     const submitData: SubmitAnswerRequest = {
       questionId: question.questionId,
-      answerText: text,
-      followUp: false, // 기본값: 추가 질문 없음
-      ...(audioUrl && { audioUrl }),
+      answerText: text || '', // 빈 문자열이어도 전송 (음성 답변의 경우)
+      followUp: question.followUp, // 질문 응답의 followUp 값 사용
     };
+
+    // audioUrl이 있으면 반드시 포함
+    if (audioUrl) {
+      submitData.audioUrl = audioUrl;
+    }
+
+    console.log('📤 [Home] 답변 제출 요청:', {
+      questionId: submitData.questionId,
+      answerText: submitData.answerText,
+      audioUrl: submitData.audioUrl,
+      followUp: submitData.followUp,
+      note: audioUrl ? '음성 답변' : '텍스트 답변',
+    });
 
     try {
       await submitAnswerPost('/api/answers', submitData);
@@ -85,8 +111,12 @@ const HomePage = () => {
   if (answerState === 'answered')
     return (
       <Wrapper>
-        <span>DailyQ 모의 면접</span>
-        <QuestionCardSection answerState={answerState} question={question} />
+        <TitleSpan>DailyQ 모의 면접</TitleSpan>
+        <QuestionCardSection
+          answerState={answerState}
+          question={question}
+          isLoading={isLoadingQuestion}
+        />
         {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
         <h1>답변 후 메인 페이지</h1>
       </Wrapper>
@@ -96,7 +126,11 @@ const HomePage = () => {
     <Wrapper>
       <h1>DailyQ 모의 면접</h1>
       {/* TODO: {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'} */}
-      <QuestionCardSection answerState={answerState} question={question} />
+      <QuestionCardSection
+        answerState={answerState}
+        question={question}
+        isLoading={isLoadingQuestion}
+      />
 
       {answerState === 'before-answer' ? (
         <BeforeAnswerSection
@@ -111,6 +145,7 @@ const HomePage = () => {
           onAnswerDone={handleAnswerDone}
           isSubmitting={isSubmitting}
           questionId={question?.questionId}
+          followUp={question?.followUp}
         />
       )}
     </Wrapper>
@@ -123,6 +158,25 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 100%;
+  min-height: 100vh;
+  padding: 40px 20px;
+  gap: 16px;
+  background: ${({ theme }) => theme.colors.backgroundGradient};
+
+  h1 {
+    font-size: ${({ theme }) => theme.typography.fontSizes.h1};
+    font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+    color: ${({ theme }) => theme.colors.textBrown};
+    margin: 0;
+    text-align: center;
+  }
+`;
+
+const TitleSpan = styled.span`
+  margin-bottom: 32px;
+  font-size: ${({ theme }) => theme.typography.fontSizes.h2};
+  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.textBrown};
 `;

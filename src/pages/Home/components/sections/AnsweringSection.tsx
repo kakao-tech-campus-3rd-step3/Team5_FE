@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent } from 'react';
 
 import styled from '@emotion/styled';
-import { useNavigate } from 'react-router-dom';
+import { generatePath, useNavigate } from 'react-router-dom';
 
 import { ROUTE_PATH } from '../../../../routes/routePath';
 import AnswerButton from '../../../../shared/ui/SharedButton';
@@ -15,6 +15,7 @@ interface AnsweringSectionProps {
   onAnswerDone: (answerText: string, audioUrl?: string) => void;
   isSubmitting?: boolean;
   questionId?: number;
+  followUp?: boolean;
 }
 
 const AnsweringSection = ({
@@ -23,6 +24,7 @@ const AnsweringSection = ({
   onAnswerDone,
   isSubmitting = false,
   questionId,
+  followUp,
 }: AnsweringSectionProps) => {
   const navigate = useNavigate();
   const [answerText, setAnswerText] = useState('');
@@ -30,11 +32,46 @@ const AnsweringSection = ({
   const [convertedText, setConvertedText] = useState<string>('');
 
   const handleAnswerDone = () => {
+    // 음성 답변인 경우
     if (type === 'voice' && audioUrl) {
+      // audioUrl이 없거나 빈 문자열이면 아직 녹음/업로드가 완료되지 않은 상태
+      if (!audioUrl || audioUrl.trim() === '') {
+        console.warn('⚠️ [AnsweringSection] 음성 답변인데 audioUrl이 없습니다:', {
+          audioUrl,
+          type,
+          note: '녹음 및 업로드가 완료될 때까지 기다려주세요.',
+        });
+        alert('녹음 및 업로드가 완료될 때까지 기다려주세요.');
+        return;
+      }
+
       // 음성 답변의 경우 변환된 텍스트 또는 기본 텍스트 사용
-      const finalText = convertedText || answerText || '음성 답변';
+      // STT 변환이 완료되기 전에는 convertedText가 비어있을 수 있음
+      const finalText = convertedText || answerText || '';
+      console.log('📤 [AnsweringSection] 음성 답변 제출:', {
+        finalText,
+        audioUrl,
+        convertedText,
+        answerText,
+        type,
+        note: 'STT 변환이 완료되기 전에는 answerText가 비어있을 수 있습니다. 백엔드가 처리합니다.',
+      });
+      // 음성 답변인 경우 answerText가 비어있어도 괜찮음 (백엔드가 STT 처리)
       onAnswerDone(finalText, audioUrl);
     } else {
+      // 텍스트 답변인 경우
+      if (!answerText || answerText.trim() === '') {
+        console.error('❌ [AnsweringSection] 텍스트 답변인데 answerText가 비어있습니다:', {
+          answerText,
+          type,
+        });
+        alert('답변을 입력해주세요.');
+        return;
+      }
+      console.log('📤 [AnsweringSection] 텍스트 답변 제출:', {
+        answerText,
+        type,
+      });
       onAnswerDone(answerText);
     }
   };
@@ -51,20 +88,32 @@ const AnsweringSection = ({
       setConvertedText(text);
     }
 
-    // 이미 제출된 경우 (RecordAnswer에서 이미 POST 완료)
-    // feedbackId가 있으면 피드백 페이지로 바로 이동, 추가 제출하지 않음
-    if (alreadySubmitted && feedbackId) {
-      console.log('✅ [AnsweringSection] 이미 제출 완료 - 피드백 페이지로 이동', {
-        audioUrl,
-        text,
-        alreadySubmitted,
-        feedbackId,
-      });
+    // ⚠️ 중요: alreadySubmitted가 true이면 이미 제출된 상태이므로
+    // feedbackId가 있으면 피드백 페이지로 이동, 없어도 중복 제출하지 않음
+    if (alreadySubmitted) {
+      if (feedbackId) {
+        console.log('✅ [AnsweringSection] 이미 제출 완료 - 피드백 페이지로 이동', {
+          audioUrl,
+          text,
+          alreadySubmitted,
+          feedbackId,
+        });
 
-      // RecordAnswer에서 이미 제출했으므로 중복 제출 없이
-      // feedbackId를 사용하여 피드백 페이지로 바로 이동
-      navigate(ROUTE_PATH.FEEDBACK, { state: { feedbackId } });
-      return;
+        // RecordAnswer에서 이미 제출했으므로 중복 제출 없이
+        // feedbackId를 사용하여 피드백 페이지로 바로 이동
+        navigate(generatePath(ROUTE_PATH.FEEDBACK, { id: String(feedbackId) }));
+      } else {
+        console.warn(
+          '⚠️ [AnsweringSection] alreadySubmitted=true이지만 feedbackId가 없습니다. 중복 제출 방지:',
+          {
+            audioUrl,
+            text,
+            alreadySubmitted,
+            note: '이미 제출된 상태이므로 추가 제출하지 않습니다.',
+          }
+        );
+      }
+      return; // 이미 제출된 경우 항상 return (중복 제출 방지)
     }
 
     // 아직 제출되지 않은 경우에만 제출
@@ -95,11 +144,16 @@ const AnsweringSection = ({
           onError={handleError}
           questionId={questionId}
           answerText={answerText}
+          followUp={followUp}
         />
         <AnswerButton
           type="button"
           onClick={handleAnswerDone}
-          disabled={isSubmitting || (type === 'text' && answerText.trim() === '')}
+          disabled={
+            isSubmitting ||
+            (type === 'text' && answerText.trim() === '') ||
+            (type === 'voice' && (!audioUrl || audioUrl.trim() === ''))
+          }
         >
           {isSubmitting ? '제출 중...' : '답변 완료'}
         </AnswerButton>

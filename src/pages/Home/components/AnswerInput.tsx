@@ -22,6 +22,7 @@ interface AnswerInputProps {
   onError?: (error: string) => void;
   questionId?: number;
   answerText?: string;
+  followUp?: boolean;
 }
 
 const AnswerInput = ({
@@ -35,6 +36,7 @@ const AnswerInput = ({
   onError,
   questionId,
   answerText,
+  followUp,
 }: AnswerInputProps) => {
   if (!isActive) return null;
 
@@ -48,13 +50,11 @@ const AnswerInput = ({
     if (onAudioUrlChange) {
       onAudioUrlChange(audioUrl);
     }
+    // ⚠️ 중요: onAnswerComplete만 호출하고, onAnswerDone은 호출하지 않음
+    // AnsweringSection의 handleAnswerComplete에서 이미 제출 여부를 확인하고 처리함
+    // 여기서 onAnswerDone을 호출하면 중복 제출이 발생함
     if (onAnswerComplete) {
       onAnswerComplete(audioUrl, text, alreadySubmitted, feedbackId);
-    }
-    // 이미 제출된 경우에는 onAnswerDone을 호출하지 않음 (중복 제출 방지)
-    if (!alreadySubmitted) {
-      // 자동으로 답변 완료 처리
-      onAnswerDone();
     }
   };
 
@@ -67,6 +67,8 @@ const AnswerInput = ({
           answerText={answerText || value}
           onAnswerComplete={handleAnswerComplete}
           onError={onError}
+          onAudioUrlChange={onAudioUrlChange}
+          followUp={followUp}
         />
       )}
       {type === 'text' && <TextInput value={value} onChange={onChange} />}

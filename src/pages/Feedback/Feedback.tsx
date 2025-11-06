@@ -60,20 +60,70 @@ export interface Feedback {
 
 const FeedbackPage = () => {
   const navigate = useNavigate();
-  //const { feedbackId } = useParams<{ feedbackId: string }>();
   const { id } = useParams();
 
-  const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${id}`);
-  const { data: feedback } = useFetch<Feedback>(`/api/feedback/${id}`);
-  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
-  const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
+  // id가 유효한지 엄격하게 확인
+  // :id, undefined, 빈 문자열, 숫자가 아닌 문자열 모두 제외
+  const isValidId =
+    id &&
+    id !== ':id' &&
+    id.trim() !== '' &&
+    !isNaN(Number(id)) &&
+    Number(id) > 0 &&
+    Number.isInteger(Number(id));
+
+  const answerId = isValidId ? String(id) : '';
+  const feedbackId = isValidId ? String(id) : '';
+
+  console.log('📋 [FeedbackPage] URL 파라미터 확인:', {
+    id,
+    isValidId,
+    answerId,
+    feedbackId,
+    answerUrl: answerId ? `/api/answers/${answerId}` : '(호출 안함 - 유효하지 않은 ID)',
+    feedbackUrl: feedbackId ? `/api/feedback/${feedbackId}` : '(호출 안함 - 유효하지 않은 ID)',
+    warning: !isValidId
+      ? '⚠️ 유효하지 않은 ID입니다. 페이지를 새로고침하거나 올바른 URL로 이동해주세요.'
+      : undefined,
+  });
+
+  // id가 유효하지 않으면 에러 메시지 표시 후 리다이렉트
+  if (!isValidId && id) {
+    console.error('❌ [FeedbackPage] 유효하지 않은 ID:', id);
+    // 에러 페이지로 리다이렉트하거나 홈으로 이동
+    setTimeout(() => {
+      navigate('/');
+    }, 2000);
+  }
+
+  // id가 유효할 때만 API 호출
+  const answerUrl = answerId ? `/api/answers/${answerId}` : '';
+  const feedbackUrl = feedbackId ? `/api/feedback/${feedbackId}` : '';
+
+  console.log('🚀 [FeedbackPage] API 엔드포인트:', {
+    answerUrl: answerUrl || '(호출 안함 - id 없음)',
+    feedbackUrl: feedbackUrl || '(호출 안함 - id 없음)',
+    baseURL: import.meta.env.VITE_API_BASE_URL || '기본값',
+    fullAnswerUrl: answerUrl
+      ? `${import.meta.env.VITE_API_BASE_URL || ''}${answerUrl}`
+      : '(호출 안함)',
+    fullFeedbackUrl: feedbackUrl
+      ? `${import.meta.env.VITE_API_BASE_URL || ''}${feedbackUrl}`
+      : '(호출 안함)',
+  });
+
+  const { data } = useFetch<FeedbackDetailResponse>(answerUrl);
+  const { data: feedback } = useFetch<Feedback>(feedbackUrl);
+  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerUrl);
   console.log('FeedbackPage API 응답 데이터:', data);
 
   const question = data?.question;
 
   const [memoContent, setMemoContent] = useState('');
   useEffect(() => {
-    if (data?.memo !== undefined && data.memo !== memoContent) setMemoContent(data?.memo);
+    if (data?.memo !== undefined && data.memo !== memoContent) {
+      setMemoContent(data.memo || ''); // null이면 빈 문자열로 처리
+    }
   }, [data?.memo, memoContent]);
 
   const [isStarred, setIsStarred] = useState<boolean | undefined>();
@@ -87,6 +137,8 @@ const FeedbackPage = () => {
       setLevel(data?.level);
     }
   }, [data?.level]);
+
+  const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
 
   const handleModalClick = () => {
     //navigate(ROUTE_PATH.ARCHIVE);
