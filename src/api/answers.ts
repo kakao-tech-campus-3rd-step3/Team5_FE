@@ -25,7 +25,26 @@ export interface SSETokenResponse {
 }
 
 export const getSSEToken = async (): Promise<SSETokenResponse> => {
+  const timestamp = new Date().toISOString();
+  const callStack = new Error().stack;
+  console.log('📤 [getSSEToken] SSE 토큰 요청 시작:', {
+    url: '/api/sse/token',
+    fullUrl: `${import.meta.env.VITE_API_BASE_URL || ''}/api/sse/token`,
+    method: 'GET',
+    timestamp,
+    callStack: callStack?.split('\n').slice(0, 10).join('\n'), // 상위 10줄만
+  });
+
   const response = await apiClient.get<SSETokenResponse>('/api/sse/token');
+
+  console.log('✅ [getSSEToken] SSE 토큰 응답 성공:', {
+    url: '/api/sse/token',
+    status: response.status,
+    statusText: response.statusText,
+    sseTokenPreview: response.data.sseToken?.substring(0, 20) + '...',
+    timestamp: new Date().toISOString(),
+  });
+
   return response.data;
 };
 
