@@ -440,49 +440,63 @@ const RecordAnswer = ({
             data = event.data;
           }
 
-          // 백엔드가 보내는 초기 timeout 정보 처리
-          if (data.timeout !== undefined) {
-            console.log('⏱️ [SSE] 타임아웃 설정:', {
-              timeout: data.timeout,
-              timeoutInSeconds: data.timeout / 1000,
-              note: '백엔드에서 설정한 SSE 연결 타임아웃',
-            });
-            logInfo('SSE 타임아웃 설정', data);
-          }
+          // 타입 가드: data가 객체인지 확인
+          if (typeof data === 'object' && data !== null) {
+            const dataObj = data as Record<string, unknown>;
 
-          // STT 텍스트가 message 이벤트로 올 수도 있음
-          const text =
-            data.text || data.transcript || data.result || data.content || data.message || '';
-          if (text && text.trim() !== '' && text !== 'connected') {
-            console.log('✅ [SSE] message 이벤트에서 STT 텍스트 발견:', {
-              text: text,
-              전체데이터: data,
-              note: 'message 이벤트로 STT 텍스트가 전달되었습니다.',
-            });
-
-            setConvertedText(text);
-            setSTTStatus('COMPLETED');
-            setRecordingState('completed');
-
-            if (sttTimeoutRef.current) {
-              clearTimeout(sttTimeoutRef.current);
-            }
-
-            // ✅ STT 완료 후 SSE 연결 닫기
-            console.log('🔌 [SSE] STT 완료 (message 이벤트) - SSE 연결 종료');
-            if (sseRef.current) {
-              sseRef.current.close();
-              sseRef.current = null;
-            }
-
-            // ✅ 변환된 텍스트를 onAnswerComplete에 전달
-            const audioUrl = data.audioUrl || data.audio_url || data.url || '';
-            if (onAnswerComplete) {
-              console.log('📤 [SSE] onAnswerComplete 호출 (message 이벤트):', {
-                audioUrl: audioUrl,
-                text: text,
+            // 백엔드가 보내는 초기 timeout 정보 처리
+            if (dataObj.timeout !== undefined) {
+              console.log('⏱️ [SSE] 타임아웃 설정:', {
+                timeout: dataObj.timeout,
+                timeoutInSeconds: typeof dataObj.timeout === 'number' ? dataObj.timeout / 1000 : undefined,
+                note: '백엔드에서 설정한 SSE 연결 타임아웃',
               });
-              onAnswerComplete(audioUrl, text);
+              logInfo('SSE 타임아웃 설정', dataObj);
+            }
+
+            // STT 텍스트가 message 이벤트로 올 수도 있음
+            const text =
+              (typeof dataObj.text === 'string' ? dataObj.text : '') ||
+              (typeof dataObj.transcript === 'string' ? dataObj.transcript : '') ||
+              (typeof dataObj.result === 'string' ? dataObj.result : '') ||
+              (typeof dataObj.content === 'string' ? dataObj.content : '') ||
+              (typeof dataObj.message === 'string' ? dataObj.message : '') ||
+              '';
+            if (text && text.trim() !== '' && text !== 'connected') {
+              console.log('✅ [SSE] message 이벤트에서 STT 텍스트 발견:', {
+                text: text,
+                전체데이터: dataObj,
+                note: 'message 이벤트로 STT 텍스트가 전달되었습니다.',
+              });
+
+              setConvertedText(text);
+              setSTTStatus('COMPLETED');
+              setRecordingState('completed');
+
+              if (sttTimeoutRef.current) {
+                clearTimeout(sttTimeoutRef.current);
+              }
+
+              // ✅ STT 완료 후 SSE 연결 닫기
+              console.log('🔌 [SSE] STT 완료 (message 이벤트) - SSE 연결 종료');
+              if (sseRef.current) {
+                sseRef.current.close();
+                sseRef.current = null;
+              }
+
+              // ✅ 변환된 텍스트를 onAnswerComplete에 전달
+              const audioUrl =
+                (typeof dataObj.audioUrl === 'string' ? dataObj.audioUrl : '') ||
+                (typeof dataObj.audio_url === 'string' ? dataObj.audio_url : '') ||
+                (typeof dataObj.url === 'string' ? dataObj.url : '') ||
+                '';
+              if (onAnswerComplete) {
+                console.log('📤 [SSE] onAnswerComplete 호출 (message 이벤트):', {
+                  audioUrl: audioUrl,
+                  text: text,
+                });
+                onAnswerComplete(audioUrl, text);
+              }
             }
           }
         } catch (error) {
@@ -513,49 +527,63 @@ const RecordAnswer = ({
             data = event.data;
           }
 
-          // 텍스트 추출 (여러 가능한 필드명 확인)
-          const text =
-            data.text || data.transcript || data.result || data.content || data.message || '';
-          const audioUrl = data.audioUrl || data.audio_url || data.url || '';
+          // 타입 가드: data가 객체인지 확인
+          if (typeof data === 'object' && data !== null) {
+            const dataObj = data as Record<string, unknown>;
 
-          console.log('✅ [SSE] STT 완료 - 변환된 텍스트 수신:', {
-            text: text,
-            audioUrl: audioUrl,
-            전체데이터: data,
-            추출된텍스트: text,
-            추출된오디오URL: audioUrl,
-            note: '백엔드에서 STT 변환이 완료되어 변환된 텍스트를 받았습니다.',
-          });
+            // 텍스트 추출 (여러 가능한 필드명 확인)
+            const text =
+              (typeof dataObj.text === 'string' ? dataObj.text : '') ||
+              (typeof dataObj.transcript === 'string' ? dataObj.transcript : '') ||
+              (typeof dataObj.result === 'string' ? dataObj.result : '') ||
+              (typeof dataObj.content === 'string' ? dataObj.content : '') ||
+              (typeof dataObj.message === 'string' ? dataObj.message : '') ||
+              '';
+            const audioUrl =
+              (typeof dataObj.audioUrl === 'string' ? dataObj.audioUrl : '') ||
+              (typeof dataObj.audio_url === 'string' ? dataObj.audio_url : '') ||
+              (typeof dataObj.url === 'string' ? dataObj.url : '') ||
+              '';
 
-          if (!text || text.trim() === '') {
-            console.warn('⚠️ [SSE] STT 완료 이벤트에서 텍스트가 비어있습니다:', {
-              data: data,
-              가능한필드: ['text', 'transcript', 'result', 'content', 'message'],
-            });
-          }
-
-          setConvertedText(text);
-          setSTTStatus('COMPLETED');
-          setRecordingState('completed');
-
-          if (sttTimeoutRef.current) {
-            clearTimeout(sttTimeoutRef.current);
-          }
-
-          // ✅ STT 완료 후 SSE 연결 닫기 (더 이상 필요 없음)
-          console.log('🔌 [SSE] STT 완료 - SSE 연결 종료');
-          eventSource.close();
-          sseRef.current = null;
-
-          // ✅ 변환된 텍스트를 onAnswerComplete에 전달
-          if (onAnswerComplete) {
-            console.log('📤 [SSE] onAnswerComplete 호출:', {
-              audioUrl: audioUrl,
+            console.log('✅ [SSE] STT 완료 - 변환된 텍스트 수신:', {
               text: text,
+              audioUrl: audioUrl,
+              전체데이터: dataObj,
+              추출된텍스트: text,
+              추출된오디오URL: audioUrl,
+              note: '백엔드에서 STT 변환이 완료되어 변환된 텍스트를 받았습니다.',
             });
-            onAnswerComplete(audioUrl, text);
-          } else {
-            console.warn('⚠️ [SSE] onAnswerComplete가 정의되지 않았습니다.');
+
+            if (!text || text.trim() === '') {
+              console.warn('⚠️ [SSE] STT 완료 이벤트에서 텍스트가 비어있습니다:', {
+                data: dataObj,
+                가능한필드: ['text', 'transcript', 'result', 'content', 'message'],
+              });
+            }
+
+            setConvertedText(text);
+            setSTTStatus('COMPLETED');
+            setRecordingState('completed');
+
+            if (sttTimeoutRef.current) {
+              clearTimeout(sttTimeoutRef.current);
+            }
+
+            // ✅ STT 완료 후 SSE 연결 닫기 (더 이상 필요 없음)
+            console.log('🔌 [SSE] STT 완료 - SSE 연결 종료');
+            eventSource.close();
+            sseRef.current = null;
+
+            // ✅ 변환된 텍스트를 onAnswerComplete에 전달
+            if (onAnswerComplete) {
+              console.log('📤 [SSE] onAnswerComplete 호출:', {
+                audioUrl: audioUrl,
+                text: text,
+              });
+              onAnswerComplete(audioUrl, text);
+            } else {
+              console.warn('⚠️ [SSE] onAnswerComplete가 정의되지 않았습니다.');
+            }
           }
         } catch (error) {
           console.error('❌ [SSE] sttCompleted 이벤트 처리 중 오류:', error, {
