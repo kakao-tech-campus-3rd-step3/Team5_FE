@@ -89,18 +89,30 @@ const HomePage = () => {
       submitData.audioUrl = audioUrl;
     }
 
+    const timestamp = new Date().toISOString();
+    const callStack = new Error().stack;
     console.log('📤 [Home] 답변 제출 요청:', {
       questionId: submitData.questionId,
       answerText: submitData.answerText,
       audioUrl: submitData.audioUrl,
       followUp: submitData.followUp,
       note: audioUrl ? '음성 답변' : '텍스트 답변',
+      timestamp,
+      callStack: callStack?.split('\n').slice(0, 10).join('\n'),
     });
 
     try {
       await submitAnswerPost('/api/answers', submitData);
+      console.log('✅ [Home] 답변 제출 완료:', {
+        questionId: submitData.questionId,
+        timestamp: new Date().toISOString(),
+      });
     } catch (error) {
-      console.error('답변 제출 중 오류:', error);
+      console.error('❌ [Home] 답변 제출 중 오류:', {
+        error,
+        questionId: submitData.questionId,
+        timestamp: new Date().toISOString(),
+      });
     }
   };
 

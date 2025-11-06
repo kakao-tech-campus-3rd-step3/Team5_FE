@@ -271,10 +271,12 @@ const RecordAnswer = ({
   const reconnectAttemptsRef = useRef(0);
   const isConnectingSSERef = useRef(false); // SSE 연결 중복 방지
   const sseTokenRequestRef = useRef(false); // SSE 토큰 요청 중복 방지
+  const sseConnectTimeRef = useRef<number | null>(null); // SSE connect 이벤트 수신 시간 저장
 
   // 오디오 데이터
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null); // blob URL (미리보기용)
+  const [serverAudioUrl, setServerAudioUrl] = useState<string | null>(null); // 서버에 업로드된 실제 URL
 
   // SSE 연결 설정
   const connectSSE = async () => {
@@ -373,16 +375,16 @@ const RecordAnswer = ({
       const eventSource = new EventSource(sseUrl);
       sseRef.current = eventSource;
 
-      console.log('📡 [SSE] EventSource 생성 완료:', {
+      console.log('📡 [SSE] EventSource 생성 완료 - 백엔드에 SSE 연결 요청:', {
         url: eventSource.url,
         readyState: eventSource.readyState,
-        withCredentials: eventSource.withCredentials,
         readyStateMeaning: {
           0: 'CONNECTING - 연결 시도 중',
           1: 'OPEN - 연결 성공',
           2: 'CLOSED - 연결 종료',
         }[eventSource.readyState],
-        note: 'EventSource는 쿼리 파라미터로 토큰을 전달합니다. 백엔드가 "connect" 이벤트를 보내면 연결 성공입니다.',
+        withCredentials: eventSource.withCredentials,
+        note: 'EventSource가 생성되었습니다. 백엔드는 쿼리 파라미터로 토큰을 받고, "connect" 이벤트를 보내면 연결이 완료됩니다.',
         대기중인이벤트: [
           'connect',
           'message',
@@ -396,11 +398,23 @@ const RecordAnswer = ({
       // 모든 이벤트를 로깅하기 위한 범용 리스너 (디버깅용)
       const logAllEvents = (eventName: string) => {
         eventSource.addEventListener(eventName, (event) => {
-          console.log(`🔍 [SSE] ${eventName} 이벤트 수신:`, {
+          const eventTimestamp = Date.now();
+          const timeSinceConnect = sseConnectTimeRef.current
+            ? eventTimestamp - sseConnectTimeRef.current
+            : null;
+          const hasConnectEvent = sseConnectTimeRef.current !== null;
+          console.log(`🔍 [SSE] ✅ connect 이후 백엔드 이벤트 수신 - ${eventName}:`, {
             eventType: eventName,
             rawData: event.data,
             dataType: typeof event.data,
             timestamp: new Date().toISOString(),
+            eventTime: eventTimestamp,
+            connectTime: sseConnectTimeRef.current,
+            hasConnectEvent: hasConnectEvent,
+            timeSinceConnect: timeSinceConnect ? `${timeSinceConnect}ms (${(timeSinceConnect / 1000).toFixed(2)}초)` : '알 수 없음 (connect 이벤트가 아직 수신되지 않음)',
+            note: hasConnectEvent && timeSinceConnect !== null
+              ? `✅ connect 이벤트 이후 ${(timeSinceConnect / 1000).toFixed(2)}초 후 백엔드에서 ${eventName} 이벤트를 보냈습니다.`
+              : '⚠️ connect 이벤트가 아직 수신되지 않았습니다. (이벤트 순서 확인 필요)',
           });
         });
       };
@@ -408,8 +422,22 @@ const RecordAnswer = ({
       // 가능한 모든 이벤트 이름 리스닝 (디버깅용)
       ['stt-completed', 'stt_completed', 'sttComplete', 'text', 'transcript'].forEach(logAllEvents);
 
+      // 주기적으로 SSE 연결 상태 확인 (디버깅용) - 로그 제거
+      const statusCheckInterval = setInterval(() => {
+        // 로그 제거 - 상태 확인만 수행
+        if (sseRef.current && sseConnectTimeRef.current) {
+          // 상태 확인만 수행 (로그 없음)
+        }
+      }, 5000); // 5초마다 상태 확인
+
       eventSource.onopen = () => {
-        console.log('✅ [SSE] EventSource.onopen 호출 - 연결 성공!');
+        console.log('✅ [SSE] EventSource.onopen 호출 - 백엔드와 SSE 연결 성공!', {
+          url: eventSource.url,
+          readyState: eventSource.readyState,
+          readyStateMeaning: 'OPEN (연결됨)',
+          timestamp: new Date().toISOString(),
+          note: '백엔드와 SSE 연결이 성공적으로 열렸습니다. 이제 connect 이벤트를 기다립니다.',
+        });
         logInfo('SSE 연결 성공');
         reconnectAttemptsRef.current = 0;
         isConnectingSSERef.current = false; // 연결 성공 시 플래그 해제
@@ -435,13 +463,22 @@ const RecordAnswer = ({
             data = rawData;
           }
 
+          const connectTimestamp = Date.now();
+          sseConnectTimeRef.current = connectTimestamp; // connect 이벤트 시간 저장
           console.log('✅ [SSE] 백엔드 connect 이벤트 수신 - 연결 성공 확인:', {
             eventType: 'connect',
             rawData: rawData,
             parsedData: data,
             dataType: typeof data,
             timestamp: new Date().toISOString(),
-            note: '백엔드에서 SSE 연결 성공을 확인했습니다.',
+            connectTime: connectTimestamp,
+            note: '백엔드에서 SSE 연결 성공을 확인했습니다. 이후 이벤트 수신 시간을 추적합니다.',
+          });
+          console.log('⏳ [SSE] 백엔드 이벤트 대기 중:', {
+            대기중인이벤트: ['sttCompleted', 'sttFailed', 'message'],
+            note: '네이버 STT 변환이 완료되면 백엔드가 sttCompleted 또는 sttFailed 이벤트를 보낼 예정입니다. 이벤트가 오지 않으면 백엔드에서 이벤트를 보내지 않았거나 네이버 STT 변환이 아직 완료되지 않았을 수 있습니다.',
+            현재시간: new Date().toISOString(),
+            connect이후경과시간: '0초',
           });
           logInfo('SSE connect 이벤트 수신', { rawData, parsedData: data });
         } catch {
@@ -459,11 +496,23 @@ const RecordAnswer = ({
       // message 이벤트는 기본 이벤트이므로 STT 텍스트도 여기로 올 수 있음
       eventSource.addEventListener('message', (event) => {
         try {
-          console.log('📨 [SSE] message 이벤트 수신 (원본):', {
+          const messageTimestamp = Date.now();
+          const timeSinceConnect = sseConnectTimeRef.current
+            ? messageTimestamp - sseConnectTimeRef.current
+            : null;
+          const hasConnectEvent = sseConnectTimeRef.current !== null;
+          console.log('📨 [SSE] ✅ connect 이후 백엔드 이벤트 수신 - message:', {
             eventType: 'message',
             rawData: event.data,
             dataType: typeof event.data,
             timestamp: new Date().toISOString(),
+            messageTime: messageTimestamp,
+            connectTime: sseConnectTimeRef.current,
+            hasConnectEvent: hasConnectEvent,
+            timeSinceConnect: timeSinceConnect ? `${timeSinceConnect}ms (${(timeSinceConnect / 1000).toFixed(2)}초)` : '알 수 없음 (connect 이벤트가 아직 수신되지 않음)',
+            note: hasConnectEvent && timeSinceConnect !== null
+              ? `✅ connect 이벤트 이후 ${(timeSinceConnect / 1000).toFixed(2)}초 후 백엔드에서 message 이벤트를 보냈습니다.`
+              : '⚠️ connect 이벤트가 아직 수신되지 않았습니다. (이벤트 순서 확인 필요)',
           });
 
           let data: Record<string, unknown> | string;
@@ -524,7 +573,8 @@ const RecordAnswer = ({
               isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
 
               // ✅ 변환된 텍스트를 onAnswerComplete에 전달
-              const audioUrl =
+              // ⚠️ 중요: 서버에 업로드된 실제 URL을 사용 (blob URL이 아님)
+              const finalServerAudioUrl = serverAudioUrl || 
                 (typeof dataObj.audioUrl === 'string' ? dataObj.audioUrl : '') ||
                 (typeof dataObj.audio_url === 'string' ? dataObj.audio_url : '') ||
                 (typeof dataObj.url === 'string' ? dataObj.url : '') ||
@@ -534,13 +584,14 @@ const RecordAnswer = ({
               // 상위 컴포넌트가 중복 제출하지 않도록 함
               if (onAnswerComplete) {
                 console.log('📤 [SSE] onAnswerComplete 호출 (message 이벤트):', {
-                  audioUrl: audioUrl,
+                  audioUrl: finalServerAudioUrl,
+                  audioUrlType: finalServerAudioUrl.startsWith('blob:') ? 'blob URL (⚠️ 문제)' : '서버 URL (✅ 정상)',
                   text: text,
                   alreadySubmitted: true,
-                  note: '이미 제출된 답변의 STT 완료 알림',
+                  note: '이미 제출된 답변의 STT 완료 알림 - 서버 URL 사용',
                 });
                 onAnswerComplete(
-                  audioUrl,
+                  finalServerAudioUrl,
                   text,
                   true, // alreadySubmitted = true (이미 제출된 상태)
                   feedbackId || answerId || undefined // 저장된 feedbackId 우선 사용
@@ -554,97 +605,111 @@ const RecordAnswer = ({
       });
 
       // STT 완료 이벤트
+      // 백엔드 스펙: SttCompletedEvent(answerId, userId, answerText)
+      // 네이버가 STT 변환을 완료하고 백엔드에 알림 → 백엔드가 SSE로 프론트엔드에 전달
       eventSource.addEventListener('sttCompleted', (event) => {
         try {
-          console.log('📨 [SSE] sttCompleted 이벤트 수신 (원본):', {
+          const sttCompletedTimestamp = Date.now();
+          const timeSinceConnect = sseConnectTimeRef.current
+            ? sttCompletedTimestamp - sseConnectTimeRef.current
+            : null;
+          const hasConnectEvent = sseConnectTimeRef.current !== null;
+          
+          console.log('📨 [SSE] ✅ 네이버 STT 변환 완료 - 백엔드가 SSE로 알림:', {
             eventType: 'sttCompleted',
             rawData: event.data,
             dataType: typeof event.data,
             timestamp: new Date().toISOString(),
+            sttCompletedTime: sttCompletedTimestamp,
+            connectTime: sseConnectTimeRef.current,
+            hasConnectEvent: hasConnectEvent,
+            timeSinceConnect: timeSinceConnect ? `${timeSinceConnect}ms (${(timeSinceConnect / 1000).toFixed(2)}초)` : '알 수 없음 (connect 이벤트가 아직 수신되지 않음)',
+            흐름: [
+              '1. 네이버가 STT 변환 완료',
+              '2. 네이버가 백엔드에 변환 완료 알림',
+              '3. 백엔드가 SSE로 프론트엔드에 sttCompleted 이벤트 전송',
+              '4. 프론트엔드가 변환된 텍스트를 받음',
+            ],
+            note: hasConnectEvent && timeSinceConnect !== null
+              ? `✅ connect 이벤트 이후 ${(timeSinceConnect / 1000).toFixed(2)}초 후 네이버 STT 변환이 완료되어 백엔드가 SSE로 알림을 보냈습니다.`
+              : '⚠️ connect 이벤트가 아직 수신되지 않았습니다. (이벤트 순서 확인 필요)',
           });
 
-          // JSON 파싱 시도
-          let data: Record<string, unknown> | string;
-          try {
-            data = JSON.parse(event.data) as Record<string, unknown>;
-            console.log('✅ [SSE] sttCompleted JSON 파싱 성공:', data);
-          } catch (parseError) {
-            console.error('❌ [SSE] sttCompleted JSON 파싱 실패:', parseError, {
-              rawData: event.data,
+          // 백엔드 스펙: SttCompletedEvent(answerId, userId, answerText)
+          // event.data는 백엔드가 보낸 JSON 문자열
+          const sttResult = JSON.parse(event.data) as {
+            answerId: number;
+            userId: number;
+            answerText: string;
+          };
+
+          console.log('✅ [SSE] STT 성공 (백엔드 스펙: SttCompletedEvent):', {
+            answerId: sttResult.answerId,
+            userId: sttResult.userId,
+            answerText: sttResult.answerText,
+            전체데이터: sttResult,
+            note: '백엔드에서 STT 변환이 완료되어 변환된 텍스트를 받았습니다.',
+          });
+
+          if (!sttResult.answerText || sttResult.answerText.trim() === '') {
+            console.warn('⚠️ [SSE] STT 완료 이벤트에서 answerText가 비어있습니다:', {
+              sttResult,
             });
-            // JSON 파싱 실패 시 원본 데이터를 그대로 사용
-            data = event.data;
           }
 
-          // 타입 가드: data가 객체인지 확인
-          if (typeof data === 'object' && data !== null) {
-            const dataObj = data as Record<string, unknown>;
+          // answerId 저장 (이미 제출된 답변의 ID)
+          if (sttResult.answerId) {
+            setAnswerId(sttResult.answerId);
+            // answerId와 feedbackId는 동일한 값으로 사용됨
+            if (!feedbackId) {
+              setFeedbackId(sttResult.answerId);
+            }
+          }
 
-            // 텍스트 추출 (여러 가능한 필드명 확인)
-            const text =
-              (typeof dataObj.text === 'string' ? dataObj.text : '') ||
-              (typeof dataObj.transcript === 'string' ? dataObj.transcript : '') ||
-              (typeof dataObj.result === 'string' ? dataObj.result : '') ||
-              (typeof dataObj.content === 'string' ? dataObj.content : '') ||
-              (typeof dataObj.message === 'string' ? dataObj.message : '') ||
-              '';
-            const audioUrl =
-              (typeof dataObj.audioUrl === 'string' ? dataObj.audioUrl : '') ||
-              (typeof dataObj.audio_url === 'string' ? dataObj.audio_url : '') ||
-              (typeof dataObj.url === 'string' ? dataObj.url : '') ||
-              '';
+          setConvertedText(sttResult.answerText);
+        setSTTStatus('COMPLETED');
+        setRecordingState('completed');
 
-            console.log('✅ [SSE] STT 완료 - 변환된 텍스트 수신:', {
-              text: text,
-              audioUrl: audioUrl,
-              전체데이터: dataObj,
-              추출된텍스트: text,
-              추출된오디오URL: audioUrl,
-              note: '백엔드에서 STT 변환이 완료되어 변환된 텍스트를 받았습니다.',
+        if (sttTimeoutRef.current) {
+          clearTimeout(sttTimeoutRef.current);
+        }
+
+          // ✅ STT 완료 후 SSE 연결 닫기 (더 이상 필요 없음)
+          console.log('🔌 [SSE] STT 완료 - SSE 연결 종료');
+          eventSource.close();
+          sseRef.current = null;
+          sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+          isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
+          
+          // 상태 확인 인터벌 정리
+          if (statusCheckInterval) {
+            clearInterval(statusCheckInterval);
+          }
+
+          // ⚠️ 중요: SSE sttCompleted 이벤트는 이미 제출된 답변의 STT 완료를 알리는 것이므로
+          // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
+          // 상위 컴포넌트가 중복 제출하지 않도록 함
+          // ✅ 변환된 텍스트를 onAnswerComplete에 전달
+        if (onAnswerComplete) {
+            // ⚠️ 중요: 서버에 업로드된 실제 URL을 사용 (blob URL이 아님)
+            const finalServerAudioUrl = serverAudioUrl || '';
+            console.log('📤 [SSE] onAnswerComplete 호출 (sttCompleted):', {
+              audioUrl: finalServerAudioUrl,
+              audioUrlType: finalServerAudioUrl.startsWith('blob:') ? 'blob URL (⚠️ 문제)' : '서버 URL (✅ 정상)',
+              text: sttResult.answerText,
+              answerId: sttResult.answerId,
+              alreadySubmitted: true,
+              feedbackId: feedbackId || sttResult.answerId,
+              note: '이미 제출된 답변의 STT 완료 알림 - 서버 URL 사용',
             });
-
-            if (!text || text.trim() === '') {
-              console.warn('⚠️ [SSE] STT 완료 이벤트에서 텍스트가 비어있습니다:', {
-                data: dataObj,
-                가능한필드: ['text', 'transcript', 'result', 'content', 'message'],
-              });
-            }
-
-            setConvertedText(text);
-            setSTTStatus('COMPLETED');
-            setRecordingState('completed');
-
-            if (sttTimeoutRef.current) {
-              clearTimeout(sttTimeoutRef.current);
-            }
-
-            // ✅ STT 완료 후 SSE 연결 닫기 (더 이상 필요 없음)
-            console.log('🔌 [SSE] STT 완료 - SSE 연결 종료');
-            eventSource.close();
-            sseRef.current = null;
-            sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
-            isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
-
-            // ⚠️ 중요: SSE sttCompleted 이벤트는 이미 제출된 답변의 STT 완료를 알리는 것이므로
-            // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
-            // 상위 컴포넌트가 중복 제출하지 않도록 함
-            // ✅ 변환된 텍스트를 onAnswerComplete에 전달
-            if (onAnswerComplete) {
-              console.log('📤 [SSE] onAnswerComplete 호출:', {
-                audioUrl: audioUrl,
-                text: text,
-                alreadySubmitted: true,
-                note: '이미 제출된 답변의 STT 완료 알림',
-              });
-              onAnswerComplete(
-                audioUrl,
-                text,
-                true, // alreadySubmitted = true (이미 제출된 상태)
-                feedbackId || answerId || undefined // 저장된 feedbackId 우선 사용
-              );
-            } else {
-              console.warn('⚠️ [SSE] onAnswerComplete가 정의되지 않았습니다.');
-            }
+            onAnswerComplete(
+              finalServerAudioUrl,
+              sttResult.answerText,
+              true, // alreadySubmitted = true (이미 제출된 상태)
+              feedbackId || sttResult.answerId || undefined // 저장된 feedbackId 우선 사용
+            );
+          } else {
+            console.warn('⚠️ [SSE] onAnswerComplete가 정의되지 않았습니다.');
           }
         } catch (error) {
           console.error('❌ [SSE] sttCompleted 이벤트 처리 중 오류:', error, {
@@ -656,9 +721,43 @@ const RecordAnswer = ({
       });
 
       // STT 실패 이벤트
+      // 백엔드 스펙: SttFailedEvent(answerId, userId, errorMessage)
       eventSource.addEventListener('sttFailed', (event) => {
-        const data = JSON.parse(event.data);
-        logError('STT 변환 실패', new Error(data.message), data);
+        const sttFailedTimestamp = Date.now();
+        const timeSinceConnect = sseConnectTimeRef.current
+          ? sttFailedTimestamp - sseConnectTimeRef.current
+          : null;
+        const hasConnectEvent = sseConnectTimeRef.current !== null;
+        
+        console.log('❌ [SSE] ✅ connect 이후 백엔드 이벤트 수신 - sttFailed:', {
+          eventType: 'sttFailed',
+          rawData: event.data,
+          timestamp: new Date().toISOString(),
+          sttFailedTime: sttFailedTimestamp,
+          connectTime: sseConnectTimeRef.current,
+          hasConnectEvent: hasConnectEvent,
+          timeSinceConnect: timeSinceConnect ? `${timeSinceConnect}ms (${(timeSinceConnect / 1000).toFixed(2)}초)` : '알 수 없음 (connect 이벤트가 아직 수신되지 않음)',
+          note: hasConnectEvent && timeSinceConnect !== null
+            ? `✅ connect 이벤트 이후 ${(timeSinceConnect / 1000).toFixed(2)}초 후 백엔드에서 sttFailed 이벤트를 보냈습니다.`
+            : '⚠️ connect 이벤트가 아직 수신되지 않았습니다. (이벤트 순서 확인 필요)',
+        });
+
+        // 백엔드 스펙: SttFailedEvent(answerId, userId, errorMessage)
+        // event.data는 백엔드가 보낸 JSON 문자열
+        const sttError = JSON.parse(event.data) as {
+          answerId: number;
+          userId: number;
+          errorMessage: string;
+        };
+
+        console.error('❌ [SSE] STT 실패 (백엔드 스펙: SttFailedEvent):', {
+          answerId: sttError.answerId,
+          userId: sttError.userId,
+          errorMessage: sttError.errorMessage,
+          전체데이터: sttError,
+        });
+
+        logError('STT 변환 실패', new Error(sttError.errorMessage), sttError);
 
         setSTTStatus('FAILED_STT');
         setRecordingState('error');
@@ -674,10 +773,18 @@ const RecordAnswer = ({
         sseRef.current = null;
         sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
         isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
+        
+        // 상태 확인 인터벌 정리
+        if (statusCheckInterval) {
+          clearInterval(statusCheckInterval);
+        }
       });
 
       // SSE 에러 처리
       eventSource.onerror = (event) => {
+        // 상태 확인 인터벌 정리
+        clearInterval(statusCheckInterval);
+        
         const readyState = eventSource.readyState;
         const errorMsg =
           readyState === EventSource.CLOSED
@@ -793,6 +900,17 @@ const RecordAnswer = ({
         answerId: answerIdToCheck,
       });
 
+      const timestamp = new Date().toISOString();
+      const callStack = new Error().stack;
+      console.log('📤 [checkAnswerStatus] 상태 조회 API 요청 시작:', {
+        url: statusUrl,
+        fullUrl: fullStatusUrl,
+        method: 'GET',
+        answerId: answerIdToCheck,
+        timestamp,
+        callStack: callStack?.split('\n').slice(0, 10).join('\n'),
+      });
+
       const response = await apiClient.get<{
         status: string;
         text?: string;
@@ -800,10 +918,11 @@ const RecordAnswer = ({
       }>(statusUrl);
 
       const data = response.data;
-      console.log('✅ [상태 조회] API 응답 성공:', {
+      console.log('✅ [checkAnswerStatus] 상태 조회 API 응답 성공:', {
         url: statusUrl,
         status: response.status,
         data: data,
+        timestamp: new Date().toISOString(),
       });
 
       logInfo('답변 상태 조회 결과', data);
@@ -826,7 +945,7 @@ const RecordAnswer = ({
         case 'COMPLETED':
           // STT 변환 성공 - SSE 알림만 놓친 상태
           if (data.text) {
-            setConvertedText(data.text);
+          setConvertedText(data.text);
           }
           setSTTStatus('COMPLETED');
           setRecordingState('completed');
@@ -844,7 +963,20 @@ const RecordAnswer = ({
           // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
           // 상위 컴포넌트가 중복 제출하지 않도록 함
           // answerId와 feedbackId는 동일한 값으로 사용됨
+          // ✅ 서버 URL을 state에 저장 (SSE 이벤트에서 사용)
+          if (data.audioUrl) {
+            setServerAudioUrl(data.audioUrl);
+          }
+          
           if (onAnswerComplete && data.audioUrl) {
+            console.log('📤 [checkAnswerStatus] onAnswerComplete 호출:', {
+              audioUrl: data.audioUrl,
+              audioUrlType: data.audioUrl.startsWith('blob:') ? 'blob URL (⚠️ 문제)' : '서버 URL (✅ 정상)',
+              text: data.text,
+              alreadySubmitted: true,
+              feedbackId: feedbackId || answerIdToCheck,
+              note: '상태 조회로 확인된 답변 - 서버 URL 사용',
+            });
             onAnswerComplete(
               data.audioUrl,
               data.text,
@@ -859,17 +991,25 @@ const RecordAnswer = ({
       }
     } catch (error) {
       logError('상태 조회 실패', error, { answerIdToCheck });
+      // ⚠️ 요구사항: 상태 조회 API도 실패하면 사용자에게 "연결 오류" 최종 에러 메세지 전달
       setErrorMessage('연결 오류가 발생했습니다. 페이지를 새로고침해주세요.');
+      setRecordingState('error');
+      setSTTStatus('FAILED_STT');
     }
   };
 
   // 1. 메모리 누수 방지 및 SSE 연결 관리 (필수)
   useEffect(() => {
-    // SSE 연결은 실제로 필요할 때만 연결 (업로드 후)
-    // 페이지 진입 시 자동 연결하지 않음
-    // connectSSE();
+    // ⚠️ 요구사항: 페이지 진입 시 GET /api/sse/connect 연결
+    // POST /api/answers 응답이 PENDING_STT일 때 재사용하기 위해 미리 연결
+    console.log('🔌 [SSE] 페이지 진입 시 SSE 연결 시작 (요구사항)');
+    if (!sseRef.current || sseRef.current.readyState === EventSource.CLOSED) {
+      connectSSE();
+    }
 
     return () => {
+      // ⚠️ 요구사항: 이탈 시 해제
+      console.log('🔌 [SSE] 페이지 이탈 시 SSE 연결 해제 (요구사항)');
       // 모든 타이머 정리
 
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
@@ -1018,10 +1158,14 @@ const RecordAnswer = ({
 
           setAudioBlob(oggBlob);
           const url = URL.createObjectURL(oggBlob);
-          setAudioUrl(url);
+        setAudioUrl(url);
           // ⚠️ blob URL은 onAudioUrlChange로 전달하지 않음
           // 서버에 업로드된 실제 URL만 전달해야 함
-          setRecordingState('processing');
+        setRecordingState('processing');
+
+          // ✅ 오디오 변환 완료 후 자동으로 업로드 및 제출 시작
+          console.log('🚀 [녹음 완료] 오디오 변환 완료 - 업로드 및 제출 시작');
+          uploadToServer();
         } catch (error) {
           console.warn('⚠️ [오디오 변환 실패] webm을 그대로 사용합니다:', error);
           // 변환 실패 시 원본 webm 사용
@@ -1031,6 +1175,10 @@ const RecordAnswer = ({
           // ⚠️ blob URL은 onAudioUrlChange로 전달하지 않음
           // 서버에 업로드된 실제 URL만 전달해야 함
           setRecordingState('processing');
+          
+          // ✅ 오디오 변환 실패해도 원본 webm으로 업로드 및 제출 시작
+          console.log('🚀 [녹음 완료] 원본 webm 사용 - 업로드 및 제출 시작');
+          uploadToServer();
         }
       };
 
@@ -1066,14 +1214,20 @@ const RecordAnswer = ({
         clearInterval(recordingTimerRef.current);
       }
 
-      // ✅ 녹음 종료 시 기존 SSE 연결이 있으면 닫기 (새로운 연결을 위해)
+      // ⚠️ 중요: 녹음 종료 시에는 SSE 연결을 닫지 않음
+      // SSE 연결은 STT 이벤트(sttCompleted/sttFailed)를 받은 후에만 닫아야 함
+      // 녹음 종료 → 업로드 → POST /api/answers → SSE 연결 시작 → STT 이벤트 대기
+      // 이 순서로 진행되므로, 녹음 종료 시점에는 아직 SSE 연결이 시작되지 않았을 수 있음
+      // 만약 이미 SSE 연결이 있다면 (이전 답변의 연결), STT 이벤트를 받을 때까지 유지해야 함
       if (sseRef.current) {
-        console.log('🔌 [SSE] 녹음 종료 - 기존 SSE 연결 종료 (새 연결 대기)');
-        sseRef.current.close();
-        sseRef.current = null;
+        const readyState = sseRef.current.readyState;
+        console.log('⚠️ [SSE] 녹음 종료 시점에 SSE 연결이 존재합니다:', {
+          readyState: readyState,
+          readyStateMeaning: readyState === EventSource.OPEN ? 'OPEN' : readyState === EventSource.CONNECTING ? 'CONNECTING' : 'CLOSED',
+          note: 'STT 이벤트를 받을 때까지 SSE 연결을 유지합니다. 이벤트 수신 전에 닫으면 안 됩니다.',
+        });
+        // SSE 연결을 닫지 않음 - STT 이벤트를 받을 때까지 유지
       }
-      sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
-      isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
 
       // 스트림 정리
       if (audioStreamRef.current) {
@@ -1280,13 +1434,27 @@ const RecordAnswer = ({
         // 먼저 fileName으로 시도 (원래 로직 유지)
         let response;
         try {
-          console.log('🔄 [Pre-signed URL 요청 시도 1] fileName 사용:', fileName);
+          const timestamp = new Date().toISOString();
+          const callStack = new Error().stack;
+          console.log('🔄 [Pre-signed URL 요청 시도 1] fileName 사용:', {
+            url: '/api/answers/upload-url',
+            fullUrl: `${API_BASE_URL}/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`,
+            method: 'GET',
+            params: { fileName },
+            timestamp,
+            callStack: callStack?.split('\n').slice(0, 10).join('\n'),
+          });
           response = await apiClient.get<{ preSignedUrl: string; finalAudioUrl: string }>(
             '/api/answers/upload-url',
             {
               params: { fileName },
             }
           );
+          console.log('✅ [Pre-signed URL 요청 성공 1]', {
+            url: '/api/answers/upload-url',
+            status: response.status,
+            timestamp: new Date().toISOString(),
+          });
           // ✅ 성공하면 여기서 끝 (두 번째 시도 없음)
         } catch (firstError: unknown) {
           const error = firstError as {
@@ -1303,7 +1471,16 @@ const RecordAnswer = ({
 
           // 400 또는 404 에러인 경우에만 file_name으로 재시도
           if (error.response?.status === 400 || error.response?.status === 404) {
-            console.log('⚠️ [재시도] fileName으로 실패, file_name으로 재시도');
+            const retryTimestamp = new Date().toISOString();
+            const retryCallStack = new Error().stack;
+            console.log('⚠️ [재시도] fileName으로 실패, file_name으로 재시도:', {
+              url: '/api/answers/upload-url',
+              fullUrl: `${API_BASE_URL}/api/answers/upload-url?file_name=${encodeURIComponent(fileName)}`,
+              method: 'GET',
+              params: { file_name: fileName },
+              timestamp: retryTimestamp,
+              callStack: retryCallStack?.split('\n').slice(0, 10).join('\n'),
+            });
             try {
               response = await apiClient.get<{ preSignedUrl: string; finalAudioUrl: string }>(
                 '/api/answers/upload-url',
@@ -1311,7 +1488,11 @@ const RecordAnswer = ({
                   params: { file_name: fileName },
                 }
               );
-              console.log('✅ [재시도 성공] file_name 사용:', fileName);
+              console.log('✅ [재시도 성공] file_name 사용:', {
+                url: '/api/answers/upload-url',
+                status: response.status,
+                timestamp: new Date().toISOString(),
+              });
             } catch (secondError: unknown) {
               const secondErr = secondError as {
                 response?: { status?: number; statusText?: string; data?: unknown };
@@ -1343,6 +1524,9 @@ const RecordAnswer = ({
 
         // 2. 파일 업로드 (fileName을 함께 전송)
         await uploadWithProgress(preSignedUrl, audioBlob, fileName);
+
+        // ✅ 서버에 업로드된 실제 URL을 state에 저장 (SSE 이벤트에서 사용)
+        setServerAudioUrl(serverAudioUrl);
 
         // ✅ 서버에 업로드된 실제 URL을 상위 컴포넌트에 알림
         // 이제 버튼이 활성화되어 제출할 수 있음
@@ -1444,6 +1628,17 @@ const RecordAnswer = ({
             전체Body: requestBody,
           });
 
+          const submitTimestamp = new Date().toISOString();
+          const submitCallStack = new Error().stack;
+          console.log('📤 [RecordAnswer] POST /api/answers 요청 시작:', {
+            url: '/api/answers',
+            fullUrl: `${API_BASE_URL}/api/answers`,
+            method: 'POST',
+            requestBody,
+            timestamp: submitTimestamp,
+            callStack: submitCallStack?.split('\n').slice(0, 10).join('\n'),
+          });
+
           const submitResponse = await apiClient.post<{
             answerId: number;
             answerText: string;
@@ -1481,20 +1676,35 @@ const RecordAnswer = ({
 
           // 응답 상태 확인
           if (result.status === 'PENDING_STT') {
-            console.log('✅ [업로드 완료 확인] 파일 업로드 및 답변 제출 성공, STT 변환 대기 중:', {
+            console.log('✅ [POST /api/answers 응답] STT 변환 대기 중 상태:', {
               answerId: result.answerId,
               feedbackId: result.feedbackId,
               status: result.status,
               audioUrl: serverAudioUrl,
-              note: '업로드는 완료되었습니다. 이제 STT(음성→텍스트 변환) 처리를 기다리는 중입니다.',
+              note: '백엔드가 네이버로 STT 변환 요청을 보냈습니다. 네이버가 변환 완료되면 백엔드가 SSE로 알려줍니다.',
             });
             setRecordingState('pending_stt');
             setSTTStatus('PENDING_STT');
 
-            // STT 대기 중일 때만 SSE 연결 시작
-            if (!sseRef.current) {
-              logInfo('STT 대기 중 - SSE 연결 시작');
+            // ⚠️ 요구사항: POST /api/answers에 대한 응답 (status=PENDING_STT) -> "텍스트 변환 처리 중"
+            // 페이지 진입 시 이미 SSE 연결이 되어있으므로 재사용
+            // 만약 연결이 닫혀있으면 재연결
+            if (!sseRef.current || sseRef.current.readyState === EventSource.CLOSED) {
+              console.log('🔌 [SSE] STT 변환 완료 알림을 받기 위해 SSE 재연결:', {
+                answerId: result.answerId,
+                feedbackId: result.feedbackId,
+                status: result.status,
+                note: '페이지 진입 시 연결된 SSE가 닫혀있어 재연결합니다.',
+              });
+              logInfo('STT 대기 중 - SSE 재연결');
               connectSSE();
+            } else {
+              console.log('✅ [SSE] 페이지 진입 시 연결된 SSE 재사용:', {
+                readyState: sseRef.current.readyState,
+                readyStateMeaning: sseRef.current.readyState === EventSource.OPEN ? 'OPEN (연결됨)' : sseRef.current.readyState === EventSource.CONNECTING ? 'CONNECTING (연결 중)' : 'CLOSED (닫힘)',
+                url: sseRef.current.url,
+                note: '페이지 진입 시 연결된 SSE를 재사용하여 STT 변환 완료 이벤트를 기다립니다.',
+              });
             }
 
             // STT 타임아웃 설정
@@ -1521,7 +1731,17 @@ const RecordAnswer = ({
             // ⚠️ 중요: RecordAnswer에서 이미 답변을 제출했으므로
             // onAnswerComplete에 alreadySubmitted=true 플래그와 feedbackId를 전달하여
             // 상위 컴포넌트가 중복 제출하지 않고 피드백 페이지로 이동하도록 함
+            // ✅ 서버 URL을 state에 저장 (SSE 이벤트에서 사용)
+            setServerAudioUrl(serverAudioUrl);
+            
             if (onAnswerComplete) {
+              console.log('📤 [RecordAnswer] onAnswerComplete 호출 (즉시 완료):', {
+                audioUrl: serverAudioUrl,
+                audioUrlType: serverAudioUrl.startsWith('blob:') ? 'blob URL (⚠️ 문제)' : '서버 URL (✅ 정상)',
+                alreadySubmitted: true,
+                feedbackId: result.feedbackId,
+                note: 'RecordAnswer에서 이미 제출 완료 - 서버 URL 사용',
+              });
               onAnswerComplete(
                 serverAudioUrl,
                 undefined,
