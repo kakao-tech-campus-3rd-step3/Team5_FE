@@ -5,11 +5,6 @@ import CalendarHeatmap from 'react-calendar-heatmap';
 import LoadingAnimation from '../../assets/lottie/loading.json';
 
 import 'react-calendar-heatmap/dist/styles.css'; // 기본 스타일 import
-<<<<<<< HEAD
-=======
-// eslint-disable-next-line import/order
-import Lottie from 'lottie-react';
->>>>>>> 99aa9b2408044292a27669b6b426dfbdfd629d23
 
 export interface DailySolveCount {
   date: string;
@@ -74,7 +69,6 @@ const StreakSection = ({ data }: StreakSectionProps) => {
 export default StreakSection;
 
 const SectionWrapper = styled.section`
-  padding: 20px;
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 `;
@@ -99,7 +93,7 @@ const LottieWrapper = styled.div`
 
 // 히트맵(잔디) 스타일링
 const HeatmapWrapper = styled.div`
-  width: 300px;
+  width: 350px;
 
   .react-calendar-heatmap .color-empty {
     fill: #ebedf0; // 비어있는 칸
