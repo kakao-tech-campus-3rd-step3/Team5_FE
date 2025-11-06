@@ -267,7 +267,7 @@ const QuestionList = () => {
 
       {isOccupationSelected && (
         <FilterWrapper>
-          {occupations?.map((occupation) => (
+          {occupations?.slice(0, 2).map((occupation) => (
             <FilterButton
               key={occupation.occupationId}
               selected={selectedOccupation === occupation.occupationId.toString()}

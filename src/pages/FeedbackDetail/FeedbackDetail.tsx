@@ -192,9 +192,11 @@ const FeedbackDetailPage = () => {
         <Card>
           <CardTitle>좋은 점</CardTitle>
           <CardList>
-            {feedback.content.positivePoints.map((point, index) => (
-              <CardListItem key={index}>{point}</CardListItem>
-            ))}
+            {feedback.content.positivePoints
+              ? feedback.content.positivePoints.map((point, index) => (
+                  <CardListItem key={index}>{point}</CardListItem>
+                ))
+              : ''}
           </CardList>
         </Card>
 

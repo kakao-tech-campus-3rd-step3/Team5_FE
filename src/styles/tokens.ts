@@ -5,8 +5,8 @@ export const colors = {
   white: '#FFFFFF',
   black: '#000000',
   text: '#333333',
+  backgroundGradient: ` linear-gradient(180deg, #f5f5dc 0%, #f4c2c2 100%)`,
   background: '#F8F9FA',
-  backgroundGradient: `linear-gradient(180deg, #FFF6F3 0%, #F8C8C0 100%)`,
   textBrown: '#4B3C39',
   pointCoral: '#FF8E8E',
 };

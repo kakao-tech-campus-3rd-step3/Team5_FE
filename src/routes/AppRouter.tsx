@@ -9,6 +9,7 @@ import FeedbackDetailPage from '../pages/FeedbackDetail/FeedbackDetail';
 import HomePage from '../pages/Home/Home';
 import LoginPage from '../pages/Login/Login';
 import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
+import MyPage from '../pages/MyPage/MyPage';
 import NotFound from '../pages/NotFound/NotFound';
 import RivalPage from '../pages/Rival/Rival';
 import SubscribePage from '../pages/Subscribe/Subscribe';
@@ -221,6 +222,7 @@ const AppRouter = () => {
           <Route path={ROUTE_PATH.SUBSCRIBE} element={<SubscribePage />} />
           {/* <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} /> */}
           <Route path={ROUTE_PATH.RIVAL} element={<RivalPage />} />
+          <Route path={ROUTE_PATH.MYPAGE} element={<MyPage />} />
         </Route>
       </Route>
 

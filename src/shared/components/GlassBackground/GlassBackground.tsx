@@ -29,6 +29,8 @@ const Wrapper = styled.div`
   /* 레이아웃 */
   width: 100%;
   height: 100%;
+  color: #f5f5f5;
+
   display: flex;
   align-items: center;
   justify-content: center;

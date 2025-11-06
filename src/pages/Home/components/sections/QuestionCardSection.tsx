@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
-import { Loader2 } from 'lucide-react';
+import Lottie from 'lottie-react';
 
+import LoadingAnimation from '../../../../assets/lottie/loading.json';
 import GlassBackground from '../../../../shared/components/GlassBackground/GlassBackground';
 
 import type { AnswerStateType, Question } from '../../Home';
@@ -8,32 +9,33 @@ import type { AnswerStateType, Question } from '../../Home';
 interface QuestionCardSectionProps {
   answerState: AnswerStateType;
   question: Question | null;
-  isLoading?: boolean;
 }
 
-const QuestionCardSection = ({
-  answerState,
-  question,
-  isLoading = false,
-}: QuestionCardSectionProps) => {
+const QuestionCardSection = ({ answerState, question }: QuestionCardSectionProps) => {
+  if (!question)
+    return (
+      <QuestionCard>
+        <GlassBackground>
+          <LottieWrapper>
+            <Lottie animationData={LoadingAnimation} loop autoplay />
+          </LottieWrapper>
+        </GlassBackground>
+      </QuestionCard>
+    );
+
   return (
     <section>
-      <QuestionCard isStarted={answerState === 'answering'}>
+      <QuestionCard>
         <GlassBackground>
-          {isLoading ? (
-            <LoadingContainer>
-              <Spinner />
-              <LoadingText>질문을 불러오는 중...</LoadingText>
-            </LoadingContainer>
-          ) : question ? (
-            answerState === 'before-answer' ? (
-              '오늘의 질문을 확인하세요!'
-            ) : (
-              question.questionText
-            )
-          ) : (
-            <ErrorText>질문을 불러올 수 없습니다.</ErrorText>
-          )}
+          {answerState === 'before-answer'
+            ? // 1. question.followUp이 null/undefined가 아니면 그 값을 사용하고,
+              // 2. null/undefined라면 '오늘의 질문을 확인하세요!'를 사용합니다.
+              question?.followUp
+              ? '꼬리 질문을 확인하세요'
+              : '오늘의 질문을 확인하세요!'
+            : // answerState가 'before-answer'가 아니면(e.g., 'answering')
+              // question.questionText를 보여줍니다.
+              question.questionText}
         </GlassBackground>
       </QuestionCard>
     </section>
@@ -42,62 +44,20 @@ const QuestionCardSection = ({
 
 export default QuestionCardSection;
 
-const QuestionCard = styled.div<{ isStarted: boolean }>`
+const QuestionCard = styled.div`
   width: 300px;
   height: 300px;
-  margin-bottom: 0;
+  margin-bottom: ${({ theme }) => theme.space.space16};
 
   transition: 0.3s ease-in-out;
-  animation: fadeInUp 0.6s ease-out;
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 `;
 
-const LoadingContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  width: 100%;
-  height: 100%;
-`;
-
-const Spinner = styled(Loader2)`
-  width: 48px;
-  height: 48px;
-  color: ${({ theme }) => theme.colors.pointCoral || theme.colors.secondary};
-  animation: spin 1s linear infinite;
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const LoadingText = styled.p`
-  font-size: ${({ theme }) => theme.typography.fontSizes.body};
-  color: ${({ theme }) => theme.colors.textBrown};
-  margin: 0;
-  font-weight: ${({ theme }) => theme.typography.fontWeights.regular};
-`;
-
-const ErrorText = styled.p`
-  font-size: ${({ theme }) => theme.typography.fontSizes.body};
-  color: #ef4444;
-  margin: 0;
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+const LottieWrapper = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  pointer-events: none;
 `;

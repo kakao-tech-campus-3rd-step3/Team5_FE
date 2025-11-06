@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Home, Archive, Star, Users, PlusCircle } from 'lucide-react';
+import { Home, Archive, Star, Users, CircleUserRound } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 import { ROUTE_PATH } from '../../../routes/routePath';
@@ -15,14 +15,14 @@ const Navigation = () => {
         <StyledNavLink to={ROUTE_PATH.ARCHIVE}>
           <Archive />
         </StyledNavLink>
-        <StyledNavLink to={ROUTE_PATH.FEEDBACK}>
-          <PlusCircle />
-        </StyledNavLink>
         <StyledNavLink to={ROUTE_PATH.SUBSCRIBE}>
           <Star />
         </StyledNavLink>
         <StyledNavLink to={ROUTE_PATH.RIVAL}>
           <Users />
+        </StyledNavLink>
+        <StyledNavLink to={ROUTE_PATH.MYPAGE}>
+          <CircleUserRound />
         </StyledNavLink>
       </NavContainer>
     </Wrapper>
