@@ -29,7 +29,6 @@ const AnsweringSection = ({
   const navigate = useNavigate();
   const [answerText, setAnswerText] = useState('');
   const [audioUrl, setAudioUrl] = useState<string>('');
-  const [convertedText, setConvertedText] = useState<string>('');
   const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false); // 이미 제출되었는지 추적
   const [submittedFeedbackId, setSubmittedFeedbackId] = useState<number | null>(null); // 제출된 feedbackId 저장
 
@@ -58,7 +57,7 @@ const AnsweringSection = ({
         alert('녹음 및 업로드가 완료될 때까지 기다려주세요.');
         return;
       }
-      
+
       // audioUrl이 있지만 아직 제출이 완료되지 않은 경우 (SSE 대기 중)
       // RecordAnswer에서 자동으로 제출되므로 여기서는 아무것도 하지 않음
       // 로그는 최소화 (이미 제출된 경우는 위에서 처리됨)
@@ -82,16 +81,14 @@ const AnsweringSection = ({
   };
 
   // RecordAnswer에서 완료된 답변 처리
-  const handleAnswerComplete = (
-    audioUrl: string,
-    text?: string,
-    alreadySubmitted?: boolean,
-    feedbackId?: number
-  ) => {
-    setAudioUrl(audioUrl);
-    if (text) {
-      setConvertedText(text);
-    }
+          const handleAnswerComplete = (
+            audioUrl: string,
+            text?: string,
+            alreadySubmitted?: boolean,
+            feedbackId?: number
+          ) => {
+            setAudioUrl(audioUrl);
+            // convertedText는 사용하지 않으므로 제거
 
     // ⚠️ 중요: alreadySubmitted가 true이면 이미 제출된 상태이므로
     // feedbackId를 저장하고 버튼을 활성화 상태로 유지 (피드백으로 이동 가능하도록)

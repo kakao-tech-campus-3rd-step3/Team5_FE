@@ -35,9 +35,7 @@ const usePost = <T = unknown>(options: UsePostOptions<T> = {}): UsePostReturn<T>
       const callStack = new Error().stack;
       console.log('📤 [usePost] API 요청 시작:', {
         url,
-        fullUrl: url.startsWith('http')
-          ? url
-          : `${import.meta.env.VITE_API_BASE_URL || ''}${url}`,
+        fullUrl: url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL || ''}${url}`,
         method: 'POST',
         payload,
         config: config || {},
