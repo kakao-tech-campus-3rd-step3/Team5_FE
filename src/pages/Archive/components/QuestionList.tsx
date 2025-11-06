@@ -141,6 +141,11 @@ const QuestionList = () => {
 
       try {
         // API 호출
+        console.log('📤 [QuestionList] GET /api/answers 요청:', {
+          url: '/api/answers',
+          params,
+          fullUrl: `/api/answers?${new URLSearchParams(params as Record<string, string>).toString()}`,
+        });
         const response = await apiClient.get<CursorAnswersApiResponse>('/api/answers', { params });
 
         if (response.data) {

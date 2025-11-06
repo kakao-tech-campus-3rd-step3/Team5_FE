@@ -3,8 +3,205 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
 import { Mic, Square, Upload, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 
+import { getSSEToken } from '../../../api/answers';
 import apiClient, { API_BASE_URL } from '../../../api/apiClient';
-import { ACCESS_TOKEN_KEY } from '../../../shared/utils/auth';
+import { ACCESS_TOKEN_KEY, isTokenExpired } from '../../../shared/utils/auth';
+
+// Web Audio API를 사용하여 webm을 OGG로 변환하는 함수
+// OGG는 브라우저에서 직접 인코딩 가능하고 라이선스 문제가 없습니다.
+const convertWebmToOgg = async (webmBlob: Blob): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    try {
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioContext = new AudioContextClass();
+      const fileReader = new FileReader();
+
+      fileReader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+          // AudioBuffer를 OGG로 변환
+          // MediaRecorder를 사용하여 OGG 형식으로 인코딩
+          const oggBlob = await audioBufferToOgg(audioBuffer);
+
+          console.log('✅ [오디오 변환] OGG 변환 완료:', {
+            원본크기: webmBlob.size,
+            변환크기: oggBlob.size,
+            원본타입: webmBlob.type,
+            변환타입: oggBlob.type,
+          });
+
+          resolve(oggBlob);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      fileReader.onerror = reject;
+      fileReader.readAsArrayBuffer(webmBlob);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+// AudioBuffer를 OGG Blob으로 변환
+// MediaRecorder를 사용하여 OGG 형식으로 인코딩
+const audioBufferToOgg = async (buffer: AudioBuffer): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    try {
+      // AudioContext를 사용하여 MediaStream 생성
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioContext = new AudioContextClass();
+
+      // MediaStreamDestination 생성 (실시간 오디오 스트림)
+      const destination = audioContext.createMediaStreamDestination();
+
+      // AudioBufferSourceNode 생성
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(destination);
+
+      // MediaRecorder로 OGG 형식 인코딩
+      const mimeType = 'audio/ogg; codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        console.warn('⚠️ [OGG 변환] OGG 형식이 지원되지 않습니다. WAV로 변환합니다.');
+        const wavBlob = audioBufferToWav(buffer);
+        resolve(wavBlob);
+        return;
+      }
+
+      const mediaRecorder = new MediaRecorder(destination.stream, {
+        mimeType: mimeType,
+      });
+
+      const chunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const oggBlob = new Blob(chunks, { type: mimeType });
+        audioContext.close();
+        resolve(oggBlob);
+      };
+
+      mediaRecorder.onerror = () => {
+        audioContext.close();
+        reject(new Error('MediaRecorder 오류'));
+      };
+
+      // 녹음 시작
+      mediaRecorder.start();
+
+      // 오디오 재생 시작
+      source.start(0);
+
+      // 오디오 재생 완료 후 녹음 중지
+      source.onended = () => {
+        if (mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+        audioContext.close();
+      };
+    } catch (error) {
+      // OGG 변환 실패 시 WAV로 폴백
+      console.warn('⚠️ [OGG 변환 실패] WAV로 변환합니다:', error);
+      const wavBlob = audioBufferToWav(buffer);
+      resolve(wavBlob);
+    }
+  });
+};
+
+// AudioBuffer를 WAV Blob으로 변환
+const audioBufferToWav = (buffer: AudioBuffer): Blob => {
+  const length = buffer.length;
+  const numberOfChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * 2);
+  const view = new DataView(arrayBuffer);
+  const channels: Float32Array[] = [];
+
+  // WAV 헤더 작성
+  const writeString = (offset: number, string: string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
+  let offset = 0;
+  writeString(offset, 'RIFF');
+  offset += 4;
+  view.setUint32(offset, 36 + length * numberOfChannels * 2, true);
+  offset += 4;
+  writeString(offset, 'WAVE');
+  offset += 4;
+  writeString(offset, 'fmt ');
+  offset += 4;
+  view.setUint32(offset, 16, true);
+  offset += 4;
+  view.setUint16(offset, 1, true);
+  offset += 2;
+  view.setUint16(offset, numberOfChannels, true);
+  offset += 2;
+  view.setUint32(offset, sampleRate, true);
+  offset += 4;
+  view.setUint32(offset, sampleRate * numberOfChannels * 2, true);
+  offset += 4;
+  view.setUint16(offset, numberOfChannels * 2, true);
+  offset += 2;
+  view.setUint16(offset, 16, true);
+  offset += 2;
+  writeString(offset, 'data');
+  offset += 4;
+  view.setUint32(offset, length * numberOfChannels * 2, true);
+  offset += 4;
+
+  // 채널 데이터 가져오기
+  for (let i = 0; i < numberOfChannels; i++) {
+    channels.push(buffer.getChannelData(i));
+  }
+
+  // 데이터 작성
+  for (let i = 0; i < length; i++) {
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+      const sample = Math.max(-1, Math.min(1, channels[channel][i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([arrayBuffer], { type: 'audio/wav' });
+};
+
+// SSE URL 생성 함수
+// 백엔드: GET /api/sse/connect?token={sseToken}
+// Media type: text/event-stream
+// 초기 응답: { "timeout": 9007199254740991 }
+// 쿼리 파라미터로 sseToken 전달 (일회성 토큰)
+const getSSEUrl = (sseToken: string): string => {
+  const baseUrl = API_BASE_URL || window.location.origin;
+  const ssePath = `/api/sse/connect?token=${encodeURIComponent(sseToken)}`;
+  const fullUrl = baseUrl + ssePath;
+
+  console.log('🔗 [SSE URL 생성]:', {
+    baseUrl,
+    ssePath,
+    fullUrl,
+    sseTokenPreview: sseToken.substring(0, 20) + '...',
+    note: '쿼리 파라미터로 sseToken 전달 (일회성 토큰)',
+  });
+
+  return fullUrl;
+};
 
 interface RecordAnswerProps {
   questionId?: number;
@@ -16,6 +213,8 @@ interface RecordAnswerProps {
     feedbackId?: number
   ) => void;
   onError?: (error: string) => void;
+  onAudioUrlChange?: (url: string) => void; // audioUrl이 변경될 때 호출
+  followUp?: boolean; // 질문 응답의 followUp 값
 }
 
 // 설정 상수
@@ -40,7 +239,14 @@ type RecordingState =
 type NetworkState = 'online' | 'offline' | 'checking';
 type STTStatus = 'PENDING_STT' | 'COMPLETED' | 'FAILED_STT';
 
-const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: RecordAnswerProps) => {
+const RecordAnswer = ({
+  questionId,
+  answerText,
+  onAnswerComplete,
+  onError,
+  onAudioUrlChange,
+  followUp,
+}: RecordAnswerProps) => {
   // 상태 관리
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [networkState, setNetworkState] = useState<NetworkState>('online');
@@ -49,8 +255,10 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   const [retryCount, setRetryCount] = useState(0);
   const [recordingTime, setRecordingTime] = useState(0);
   const [answerId, setAnswerId] = useState<number | null>(null);
+  const [feedbackId, setFeedbackId] = useState<number | null>(null); // POST 응답에서 받은 feedbackId 저장
   const [convertedText, setConvertedText] = useState<string>('');
   const [sttStatus, setSTTStatus] = useState<STTStatus | null>(null);
+  const [isUploading, setIsUploading] = useState(false); // 업로드 중복 호출 방지
 
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -61,43 +269,389 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   const sttTimeoutRef = useRef<number | null>(null);
   const sseRef = useRef<EventSource | null>(null);
   const reconnectAttemptsRef = useRef(0);
+  const isConnectingSSERef = useRef(false); // SSE 연결 중복 방지
+  const sseTokenRequestRef = useRef(false); // SSE 토큰 요청 중복 방지
 
   // 오디오 데이터
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   // SSE 연결 설정
-  const connectSSE = () => {
+  const connectSSE = async () => {
+    // ⚠️ 중복 호출 방지: 이미 연결 중이거나 연결되어 있으면 무시
+    if (isConnectingSSERef.current) {
+      console.warn('⚠️ [SSE] 이미 연결 중입니다. 중복 호출을 무시합니다.');
+      return;
+    }
+
+    if (sseRef.current && sseRef.current.readyState !== EventSource.CLOSED) {
+      console.warn('⚠️ [SSE] 이미 연결되어 있습니다. 중복 호출을 무시합니다.', {
+        readyState: sseRef.current.readyState,
+      });
+      return;
+    }
+
     try {
+      isConnectingSSERef.current = true; // 연결 시작 플래그 설정
+
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
       if (!token) {
         throw new Error('인증 토큰이 없습니다.');
       }
 
-      logInfo('SSE 연결 시도 시작');
-      const eventSource = new EventSource(`/api/sse/connect?token=${token}`);
+      // 토큰 만료 체크
+      const tokenExpired = isTokenExpired(token);
+      console.log('🔍 [SSE] 토큰 상태 확인:', {
+        tokenPreview: token.substring(0, 20) + '...',
+        isExpired: tokenExpired,
+        note: tokenExpired
+          ? '⚠️ 토큰이 만료되었습니다. 토큰 갱신이 필요합니다.'
+          : '✅ 토큰이 유효합니다.',
+      });
+
+      if (tokenExpired) {
+        console.warn('⚠️ [SSE] 토큰이 만료되어 SSE 연결을 시도하지 않습니다.');
+        setErrorMessage('인증 토큰이 만료되었습니다. 페이지를 새로고침해주세요.');
+        isConnectingSSERef.current = false; // 연결 실패 시 플래그 해제
+        return;
+      }
+
+      // 1단계: GET /api/sse/token으로 일회성 sseToken 받기
+      // ⚠️ 중복 요청 방지: 이미 토큰 요청 중이면 무시
+      if (sseTokenRequestRef.current) {
+        console.warn('⚠️ [SSE] SSE 토큰 요청이 이미 진행 중입니다. 중복 요청을 무시합니다.');
+        isConnectingSSERef.current = false;
+        return;
+      }
+
+      console.log('🔑 [SSE] 일회성 SSE 토큰 요청 시작:', {
+        apiEndpoint: '/api/sse/token',
+        note: '헤더에 Authorization 토큰이 자동으로 포함됩니다.',
+      });
+
+      let sseToken: string;
+      try {
+        sseTokenRequestRef.current = true; // 토큰 요청 시작 플래그 설정
+        const sseTokenResponse = await getSSEToken();
+        sseToken = sseTokenResponse.sseToken;
+        sseTokenRequestRef.current = false; // 토큰 요청 완료 플래그 해제
+
+        console.log('✅ [SSE] 일회성 SSE 토큰 수신 성공:', {
+          sseTokenPreview: sseToken.substring(0, 20) + '...',
+          sseTokenLength: sseToken.length,
+          note: '이제 이 sseToken을 사용하여 SSE 연결을 시도합니다.',
+        });
+        logInfo('SSE 토큰 수신 성공', { sseTokenPreview: sseToken.substring(0, 20) + '...' });
+      } catch (error) {
+        sseTokenRequestRef.current = false; // 토큰 요청 실패 시 플래그 해제
+        isConnectingSSERef.current = false; // 연결 실패 시 플래그 해제
+        logError('SSE 토큰 요청 실패', error, {});
+        setErrorMessage('SSE 토큰을 받아오는데 실패했습니다. 다시 시도해주세요.');
+        return;
+      }
+
+      // 2단계: 받은 sseToken으로 SSE 연결
+      const sseUrl = getSSEUrl(sseToken);
+
+      console.log('🔗 [SSE] 연결 시도:', {
+        url: sseUrl,
+        baseURL: API_BASE_URL,
+        fullUrl: sseUrl,
+        sseTokenPreview: sseToken.substring(0, 20) + '...',
+        note: '쿼리 파라미터로 sseToken 전달 (일회성 토큰)',
+      });
+
+      logInfo('SSE 연결 시도 시작', { url: sseUrl, baseURL: API_BASE_URL });
+
+      // ✅ 백엔드 요구사항: EventSource 사용 (쿼리 파라미터로 sseToken 전달)
+      console.log('🔧 [SSE] EventSource 사용 (백엔드 요구사항):', {
+        url: sseUrl,
+        note: 'EventSource는 헤더를 설정할 수 없지만, 쿼리 파라미터로 sseToken 전달',
+      });
+
+      // EventSource 생성 (백엔드 예시 코드와 동일)
+      const eventSource = new EventSource(sseUrl);
       sseRef.current = eventSource;
 
+      console.log('📡 [SSE] EventSource 생성 완료:', {
+        url: eventSource.url,
+        readyState: eventSource.readyState,
+        withCredentials: eventSource.withCredentials,
+        readyStateMeaning: {
+          0: 'CONNECTING - 연결 시도 중',
+          1: 'OPEN - 연결 성공',
+          2: 'CLOSED - 연결 종료',
+        }[eventSource.readyState],
+        note: 'EventSource는 쿼리 파라미터로 토큰을 전달합니다. 백엔드가 "connect" 이벤트를 보내면 연결 성공입니다.',
+        대기중인이벤트: [
+          'connect',
+          'message',
+          'sttCompleted',
+          'sttFailed',
+          'stt-completed',
+          'stt_completed',
+        ],
+      });
+
+      // 모든 이벤트를 로깅하기 위한 범용 리스너 (디버깅용)
+      const logAllEvents = (eventName: string) => {
+        eventSource.addEventListener(eventName, (event) => {
+          console.log(`🔍 [SSE] ${eventName} 이벤트 수신:`, {
+            eventType: eventName,
+            rawData: event.data,
+            dataType: typeof event.data,
+            timestamp: new Date().toISOString(),
+          });
+        });
+      };
+
+      // 가능한 모든 이벤트 이름 리스닝 (디버깅용)
+      ['stt-completed', 'stt_completed', 'sttComplete', 'text', 'transcript'].forEach(logAllEvents);
+
       eventSource.onopen = () => {
+        console.log('✅ [SSE] EventSource.onopen 호출 - 연결 성공!');
         logInfo('SSE 연결 성공');
         reconnectAttemptsRef.current = 0;
+        isConnectingSSERef.current = false; // 연결 성공 시 플래그 해제
       };
+
+      // ✅ 백엔드가 보내는 "connect" 이벤트 리스닝 (연결 성공 확인용)
+      eventSource.addEventListener('connect', (event) => {
+        try {
+          // 백엔드가 JSON이 아닌 단순 문자열("connected")을 보낼 수 있음
+          let data: string | Record<string, unknown>;
+          const rawData = event.data;
+
+          if (rawData && typeof rawData === 'string') {
+            // JSON 형식인지 확인
+            if (rawData.trim().startsWith('{') || rawData.trim().startsWith('[')) {
+              // JSON 형식인 경우
+              data = JSON.parse(rawData);
+            } else {
+              // 단순 문자열인 경우 (예: "connected")
+              data = rawData;
+            }
+          } else {
+            data = rawData;
+          }
+
+          console.log('✅ [SSE] 백엔드 connect 이벤트 수신 - 연결 성공 확인:', {
+            eventType: 'connect',
+            rawData: rawData,
+            parsedData: data,
+            dataType: typeof data,
+            timestamp: new Date().toISOString(),
+            note: '백엔드에서 SSE 연결 성공을 확인했습니다.',
+          });
+          logInfo('SSE connect 이벤트 수신', { rawData, parsedData: data });
+        } catch {
+          // 파싱 실패해도 연결 성공으로 간주 (백엔드가 단순 문자열을 보낸 경우)
+          console.log('✅ [SSE] 백엔드 connect 이벤트 수신 (단순 문자열):', {
+            eventType: 'connect',
+            rawData: event.data,
+            note: '백엔드가 단순 문자열을 보냈지만 연결 성공으로 간주합니다.',
+          });
+          logInfo('SSE connect 이벤트 수신 (단순 문자열)', { rawData: event.data });
+        }
+      });
+
+      // 초기 연결 메시지 처리 (timeout 정보 등)
+      // message 이벤트는 기본 이벤트이므로 STT 텍스트도 여기로 올 수 있음
+      eventSource.addEventListener('message', (event) => {
+        try {
+          console.log('📨 [SSE] message 이벤트 수신 (원본):', {
+            eventType: 'message',
+            rawData: event.data,
+            dataType: typeof event.data,
+            timestamp: new Date().toISOString(),
+          });
+
+          let data: Record<string, unknown> | string;
+          try {
+            data = JSON.parse(event.data) as Record<string, unknown>;
+            console.log('✅ [SSE] message JSON 파싱 성공:', data);
+          } catch (parseError) {
+            console.warn('⚠️ [SSE] message JSON 파싱 실패:', parseError, { rawData: event.data });
+            // JSON 파싱 실패 시 원본 데이터를 그대로 사용
+            data = event.data;
+          }
+
+          // 타입 가드: data가 객체인지 확인
+          if (typeof data === 'object' && data !== null) {
+            const dataObj = data as Record<string, unknown>;
+
+            // 백엔드가 보내는 초기 timeout 정보 처리
+            if (dataObj.timeout !== undefined) {
+              console.log('⏱️ [SSE] 타임아웃 설정:', {
+                timeout: dataObj.timeout,
+                timeoutInSeconds:
+                  typeof dataObj.timeout === 'number' ? dataObj.timeout / 1000 : undefined,
+                note: '백엔드에서 설정한 SSE 연결 타임아웃',
+              });
+              logInfo('SSE 타임아웃 설정', dataObj);
+            }
+
+            // STT 텍스트가 message 이벤트로 올 수도 있음
+            const text =
+              (typeof dataObj.text === 'string' ? dataObj.text : '') ||
+              (typeof dataObj.transcript === 'string' ? dataObj.transcript : '') ||
+              (typeof dataObj.result === 'string' ? dataObj.result : '') ||
+              (typeof dataObj.content === 'string' ? dataObj.content : '') ||
+              (typeof dataObj.message === 'string' ? dataObj.message : '') ||
+              '';
+            if (text && text.trim() !== '' && text !== 'connected') {
+              console.log('✅ [SSE] message 이벤트에서 STT 텍스트 발견:', {
+                text: text,
+                전체데이터: dataObj,
+                note: 'message 이벤트로 STT 텍스트가 전달되었습니다.',
+              });
+
+              setConvertedText(text);
+              setSTTStatus('COMPLETED');
+              setRecordingState('completed');
+
+              if (sttTimeoutRef.current) {
+                clearTimeout(sttTimeoutRef.current);
+              }
+
+              // ✅ STT 완료 후 SSE 연결 닫기
+              console.log('🔌 [SSE] STT 완료 (message 이벤트) - SSE 연결 종료');
+              if (sseRef.current) {
+                sseRef.current.close();
+                sseRef.current = null;
+              }
+              sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+              isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
+
+              // ✅ 변환된 텍스트를 onAnswerComplete에 전달
+              const audioUrl =
+                (typeof dataObj.audioUrl === 'string' ? dataObj.audioUrl : '') ||
+                (typeof dataObj.audio_url === 'string' ? dataObj.audio_url : '') ||
+                (typeof dataObj.url === 'string' ? dataObj.url : '') ||
+                '';
+              // ⚠️ 중요: SSE message 이벤트는 이미 제출된 답변의 STT 완료를 알리는 것이므로
+              // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
+              // 상위 컴포넌트가 중복 제출하지 않도록 함
+              if (onAnswerComplete) {
+                console.log('📤 [SSE] onAnswerComplete 호출 (message 이벤트):', {
+                  audioUrl: audioUrl,
+                  text: text,
+                  alreadySubmitted: true,
+                  note: '이미 제출된 답변의 STT 완료 알림',
+                });
+                onAnswerComplete(
+                  audioUrl,
+                  text,
+                  true, // alreadySubmitted = true (이미 제출된 상태)
+                  feedbackId || answerId || undefined // 저장된 feedbackId 우선 사용
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('⚠️ [SSE] message 이벤트 처리 실패:', error, { rawData: event.data });
+        }
+      });
 
       // STT 완료 이벤트
       eventSource.addEventListener('sttCompleted', (event) => {
-        const data = JSON.parse(event.data);
-        logInfo('STT 변환 완료', data);
+        try {
+          console.log('📨 [SSE] sttCompleted 이벤트 수신 (원본):', {
+            eventType: 'sttCompleted',
+            rawData: event.data,
+            dataType: typeof event.data,
+            timestamp: new Date().toISOString(),
+          });
 
-        setConvertedText(data.text);
-        setSTTStatus('COMPLETED');
-        setRecordingState('completed');
+          // JSON 파싱 시도
+          let data: Record<string, unknown> | string;
+          try {
+            data = JSON.parse(event.data) as Record<string, unknown>;
+            console.log('✅ [SSE] sttCompleted JSON 파싱 성공:', data);
+          } catch (parseError) {
+            console.error('❌ [SSE] sttCompleted JSON 파싱 실패:', parseError, {
+              rawData: event.data,
+            });
+            // JSON 파싱 실패 시 원본 데이터를 그대로 사용
+            data = event.data;
+          }
 
-        if (sttTimeoutRef.current) {
-          clearTimeout(sttTimeoutRef.current);
-        }
+          // 타입 가드: data가 객체인지 확인
+          if (typeof data === 'object' && data !== null) {
+            const dataObj = data as Record<string, unknown>;
 
-        if (onAnswerComplete) {
-          onAnswerComplete(data.audioUrl);
+            // 텍스트 추출 (여러 가능한 필드명 확인)
+            const text =
+              (typeof dataObj.text === 'string' ? dataObj.text : '') ||
+              (typeof dataObj.transcript === 'string' ? dataObj.transcript : '') ||
+              (typeof dataObj.result === 'string' ? dataObj.result : '') ||
+              (typeof dataObj.content === 'string' ? dataObj.content : '') ||
+              (typeof dataObj.message === 'string' ? dataObj.message : '') ||
+              '';
+            const audioUrl =
+              (typeof dataObj.audioUrl === 'string' ? dataObj.audioUrl : '') ||
+              (typeof dataObj.audio_url === 'string' ? dataObj.audio_url : '') ||
+              (typeof dataObj.url === 'string' ? dataObj.url : '') ||
+              '';
+
+            console.log('✅ [SSE] STT 완료 - 변환된 텍스트 수신:', {
+              text: text,
+              audioUrl: audioUrl,
+              전체데이터: dataObj,
+              추출된텍스트: text,
+              추출된오디오URL: audioUrl,
+              note: '백엔드에서 STT 변환이 완료되어 변환된 텍스트를 받았습니다.',
+            });
+
+            if (!text || text.trim() === '') {
+              console.warn('⚠️ [SSE] STT 완료 이벤트에서 텍스트가 비어있습니다:', {
+                data: dataObj,
+                가능한필드: ['text', 'transcript', 'result', 'content', 'message'],
+              });
+            }
+
+            setConvertedText(text);
+            setSTTStatus('COMPLETED');
+            setRecordingState('completed');
+
+            if (sttTimeoutRef.current) {
+              clearTimeout(sttTimeoutRef.current);
+            }
+
+            // ✅ STT 완료 후 SSE 연결 닫기 (더 이상 필요 없음)
+            console.log('🔌 [SSE] STT 완료 - SSE 연결 종료');
+            eventSource.close();
+            sseRef.current = null;
+            sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+            isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
+
+            // ⚠️ 중요: SSE sttCompleted 이벤트는 이미 제출된 답변의 STT 완료를 알리는 것이므로
+            // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
+            // 상위 컴포넌트가 중복 제출하지 않도록 함
+            // ✅ 변환된 텍스트를 onAnswerComplete에 전달
+            if (onAnswerComplete) {
+              console.log('📤 [SSE] onAnswerComplete 호출:', {
+                audioUrl: audioUrl,
+                text: text,
+                alreadySubmitted: true,
+                note: '이미 제출된 답변의 STT 완료 알림',
+              });
+              onAnswerComplete(
+                audioUrl,
+                text,
+                true, // alreadySubmitted = true (이미 제출된 상태)
+                feedbackId || answerId || undefined // 저장된 feedbackId 우선 사용
+              );
+            } else {
+              console.warn('⚠️ [SSE] onAnswerComplete가 정의되지 않았습니다.');
+            }
+          }
+        } catch (error) {
+          console.error('❌ [SSE] sttCompleted 이벤트 처리 중 오류:', error, {
+            event: event,
+            rawData: event.data,
+          });
+          logError('STT 완료 이벤트 처리 실패', error, { event });
         }
       });
 
@@ -113,14 +667,82 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         if (sttTimeoutRef.current) {
           clearTimeout(sttTimeoutRef.current);
         }
+
+        // ✅ STT 실패 후 SSE 연결 닫기 (더 이상 필요 없음)
+        console.log('🔌 [SSE] STT 실패 - SSE 연결 종료');
+        eventSource.close();
+        sseRef.current = null;
+        sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+        isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
       });
 
       // SSE 에러 처리
       eventSource.onerror = (event) => {
+        const readyState = eventSource.readyState;
         const errorMsg =
-          eventSource.readyState === EventSource.CLOSED
+          readyState === EventSource.CLOSED
             ? 'SSE 연결이 종료되었습니다. 백엔드 서버가 실행 중인지 확인해주세요.'
             : 'SSE 연결 오류가 발생했습니다.';
+
+        // 🔍 오류 발생 지점 상세 분석
+        console.error('❌ [SSE] 연결 오류 발생 - 상세 분석:', {
+          readyState,
+          readyStateMeaning: {
+            0: 'CONNECTING - 연결 시도 중',
+            1: 'OPEN - 연결 성공',
+            2: 'CLOSED - 연결 종료',
+          }[readyState],
+          url: eventSource.url,
+          originalUrl: sseUrl,
+          event: event,
+          timestamp: new Date().toISOString(),
+        });
+
+        // 🔍 오류 원인 분석
+        if (readyState === EventSource.CLOSED) {
+          console.error('🔍 [SSE] 오류 원인 분석:', {
+            문제: '연결이 즉시 종료됨 (readyState: 2 = CLOSED)',
+            가능한원인: [
+              '1. 백엔드가 요청을 /login으로 리다이렉트 (인증 실패)',
+              '2. 백엔드가 쿼리 파라미터 token을 인식하지 못함',
+              '3. CORS 설정 문제로 브라우저가 요청을 차단',
+              '4. 백엔드 서버가 SSE 엔드포인트를 처리하지 못함',
+            ],
+            확인사항: {
+              토큰유효성: !tokenExpired ? '✅ 유효' : '❌ 만료',
+              sseToken포함여부: sseUrl.includes('token=') ? '✅ 포함됨' : '❌ 없음',
+              URL형식: sseUrl.startsWith('https://') ? '✅ HTTPS' : '❌ HTTP',
+            },
+          });
+
+          // URL이 /login으로 리다이렉트되었는지 확인
+          if (eventSource.url.includes('/login')) {
+            console.error('❌ [SSE] 백엔드가 /login으로 리다이렉트했습니다:', {
+              원인: '백엔드 인증 필터가 SSE 요청을 인증 실패로 판단',
+              가능한이유: [
+                '1. 백엔드가 쿼리 파라미터 sseToken을 읽지 못함',
+                '2. 백엔드 인증 필터가 SSE 엔드포인트를 제외하지 않음',
+                '3. sseToken 파싱 오류',
+              ],
+              해결방법:
+                '백엔드에서 SSE 엔드포인트의 쿼리 파라미터 sseToken을 올바르게 처리하는지 확인 필요',
+            });
+            setErrorMessage(
+              '인증이 실패했습니다. 백엔드가 쿼리 파라미터 토큰을 인식하지 못하는 것 같습니다.'
+            );
+          } else {
+            console.error('❌ [SSE] 다른 원인으로 연결 실패:', {
+              최종URL: eventSource.url,
+              원래URL: sseUrl,
+              차이점: eventSource.url !== sseUrl ? 'URL이 변경됨 (리다이렉트 가능성)' : 'URL 동일',
+            });
+          }
+        } else {
+          console.error('❌ [SSE] 연결 중 오류 발생:', {
+            readyState,
+            note: '연결은 시도되었지만 중간에 오류 발생',
+          });
+        }
 
         logError('SSE 연결 오류', new Error(errorMsg), {
           event,
@@ -128,6 +750,8 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           url: eventSource.url,
         });
         eventSource.close();
+        sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+        isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
 
         // 재연결 시도 (최대 2회로 제한하여 서버가 없을 때 무한 재시도 방지)
         const maxSSERetryCount = 2;
@@ -136,7 +760,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           setTimeout(() => {
             logInfo(`SSE 재연결 시도 ${reconnectAttemptsRef.current}/${maxSSERetryCount}`);
             connectSSE();
-          }, CONFIG.RECONNECT_DELAY * reconnectAttemptsRef.current);
+          }, 2000 * reconnectAttemptsRef.current);
         } else {
           // 최종 실패 시 상태 조회 API 호출 (서버가 없어도 폴백)
           logInfo('SSE 연결 최종 실패 - 상태 조회 API로 폴백');
@@ -149,6 +773,8 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         }
       };
     } catch (error) {
+      sseTokenRequestRef.current = false; // 에러 발생 시 플래그 해제
+      isConnectingSSERef.current = false; // 연결 실패 시 플래그 해제
       logError('SSE 연결 실패', error, {});
       setErrorMessage('실시간 연결에 실패했습니다.');
     }
@@ -157,17 +783,29 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   // 상태 조회 API
   const checkAnswerStatus = async (answerIdToCheck: number) => {
     try {
-      const response = await fetch(`/api/answers/${answerIdToCheck}/status`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`,
-        },
+      const statusUrl = `/api/answers/${answerIdToCheck}/status`;
+      const fullStatusUrl = `${API_BASE_URL}${statusUrl}`;
+
+      console.log('📡 [상태 조회] API 요청:', {
+        url: statusUrl,
+        fullUrl: fullStatusUrl,
+        baseURL: API_BASE_URL,
+        answerId: answerIdToCheck,
       });
 
-      if (!response.ok) {
-        throw new Error('상태 조회 실패');
-      }
+      const response = await apiClient.get<{
+        status: string;
+        text?: string;
+        audioUrl?: string;
+      }>(statusUrl);
 
-      const data = await response.json();
+      const data = response.data;
+      console.log('✅ [상태 조회] API 응답 성공:', {
+        url: statusUrl,
+        status: response.status,
+        data: data,
+      });
+
       logInfo('답변 상태 조회 결과', data);
 
       switch (data.status) {
@@ -187,12 +825,32 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
 
         case 'COMPLETED':
           // STT 변환 성공 - SSE 알림만 놓친 상태
-          setConvertedText(data.text);
+          if (data.text) {
+            setConvertedText(data.text);
+          }
           setSTTStatus('COMPLETED');
           setRecordingState('completed');
 
-          if (onAnswerComplete) {
-            onAnswerComplete(data.audioUrl);
+          // ✅ STT 완료 후 SSE 연결 닫기 (더 이상 필요 없음)
+          if (sseRef.current) {
+            console.log('🔌 [SSE] 상태 조회로 STT 완료 확인 - SSE 연결 종료');
+            sseRef.current.close();
+            sseRef.current = null;
+          }
+          sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+          isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
+
+          // ⚠️ 중요: checkAnswerStatus는 이미 제출된 답변의 상태를 확인하는 것이므로
+          // onAnswerComplete에 alreadySubmitted=true 플래그를 전달하여
+          // 상위 컴포넌트가 중복 제출하지 않도록 함
+          // answerId와 feedbackId는 동일한 값으로 사용됨
+          if (onAnswerComplete && data.audioUrl) {
+            onAnswerComplete(
+              data.audioUrl,
+              data.text,
+              true, // alreadySubmitted = true (이미 제출된 상태)
+              feedbackId || answerIdToCheck || undefined // 저장된 feedbackId 우선 사용
+            );
           }
           break;
 
@@ -330,24 +988,50 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       };
 
       // 녹음 완료 처리
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      mediaRecorder.onstop = async () => {
+        const webmBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
 
-        if (!validateFileSize(blob)) {
+        if (!validateFileSize(webmBlob)) {
           setRecordingState('error');
           return;
         }
 
-        setAudioBlob(blob);
-        const url = URL.createObjectURL(blob);
-        setAudioUrl(url);
-        setRecordingState('processing');
-
-        logInfo('녹음 완료', {
-          size: blob.size,
+        logInfo('녹음 완료 (webm)', {
+          size: webmBlob.size,
           duration: recordingTime,
-          type: blob.type,
+          type: webmBlob.type,
         });
+
+        // 오디오 변환 시도 (OGG 형식으로 변환)
+        try {
+          console.log('🔄 [오디오 변환] webm → ogg 변환 시작...');
+
+          const oggBlob = await convertWebmToOgg(webmBlob);
+
+          console.log('✅ [오디오 변환] OGG 변환 완료:', {
+            원본크기: webmBlob.size,
+            변환크기: oggBlob.size,
+            원본타입: webmBlob.type,
+            변환타입: oggBlob.type,
+            압축률: `${((1 - oggBlob.size / webmBlob.size) * 100).toFixed(1)}%`,
+          });
+
+          setAudioBlob(oggBlob);
+          const url = URL.createObjectURL(oggBlob);
+          setAudioUrl(url);
+          // ⚠️ blob URL은 onAudioUrlChange로 전달하지 않음
+          // 서버에 업로드된 실제 URL만 전달해야 함
+          setRecordingState('processing');
+        } catch (error) {
+          console.warn('⚠️ [오디오 변환 실패] webm을 그대로 사용합니다:', error);
+          // 변환 실패 시 원본 webm 사용
+          setAudioBlob(webmBlob);
+          const url = URL.createObjectURL(webmBlob);
+          setAudioUrl(url);
+          // ⚠️ blob URL은 onAudioUrlChange로 전달하지 않음
+          // 서버에 업로드된 실제 URL만 전달해야 함
+          setRecordingState('processing');
+        }
       };
 
       // 녹음 시작
@@ -381,6 +1065,15 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
       }
+
+      // ✅ 녹음 종료 시 기존 SSE 연결이 있으면 닫기 (새로운 연결을 위해)
+      if (sseRef.current) {
+        console.log('🔌 [SSE] 녹음 종료 - 기존 SSE 연결 종료 (새 연결 대기)');
+        sseRef.current.close();
+        sseRef.current = null;
+      }
+      sseTokenRequestRef.current = false; // 연결 종료 시 플래그 해제
+      isConnectingSSERef.current = false; // 연결 종료 시 플래그 해제
 
       // 스트림 정리
       if (audioStreamRef.current) {
@@ -504,7 +1197,14 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
   const uploadToServer = async () => {
     if (!audioBlob) return;
 
+    // ⚠️ 중복 호출 방지: 이미 업로드 중이면 무시
+    if (isUploading) {
+      console.warn('⚠️ [업로드] 이미 업로드 중입니다. 중복 호출을 무시합니다.');
+      return;
+    }
+
     try {
+      setIsUploading(true); // 업로드 시작 플래그 설정
       setRecordingState('uploading');
       setUploadProgress(0);
 
@@ -512,55 +1212,38 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       logInfo('Pre-signed URL 요청 시작');
 
       // 파일명 생성 (timestamp 기반)
-      // ⚠️ 중요: 백엔드가 .webm을 받지 않으므로 반드시 .mp3로 설정
-      // 빌드 캐시 문제로 인해 .webm이 나올 수 있으므로 강제로 .mp3로 고정
+      // 실제 파일 형식에 맞는 확장자 사용
       const timestamp = Date.now();
 
-      // 확장자를 명시적으로 .mp3로 강제 설정 (절대 .webm이 되지 않도록)
-      // 문자열 리터럴을 사용하여 빌드 최적화가 확장자를 변경하지 못하도록 함
-      const extension = '.mp3'; // 상수로 정의하여 변경 불가능하게 함
-      let fileName = `audio_${timestamp}${extension}`;
+      // audioBlob의 실제 타입 확인
+      const actualFileType = audioBlob.type;
+      let extension = '.ogg'; // 기본값 (OGG 형식)
 
-      // 최종 검증: 반드시 .mp3로 끝나도록 강제
-      if (!fileName.endsWith('.mp3')) {
-        console.error('❌ [치명적 오류] 파일명이 .mp3로 끝나지 않습니다! 강제 수정합니다.', {
-          원본파일명: fileName,
-          파일명길이: fileName.length,
-          마지막3글자: fileName.slice(-3),
-        });
-        // 확장자 제거 후 .mp3 추가
-        fileName = fileName.replace(/\.[^.]+$/, '') + '.mp3';
+      if (actualFileType.includes('ogg')) {
+        extension = '.ogg';
+      } else if (actualFileType.includes('wav')) {
+        extension = '.wav';
+      } else if (actualFileType.includes('webm')) {
+        extension = '.webm';
       }
 
-      // 배포 환경 확인을 위한 상세 로그
-      console.log('📝 [파일명 생성 및 검증]', {
+      const fileName = `audio_${timestamp}${extension}`;
+
+      console.log('📝 [파일명 생성] 실제 파일 타입 기반:', {
+        audioBlobType: actualFileType,
+        선택된확장자: extension,
+        파일명: fileName,
+        note: '실제 파일 형식에 맞는 확장자를 사용합니다.',
+      });
+
+      // 파일명 최종 검증
+      console.log('📝 [파일명 최종 검증]', {
         최종파일명: fileName,
         확장자: fileName.split('.').pop(),
         타임스탬프: timestamp,
-        extension상수: extension,
-        API_BASE_URL: API_BASE_URL,
-        VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
-        프로덕션모드: import.meta.env.PROD,
-        개발모드: import.meta.env.DEV,
-        빌드시간: new Date().toISOString(),
-        파일명검증결과: fileName.endsWith('.mp3') ? '✅ mp3 확인' : '❌ mp3 아님',
-        파일명길이: fileName.length,
-        파일명시작: fileName.substring(0, 10),
-        파일명끝: fileName.substring(fileName.length - 4),
+        audioBlobType: audioBlob.type,
+        파일크기: audioBlob.size,
       });
-
-      // 런타임 검증: 혹시 모를 빌드 최적화나 변수 치환을 막기 위한 추가 검증
-      if (fileName.includes('.webm')) {
-        console.error('❌ [치명적 오류] 파일명에 .webm이 포함되어 있습니다! 즉시 수정합니다.');
-        fileName = fileName.replace(/\.webm/g, '.mp3');
-      }
-
-      // 최종 파일명 확인 (요청 직전 재검증)
-      if (!fileName.endsWith('.mp3')) {
-        console.error('❌ [최종 검증 실패] 파일명이 여전히 .mp3가 아닙니다!', fileName);
-        fileName = `audio_${Date.now()}.mp3`;
-        console.warn('✅ [파일명 강제 수정 완료]', fileName);
-      }
 
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
       const requestUrl = `${API_BASE_URL}/api/answers/upload-url?fileName=${encodeURIComponent(fileName)}`;
@@ -571,7 +1254,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         fullUrl: requestUrl,
         method: 'GET',
         fileName: fileName,
-        fileName검증: fileName.endsWith('.mp3') ? '✅ .mp3 확인' : '❌ .mp3 아님',
+        fileName확장자: fileName.split('.').pop(),
         encode된파일명: encodeURIComponent(fileName),
         token: token ? `${token.substring(0, 20)}...` : '없음',
         hasToken: !!token,
@@ -594,7 +1277,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
           note: 'fileName과 file_name 둘 다 포함하여 전송 (백엔드가 snake_case를 선호할 수 있음)',
         });
 
-        // 먼저 fileName만으로 시도
+        // 먼저 fileName으로 시도 (원래 로직 유지)
         let response;
         try {
           console.log('🔄 [Pre-signed URL 요청 시도 1] fileName 사용:', fileName);
@@ -604,6 +1287,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
               params: { fileName },
             }
           );
+          // ✅ 성공하면 여기서 끝 (두 번째 시도 없음)
         } catch (firstError: unknown) {
           const error = firstError as {
             response?: { status?: number; statusText?: string; data?: unknown };
@@ -617,7 +1301,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
             fileName,
           });
 
-          // 400 또는 404 에러인 경우 file_name으로 재시도
+          // 400 또는 404 에러인 경우에만 file_name으로 재시도
           if (error.response?.status === 400 || error.response?.status === 404) {
             console.log('⚠️ [재시도] fileName으로 실패, file_name으로 재시도');
             try {
@@ -642,6 +1326,7 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
               throw secondError;
             }
           } else {
+            // 400/404가 아닌 다른 에러는 바로 throw (재시도 안 함)
             throw firstError;
           }
         }
@@ -659,17 +1344,69 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
         // 2. 파일 업로드 (fileName을 함께 전송)
         await uploadWithProgress(preSignedUrl, audioBlob, fileName);
 
+        // ✅ 서버에 업로드된 실제 URL을 상위 컴포넌트에 알림
+        // 이제 버튼이 활성화되어 제출할 수 있음
+        if (onAudioUrlChange && serverAudioUrl) {
+          console.log('📤 [RecordAnswer] 서버 URL 전달:', {
+            serverAudioUrl,
+            note: '서버에 업로드된 실제 URL을 상위 컴포넌트에 전달합니다.',
+          });
+          onAudioUrlChange(serverAudioUrl);
+        }
+
         // 3. 답변 제출
         if (!questionId) {
           throw new Error('질문 ID가 필요합니다.');
         }
 
+        // answerText 처리: 음성 답변의 경우 STT 변환이 완료되기 전에는 비어있을 수 있음
+        const finalAnswerText = convertedText || answerText || '';
+
+        // 음성 답변의 경우: STT 변환이 완료되기 전에는 answerText가 비어있을 수 있음
+        // 백엔드가 audioUrl이 있으면 answerText를 선택적으로 처리하는지 확인 필요
+        if (!finalAnswerText || finalAnswerText.trim() === '') {
+          if (serverAudioUrl) {
+            // 음성 답변인 경우 - STT 변환 대기 중
+            console.log('ℹ️ [답변 제출] 음성 답변 - STT 변환 대기 중:', {
+              convertedText,
+              answerText,
+              finalAnswerText,
+              audioUrl: serverAudioUrl,
+              note: '음성 답변의 경우 STT 변환이 완료되기 전에는 answerText가 비어있을 수 있습니다. 백엔드가 audioUrl이 있으면 answerText를 선택적으로 처리하는지 확인 필요.',
+            });
+          } else {
+            // 텍스트 답변인데 answerText가 비어있음 - 문제 가능성
+            console.warn('⚠️ [답변 제출] 텍스트 답변인데 answerText가 비어있습니다:', {
+              convertedText,
+              answerText,
+              finalAnswerText,
+              note: '텍스트 답변의 경우 answerText는 필수 필드일 수 있습니다.',
+            });
+          }
+        }
+
         const requestBody = {
           questionId,
-          answerText: answerText || '음성 답변',
+          answerText: finalAnswerText, // 빈 문자열이어도 전송 (백엔드가 처리)
           audioUrl: serverAudioUrl,
-          followUp: false,
+          followUp: followUp ?? false, // 질문 응답의 followUp 값 사용
         };
+
+        // ✅ POST /api/answers 요청 Body 로그 (백엔드 요구사항 확인용)
+        console.log('📤 [POST /api/answers] Request Body:', {
+          questionId: requestBody.questionId,
+          answerText: requestBody.answerText,
+          audioUrl: requestBody.audioUrl,
+          followUp: requestBody.followUp,
+          전체Body: requestBody,
+          JSON형식: JSON.stringify(requestBody, null, 2),
+        });
+
+        // Validation 체크: questionId가 필수인지 확인
+        if (!questionId || typeof questionId !== 'number') {
+          console.error('❌ [답변 제출] questionId가 유효하지 않습니다:', questionId);
+          throw new Error('questionId가 필요합니다.');
+        }
 
         console.log('📤 [답변 제출 요청]', {
           url: '/api/answers',
@@ -716,10 +1453,19 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
 
           const result = submitResponse.data;
 
+          // 백엔드 응답에 변환된 텍스트가 포함되어 있으면 사용
+          if (result.answerText && result.answerText !== '음성 답변') {
+            setConvertedText(result.answerText);
+            console.log('✅ [백엔드 응답에서 변환된 텍스트 발견]', {
+              answerText: result.answerText,
+            });
+          }
+
           console.log('✅ [POST /api/answers 응답 성공]', {
             answerId: result.answerId,
             feedbackId: result.feedbackId,
             status: result.status,
+            answerText: result.answerText,
             전체응답: result,
           });
 
@@ -729,16 +1475,24 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
             status: result.status,
           });
 
-          // 답변 ID 저장
+          // 답변 ID 및 피드백 ID 저장
           setAnswerId(result.answerId);
+          setFeedbackId(result.feedbackId); // feedbackId 저장 (SSE 이벤트에서 사용)
 
           // 응답 상태 확인
           if (result.status === 'PENDING_STT') {
+            console.log('✅ [업로드 완료 확인] 파일 업로드 및 답변 제출 성공, STT 변환 대기 중:', {
+              answerId: result.answerId,
+              feedbackId: result.feedbackId,
+              status: result.status,
+              audioUrl: serverAudioUrl,
+              note: '업로드는 완료되었습니다. 이제 STT(음성→텍스트 변환) 처리를 기다리는 중입니다.',
+            });
             setRecordingState('pending_stt');
             setSTTStatus('PENDING_STT');
 
             // STT 대기 중일 때만 SSE 연결 시작
-            if (!sseRef.current || sseRef.current.readyState === EventSource.CLOSED) {
+            if (!sseRef.current) {
               logInfo('STT 대기 중 - SSE 연결 시작');
               connectSSE();
             }
@@ -913,6 +1667,9 @@ const RecordAnswer = ({ questionId, answerText, onAnswerComplete, onError }: Rec
       if (onError) {
         onError(error instanceof Error ? error.message : '업로드 실패');
       }
+    } finally {
+      // ⚠️ 중요: 업로드 완료(성공/실패 모두) 후 플래그 리셋
+      setIsUploading(false);
     }
   };
 

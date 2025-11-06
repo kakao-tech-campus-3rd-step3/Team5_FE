@@ -13,11 +13,22 @@ interface PricingCardProps {
 const PricingCard = (props: PricingCardProps) => {
   const { title, description, price, highlighted = false } = props;
 
+  // <br/> 태그를 실제 줄바꿈으로 변환
+  const renderDescription = () => {
+    const parts = description.split(/<br\s*\/?>/i);
+    return parts.map((part, index) => (
+      <span key={index}>
+        {part}
+        {index < parts.length - 1 && <br />}
+      </span>
+    ));
+  };
+
   return (
     <Card $highlighted={highlighted}>
       <CardContent>
         <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardDescription>{renderDescription()}</CardDescription>
         <CardPrice>매달 ₩{formatCurrency(price)}</CardPrice>
       </CardContent>
     </Card>

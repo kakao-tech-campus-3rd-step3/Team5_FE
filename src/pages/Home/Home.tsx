@@ -82,12 +82,37 @@ const HomePage = () => {
       return;
     }
 
+    // audioUrl이 없거나 빈 문자열인 경우 (텍스트 답변)
+    // answerText가 비어있으면 안 됨
+    const hasAudioUrl = audioUrl && audioUrl.trim() !== '';
+    if (!hasAudioUrl && (!text || text.trim() === '')) {
+      alert('답변을 입력해주세요.');
+      console.error('❌ [답변 제출 실패] 텍스트 답변인데 answerText가 비어있습니다:', {
+        text,
+        audioUrl,
+        questionId: question.questionId,
+      });
+      return;
+    }
+
     const submitData: SubmitAnswerRequest = {
       questionId: question.questionId,
-      answerText: text,
-      followUp: false, // 기본값: 추가 질문 없음
-      ...(audioUrl && { audioUrl }),
+      answerText: text || '', // 빈 문자열이어도 전송 (음성 답변의 경우)
+      followUp: question.followUp, // 질문 응답의 followUp 값 사용
     };
+
+    // audioUrl이 있으면 반드시 포함
+    if (audioUrl) {
+      submitData.audioUrl = audioUrl;
+    }
+
+    console.log('📤 [Home] 답변 제출 요청:', {
+      questionId: submitData.questionId,
+      answerText: submitData.answerText,
+      audioUrl: submitData.audioUrl,
+      followUp: submitData.followUp,
+      note: audioUrl ? '음성 답변' : '텍스트 답변',
+    });
 
     try {
       await submitAnswerPost('/api/answers', submitData);

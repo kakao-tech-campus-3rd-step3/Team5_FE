@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 /* tslint:disable */
 
 /**
@@ -345,5 +345,9 @@ async function serializeRequest(request) {
     referrerPolicy: request.referrerPolicy,
     body: await request.arrayBuffer(),
     keepalive: request.keepalive,
+<<<<<<< HEAD
   }
+=======
+  };
+>>>>>>> 2d14d07c77700fd1e4d0401ecd631f2a7cfc4a7b
 }

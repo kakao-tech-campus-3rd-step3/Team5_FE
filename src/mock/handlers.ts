@@ -151,34 +151,19 @@ export const handlers = [
     const limit = Number(url.searchParams.get('limit')) || 10;
 
     // 실제 친구 이름과 이메일 데이터
-    const friendNames = [
-      '김민수',
-      '이지영',
-      '박준호',
-      '최수진',
-      '정현우',
-      '강소영',
-      '윤태호',
-      '임다은',
-      '서준영',
-      '한지민',
-      '조성민',
-      '오유진',
-      '신동현',
-      '배수정',
-      '홍민철',
-      '송지은',
-      '권태영',
-      '노하늘',
-      '문지훈',
-      '유나영',
-    ];
+    const friendNames = ['박준희', '김진현', '김도현', '박소현', '이창목', '윤자빈'];
 
-    const mockItems = Array.from({ length: limit }, (_, i) => ({
-      userId: (lastId ? Number(lastId) : 0) + i + 1,
-      name: friendNames[i] || `친구 ${i + 1}`,
-      email: `friend${i + 1}@dailyq.com`,
-    }));
+    const mockItems = Array.from({ length: limit }, (_, i) => {
+      const index = (lastId ? Number(lastId) : 0) + i;
+      const name = friendNames[index] || `친구 ${index + 1}`;
+      // 더 현실적인 이메일 형식
+      const emailName = name.toLowerCase().replace(/\s+/g, '');
+      return {
+        userId: index + 1,
+        name: name,
+        email: `${emailName}@dailyq.com`,
+      };
+    });
 
     console.log('✅ [백엔드] 팔로잉 목록 반환:', mockItems);
 
@@ -195,28 +180,7 @@ export const handlers = [
     const limit = Number(url.searchParams.get('limit')) || 10;
 
     // 실제 팔로워 이름과 이메일 데이터
-    const followerNames = [
-      '김철수',
-      '이영희',
-      '박민수',
-      '최지영',
-      '정수진',
-      '강동현',
-      '윤소영',
-      '임태호',
-      '서다은',
-      '한준영',
-      '조지민',
-      '오성민',
-      '신유진',
-      '배동현',
-      '홍수정',
-      '송민철',
-      '권지은',
-      '노태영',
-      '문하늘',
-      '유지훈',
-    ];
+    const followerNames = ['박준희', '김진현', '김도현', '박소현', '이창목', '윤자빈'];
 
     const mockItems = Array.from({ length: limit }, (_, i) => ({
       userId: (lastId ? Number(lastId) : 0) + i + 1,

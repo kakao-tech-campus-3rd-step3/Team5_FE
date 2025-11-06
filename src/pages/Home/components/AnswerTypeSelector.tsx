@@ -71,8 +71,18 @@ const AnswerTypeLabel = styled.label<{ isSelected: boolean }>`
     props.isSelected ? 'rgba(236, 236, 236, 0.1)' : 'rgba(255, 255, 255, 0.3)'};
 
   svg {
-    color: ${({ isSelected, theme }) => (isSelected ? theme.colors.secondary : '#b18f8fff')};
-    transition: color 0.3s ease-in-out;
+    color: ${({ isSelected, theme }) =>
+      isSelected
+        ? theme.colors.pointCoral || theme.colors.secondary
+        : theme.colors.pointCoral || '#FF8E8E'};
+    transition: all 0.3s ease-in-out;
+    filter: ${({ isSelected }) =>
+      isSelected ? 'drop-shadow(0 2px 4px rgba(255, 142, 142, 0.4))' : 'none'};
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
+    filter: drop-shadow(0 2px 6px rgba(255, 142, 142, 0.5));
   }
 `;
 
