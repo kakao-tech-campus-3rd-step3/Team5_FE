@@ -11,7 +11,7 @@ const GlassBackground = ({ children }: GlassBackgroundProps) => {
 export default GlassBackground;
 
 const Wrapper = styled.div`
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: #424242;
   backdrop-filter: ${({ theme }) => theme.blurs.blur8};
   border-radius: ${({ theme }) => theme.radius.radius24};
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -19,6 +19,7 @@ const Wrapper = styled.div`
 
   width: 100%;
   height: 100%;
+  color: #f5f5f5;
 
   display: flex;
   align-items: center;

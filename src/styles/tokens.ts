@@ -5,7 +5,7 @@ export const colors = {
   white: '#FFFFFF',
   black: '#000000',
   text: '#333333',
-  background: '#F8F9FA',
+  background: '#333333',
   backgroundGradient: ` linear-gradient(180deg, #f5f5dc 0%, #f4c2c2 100%)`,
 };
 

@@ -17,6 +17,6 @@ const MainLayout = () => {
 export default MainLayout;
 
 const Wrapper = styled.main`
-  background: ${({ theme }) => theme.colors.backgroundGradient};
+  background: ${({ theme }) => theme.colors.background};
   height: 100%;
 `;

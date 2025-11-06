@@ -15,10 +15,26 @@ import QuestionCardSection from './components/sections/QuestionCardSection';
 export type AnswerType = 'voice' | 'text' | null;
 export type AnswerStateType = 'before-answer' | 'answering' | 'answered';
 
-interface User {
+export interface Job {
+  jobId: number;
+  jobName: string;
+}
+
+export interface Preferences {
+  dailyQuestionLimit: number;
+  questionMode: 'TECH' | 'FLOW' | 'BEHAVIOR' | string;
+  timeLimitSeconds: number;
+  allowPush: boolean;
+}
+
+export interface User {
   userId: number;
-  name: string;
   email: string;
+  name: string;
+  streak: number;
+  solvedToday: boolean;
+  preferences: Preferences;
+  jobs: Job[];
 }
 
 // 질문 정보 타입
@@ -39,9 +55,11 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   // 사용자 정보는 현재 미사용이지만 향후 사용 예정
-  const { data: _user } = useFetch<User>('/api/user');
+  const { data: user } = useFetch<User>('/api/user');
   const { data: question } = useFetch<Question>('/api/questions/random');
-  console.log(question);
+  console.log(user);
+
+  console.log(question?.followUp);
 
   const { execute: submitAnswerPost, loading: isSubmitting } = usePost<SubmitAnswerResponse>({
     onSuccess: (data) => {
@@ -59,7 +77,7 @@ const HomePage = () => {
   };
 
   const handleAnswerDone = async (text: string, audioUrl?: string) => {
-    if (!question || !_user) {
+    if (!question || !user) {
       alert('질문 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
       return;
     }
@@ -85,35 +103,41 @@ const HomePage = () => {
   if (answerState === 'answered')
     return (
       <Wrapper>
-        <span>DailyQ 모의 면접</span>
-        <QuestionCardSection answerState={answerState} question={question} />
-        {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
-        <h1>답변 후 메인 페이지</h1>
+        <ContentCard>
+          <span>DailyQ 모의 면접</span>
+          <QuestionCardSection answerState={answerState} question={question} />
+          {/* TODO: AnsweredSection 컴포넌트 생성 예정 */}
+          <h1>답변 후 메인 페이지</h1>
+        </ContentCard>
       </Wrapper>
     );
 
   return (
     <Wrapper>
-      <h1>DailyQ 모의 면접</h1>
-      {/* TODO: {user ? `${user.name}님, 오늘의 질문을 확인하세요!` : '오늘의 질문을 확인하세요!'} */}
-      <QuestionCardSection answerState={answerState} question={question} />
+      <GridWrapper>
+        {user ? `${user.name}님, 안녕하세요!` : '안녕하세요!'}
+        <GlassBackground>남은 질문: {user?.preferences?.dailyQuestionLimit} 개</GlassBackground>
+      </GridWrapper>
 
-      {answerState === 'before-answer' ? (
-        <BeforeAnswerSection
-          type={answerType}
-          onAnswerTypeChange={handleAnswerTypeChange}
-          onAnswering={handleAnswering}
-        />
-      ) : (
-        <AnsweringSection
-          type={answerType}
-          answerState={answerState}
-          onAnswerDone={handleAnswerDone}
-          isSubmitting={isSubmitting}
-          questionId={question?.questionId}
-          userDefinedTime={question?.timeLimitSeconds}
-        />
-      )}
+      <ContentCard>
+        <QuestionCardSection answerState={answerState} question={question} />
+        {answerState === 'before-answer' ? (
+          <BeforeAnswerSection
+            type={answerType}
+            onAnswerTypeChange={handleAnswerTypeChange}
+            onAnswering={handleAnswering}
+          />
+        ) : (
+          <AnsweringSection
+            type={answerType}
+            answerState={answerState}
+            onAnswerDone={handleAnswerDone}
+            isSubmitting={isSubmitting}
+            questionId={question?.questionId}
+            userDefinedTime={question?.timeLimitSeconds}
+          />
+        )}
+      </ContentCard>
     </Wrapper>
   );
 };
@@ -125,5 +149,122 @@ const Wrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  width: 100%;
+  min-height: 100vh;
+  padding: ${({ theme }) => theme.space.space24};
+  gap: ${({ theme }) => theme.space.space24};
+
+  background-color: #333333;
+  color: #f5f5f5;
+
+  position: relative;
+  overflow: hidden;
+
+  /* 👈 Apple-Style: 시스템 폰트 스택 적용 */
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+  /* 배경 그라데이션 (유지) */
+  &::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(147, 51, 234, 0.3));
+    top: -10%;
+    left: -20%;
+    filter: blur(120px);
+    z-index: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(245, 158, 11, 0.3));
+    bottom: -10%;
+    right: -10%;
+    filter: blur(100px);
+    z-index: 0;
+  }
+`;
+
+const GridWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 650px;
+  position: relative;
+  z-index: 1;
+`;
+
+const GlassBackground = styled.div`
+  /* 👈 Apple-Style: 상단 위젯은 10% 투명도 유지 */
+  background-color: hsla(0, 0%, 100%, 0.1);
+  backdrop-filter: ${({ theme }) => theme.blurs.blur8};
+
+  /* 👈 Apple-Style: 24px -> 20px로 변경 */
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* 👈 Apple-Style: 더 부드러운 그림자 */
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+
+  color: #f5f5f5;
+  height: auto;
+  padding: ${({ theme }) => theme.space.space16};
+
+  flex: 1;
+  min-width: 200px;
+  max-width: 320px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
+
+  /* 👈 Apple-Style: bold(700) -> 600 (semibold)로 변경 */
+  font-weight: 600;
+
+  transition: all 0.3s ease;
+  &:hover {
+    background-color: hsla(0, 0%, 100%, 0.15);
+    transform: translateY(-5px);
+  }
+`;
+
+const ContentCard = styled.div`
+  width: 100%;
+  max-width: 650px;
+
+  /* 👈 Apple-Style: 메인 카드는 15% 투명도로 계층 구분 */
+  background-color: hsla(0, 0%, 100%, 0.15);
+  backdrop-filter: ${({ theme }) => theme.blurs.blur8};
+
+  /* 👈 Apple-Style: 24px -> 20px로 변경 */
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* 👈 Apple-Style: 더 부드러운 그림자 */
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+
+  /* 👈 Apple-Style: 넉넉한 내부 여백 (space24 -> space32 가정) */
+  padding: ${({ theme }) => theme.space.space32 || '2rem'};
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.space.space24};
+
+  position: relative;
+  z-index: 1;
 `;
