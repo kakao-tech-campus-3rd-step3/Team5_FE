@@ -8,5 +8,6 @@ export const ROUTE_PATH = {
   LOGIN: '/login',
   LOGIN_OAUTH: '/login/oauth',
   RIVAL: '/rival',
+  MYPAGE: '/myPage',
   NOTFOUND: '*',
 };
