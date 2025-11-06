@@ -75,8 +75,7 @@ export default StreakSection;
 
 const SectionWrapper = styled.section`
   padding: 20px;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: ${({ theme }) => theme.typography.fontFamily};
 `;
 
 const UserInfo = styled.div`

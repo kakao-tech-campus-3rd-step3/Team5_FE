@@ -2,12 +2,15 @@ import { useState, useEffect, useMemo } from 'react';
 
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
+import { generatePath, useNavigate } from 'react-router-dom';
 
 import { searchRival, getRivalProfile, getFollowingList, getFollowerList } from '../../api/rivals';
+import { ROUTE_PATH } from '../../routes/routePath';
 
 import type { RivalProfileResponse, RivalUserItem } from '../../api/rivals';
 
 const RivalPage = () => {
+  const navigate = useNavigate();
   const [searchEmail, setSearchEmail] = useState('');
   const [profile, setProfile] = useState<RivalProfileResponse | null>(null);
   const [myFollowingList, setMyFollowingList] = useState<RivalUserItem[]>([]);
@@ -19,12 +22,12 @@ const RivalPage = () => {
   // 기본 목 데이터
   const defaultFriends: RivalUserItem[] = useMemo(
     () => [
-      { userId: 1, name: '박준희', email: '김민수@dailyq.com' },
-      { userId: 2, name: '김진현', email: '이지영@dailyq.com' },
-      { userId: 3, name: '김도현', email: '박준호@dailyq.com' },
-      { userId: 4, name: '박소현', email: '최수진@dailyq.com' },
-      { userId: 5, name: '이창목', email: '정현우@dailyq.com' },
-      { userId: 6, name: '윤자빈', email: '강소영@dailyq.com' },
+      { userId: 1, name: '박준희', email: 'junijuni@naver.com' },
+      { userId: 2, name: '김진현', email: 'kimmjinn0203@gmail.com' },
+      { userId: 3, name: '김도현', email: 'dozzang@gmail.com' },
+      { userId: 4, name: '박소현', email: 'studyhyeon1004@gmail.com' },
+      { userId: 5, name: '이창목', email: 'cmlee5075@gmail.com' },
+      { userId: 6, name: '윤자빈', email: 'allisa052453@gmail.com' },
     ],
     []
   );
@@ -89,7 +92,12 @@ const RivalPage = () => {
       <MyFollowingGrid>
         {myFollowingList && myFollowingList.length > 0 ? (
           myFollowingList.map((user) => (
-            <FriendCard key={user.userId}>
+            <FriendCard
+              key={user.userId}
+              onClick={() =>
+                navigate(generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() }))
+              }
+            >
               <FriendIcon>👤</FriendIcon>
               <FriendInfo>
                 <FriendName>{user.name}</FriendName>
@@ -178,6 +186,7 @@ export default RivalPage;
 const Wrapper = styled.div`
   min-height: 100vh;
   padding: 24px;
+  padding-bottom: calc(24px + 65px + 20px); /* 네비게이션 바 높이(65px) + 여유 공간(20px) */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -226,13 +235,46 @@ const FriendCard = styled.div`
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   width: 100%;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      ${({ theme }) => theme.colors.primary} 0%,
+      ${({ theme }) => theme.colors.secondary} 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+    transition: color 0.3s ease;
+  }
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.9);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
+
+    p {
+      color: ${({ theme }) => theme.colors.white};
+    }
   }
 `;
 

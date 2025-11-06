@@ -34,7 +34,7 @@ const Textarea = styled.textarea`
   padding: 12px 15px; /* 내부 여백으로 텍스트와 테두리 사이에 공간 확보 */
   border: 1px solid #ccc; /* 은은한 회색 테두리 */
   border-radius: 8px; /* 부드러운 모서리 */
-  font-family: 'Pretendard', sans-serif; /* 가독성 좋은 폰트 */
+  font-family: ${({ theme }) => theme.typography.fontFamily};
   font-size: 16px;
   line-height: 1.6; /* 줄 간격 조절 */
   color: #333; /* 기본 텍스트 색상 */
