@@ -197,10 +197,8 @@ const Wrapper = styled.div`
   position: relative;
   overflow: hidden;
 
-  /* 👈 Apple-Style: 시스템 폰트 스택 적용 */
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
-    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  /* Pretendard 폰트 적용 */
+  font-family: ${({ theme }) => theme.typography.fontFamily};
 
   /* 배경 그라데이션 (유지) */
   &::before {

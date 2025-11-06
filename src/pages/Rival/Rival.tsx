@@ -2,12 +2,15 @@ import { useState, useEffect, useMemo } from 'react';
 
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
+import { generatePath, useNavigate } from 'react-router-dom';
 
 import { searchRival, getRivalProfile, getFollowingList, getFollowerList } from '../../api/rivals';
+import { ROUTE_PATH } from '../../routes/routePath';
 
 import type { RivalProfileResponse, RivalUserItem } from '../../api/rivals';
 
 const RivalPage = () => {
+  const navigate = useNavigate();
   const [searchEmail, setSearchEmail] = useState('');
   const [profile, setProfile] = useState<RivalProfileResponse | null>(null);
   const [myFollowingList, setMyFollowingList] = useState<RivalUserItem[]>([]);
@@ -89,7 +92,10 @@ const RivalPage = () => {
       <MyFollowingGrid>
         {myFollowingList && myFollowingList.length > 0 ? (
           myFollowingList.map((user) => (
-            <FriendCard key={user.userId}>
+            <FriendCard
+              key={user.userId}
+              onClick={() => navigate(generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() }))}
+            >
               <FriendIcon>👤</FriendIcon>
               <FriendInfo>
                 <FriendName>{user.name}</FriendName>
@@ -226,13 +232,42 @@ const FriendCard = styled.div`
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   width: 100%;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.secondary} 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+    transition: color 0.3s ease;
+  }
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.9);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
+
+    p {
+      color: ${({ theme }) => theme.colors.white};
+    }
   }
 `;
 

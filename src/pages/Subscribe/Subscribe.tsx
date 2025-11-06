@@ -1,14 +1,17 @@
 import { useState } from 'react';
 
 import styled from '@emotion/styled';
+import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 
+import { ROUTE_PATH } from '../../routes/routePath';
 import { theme } from '../../styles/theme';
 
 import BenefitsCard from './components/BenefitsCard';
 import PricingCard from './components/PricingCard';
 
 const SubscribePage = () => {
+  const navigate = useNavigate();
   const monthlyPrice = 15900;
   const benefits = ['일일 질문 한도 추가', '자소서 기반 맞춤 질문 생성'];
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,6 +22,10 @@ const SubscribePage = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+  };
+
+  const handleFontCardClick = () => {
+    navigate(ROUTE_PATH.RIVAL);
   };
 
   return (
@@ -32,14 +39,18 @@ const SubscribePage = () => {
       </HeaderSection>
 
       <CardSection>
-        <PricingCard
-          title="Premium 요금제"
-          description="당신만을 위한 AI 면접 도우미를<br/>자유롭게 활용하세요."
-          price={monthlyPrice}
-          highlighted
-        />
+        <ClickableCard onClick={handleFontCardClick}>
+          <PricingCard
+            title="Premium 요금제"
+            description="당신만을 위한 AI 면접 도우미를<br/>자유롭게 활용하세요."
+            price={monthlyPrice}
+            highlighted
+          />
+        </ClickableCard>
 
-        <BenefitsCard title="Premium 혜택" benefits={benefits} />
+        <ClickableCard onClick={handleFontCardClick}>
+          <BenefitsCard title="Premium 혜택" benefits={benefits} />
+        </ClickableCard>
       </CardSection>
 
       <ButtonSection>
@@ -77,7 +88,7 @@ export default SubscribePage;
 
 const Wrapper = styled.div`
   min-height: 100vh;
-  background: ${theme.colors.backgroundGradient};
+  background: #FFFFFF;
   padding: ${theme.space.space24};
   display: flex;
   flex-direction: column;
@@ -98,6 +109,13 @@ const CardSection = styled.div`
   margin-bottom: ${theme.space.space16};
 `;
 
+const ClickableCard = styled.div`
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
 const ButtonSection = styled.div`
   display: flex;
   justify-content: center;
@@ -107,7 +125,7 @@ const ButtonSection = styled.div`
 const MainTitle = styled.h1`
   font-size: ${theme.typography.fontSizes.h2};
   font-weight: ${theme.typography.fontWeights.bold};
-  color: ${theme.colors.text};
+  color: ${theme.colors.textBrown};
   line-height: 1.4;
   margin: 0;
 `;

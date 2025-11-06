@@ -13,6 +13,7 @@ import OauthRedirectPage from '../pages/Login/OauthRedirectPage';
 import MyPage from '../pages/MyPage/MyPage';
 import NotFound from '../pages/NotFound/NotFound';
 import RivalPage from '../pages/Rival/Rival';
+import RivalDetail from '../pages/Rival/RivalDetail';
 import SelectWorkPage from '../pages/SelectWork/SelectWork';
 import SubscribePage from '../pages/Subscribe/Subscribe';
 import AuthLayout from '../shared/layouts/AuthLayout';
@@ -224,6 +225,7 @@ const AppRouter = () => {
           <Route path={ROUTE_PATH.SUBSCRIBE} element={<SubscribePage />} />
           {/* <Route path={ROUTE_PATH.FEEDBACK} element={<FeedbackPage />} /> */}
           <Route path={ROUTE_PATH.RIVAL} element={<RivalPage />} />
+          <Route path={ROUTE_PATH.RIVAL_DETAIL} element={<RivalDetail />} />
           <Route path={ROUTE_PATH.MYPAGE} element={<MyPage />} />
         </Route>
       </Route>
