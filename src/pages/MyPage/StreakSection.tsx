@@ -4,6 +4,7 @@ import CalendarHeatmap from 'react-calendar-heatmap';
 import LoadingAnimation from '../../assets/lottie/loading.json';
 
 import 'react-calendar-heatmap/dist/styles.css'; // 기본 스타일 import
+// eslint-disable-next-line import/order
 import Lottie from 'lottie-react';
 
 export interface DailySolveCount {
