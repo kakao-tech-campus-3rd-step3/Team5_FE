@@ -26,8 +26,8 @@ const RivalPage = () => {
       { userId: 2, name: '김진현', email: 'kimmjinn0203@gmail.com' },
       { userId: 3, name: '김도현', email: 'dozzang@gmail.com' },
       { userId: 4, name: '박소현', email: 'studyhyeon1004@gmail.com' },
-      { userId: 5, name: '이창목', email: 'cmlee5075@gmail.com' },
-      { userId: 6, name: '윤자빈', email: 'allisa052453@gmail.com' },
+      { userId: 5, name: '윤자빈', email: 'allisa052453@gmail.com' },
+      { userId: 6, name: '이창목', email: 'cmlee5075@gmail.com' },
     ],
     []
   );
