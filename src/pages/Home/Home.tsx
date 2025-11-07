@@ -35,6 +35,7 @@ export interface User {
   solvedToday: boolean;
   preferences: Preferences;
   jobs: Job[];
+  unansweredFollowUpQuestionCount: number;
 }
 
 // 질문 정보 타입
@@ -57,7 +58,7 @@ const HomePage = () => {
   // 사용자 정보는 현재 미사용이지만 향후 사용 예정
   const { data: user } = useFetch<User>('/api/user');
   const { data: question } = useFetch<Question>('/api/questions/random');
-  console.log(user);
+  console.log(user?.unansweredFollowUpQuestionCount);
 
   console.log(question?.followUp);
 
@@ -137,11 +138,14 @@ const HomePage = () => {
     setAnswerState('answering');
   };
 
-  if (user?.preferences?.dailyQuestionLimit === 0)
+  if (user?.preferences?.dailyQuestionLimit === 0 && user?.unansweredFollowUpQuestionCount === 0)
     return (
       <Wrapper>
         <GridWrapper>
           <GlassBackground>남은 질문: {user?.preferences?.dailyQuestionLimit} 개</GlassBackground>
+          <GlassBackground>
+            남은 꼬리 질문: {user?.unansweredFollowUpQuestionCount} 개
+          </GlassBackground>
         </GridWrapper>
         <ContentCard>
           <span>DailyQ 모의 면접</span>
@@ -154,6 +158,9 @@ const HomePage = () => {
     <Wrapper>
       <GridWrapper>
         <GlassBackground>남은 질문: {user?.preferences?.dailyQuestionLimit} 개</GlassBackground>
+        <GlassBackground>
+          남은 꼬리 질문: {user?.unansweredFollowUpQuestionCount} 개
+        </GlassBackground>
       </GridWrapper>
 
       <ContentCard>
@@ -230,14 +237,11 @@ const Wrapper = styled.div`
 
 const GridWrapper = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.5rem;
   width: 100%;
-  max-width: 650px;
-  position: relative;
-  z-index: 1;
 
   /* Pretendard 폰트 적용 */
   font-family: ${({ theme }) => theme.typography.fontFamily};
