@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Lottie from 'lottie-react';
 import { Heart } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import apiClient from '../../api/apiClient';
 import LoadingAnimation from '../../assets/lottie/loading3.json';
@@ -15,6 +15,7 @@ import { theme } from '../../styles/theme';
 
 import Card from './components/Card';
 import LevelModal from './components/LevelModal';
+import FeedbackMemo from '../../shared/components/Feedback/FeedbackMemo';
 
 export interface Question {
   questionId: number;
@@ -75,6 +76,7 @@ interface IFollowUpResponse {
 const FeedbackPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  if (!id) return <Navigate to={ROUTE_PATH.HOME} replace />;
 
   // id가 유효한지 엄격하게 확인
   // :id, undefined, 빈 문자열, 숫자가 아닌 문자열 모두 제외
@@ -213,17 +215,6 @@ const FeedbackPage = () => {
     }
   };
 
-  const handleSaveMemo = async () => {
-    const payload: AnswerPayload = { memo: memoContent };
-    try {
-      await patchData(payload);
-      alert('메모가 저장되었습니다.');
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
-      alert('메모 저장에 실패했습니다. 다시 시도해주세요.');
-    }
-  };
-
   const handleStarredChange = async (starred: boolean) => {
     const payload: AnswerPayload = { starred: starred };
     try {
@@ -298,21 +289,7 @@ const FeedbackPage = () => {
         </Card>
       </SectionContainer>
 
-      <SectionContainer>
-        <Title>메모</Title>
-        <Card>
-          <MemoCardContent>
-            <MemoTextArea
-              value={memoContent}
-              onChange={(e) => setMemoContent(e.target.value)}
-              placeholder="메모를 작성해주세요."
-            />
-            <MemoSaveButton type="button" onClick={handleSaveMemo} disabled={false}>
-              메모 저장
-            </MemoSaveButton>
-          </MemoCardContent>
-        </Card>
-      </SectionContainer>
+      <FeedbackMemo id={id} memo={data?.memo} />
 
       {/* TODO: 테스트 해보기 */}
       {!followUp && (
@@ -444,27 +421,6 @@ const CardListItem = styled.li`
   }
 `;
 
-const MemoTextArea = styled.textarea`
-  width: 90%;
-  min-height: 120px;
-  padding: ${({ theme }) => theme.space.space16};
-  border-radius: ${({ theme }) => theme.radius.radius8};
-  font-size: ${({ theme }) => theme.typography.fontSizes.body};
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.text};
-  }
-
-  @media (max-width: 768px) {
-    width: 100%; /* ◀ 카드 안쪽 꽉 채우기 */
-    box-sizing: border-box;
-    font-size: ${({ theme }) => theme.typography.fontSizes.small};
-    min-height: 100px;
-  }
-`;
-
 const FilterWrapper = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.space.space8};
@@ -486,26 +442,6 @@ const InfoWrapper = styled.div`
   gap: ${({ theme }) => theme.space.space16};
   align-items: center;
   justify-content: center;
-`;
-
-const MemoSaveButton = styled(SharedButton)`
-  width: 90%;
-  margin-top: ${({ theme }) => theme.space.space16};
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
-
-const MemoCardContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  height: 90%; /* ◀ Card의 높이를 꽉 채움 */
-
-  padding: ${({ theme }) => theme.space.space24};
-  box-sizing: border-box;
 `;
 
 const AIFeedbackWrapper = styled.div`

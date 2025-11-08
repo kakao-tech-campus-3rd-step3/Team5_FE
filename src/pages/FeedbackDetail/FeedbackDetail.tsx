@@ -6,10 +6,10 @@ import SharedButton from '../../shared/ui/SharedButton';
 import { theme } from '../../styles/theme';
 import Card from '../Feedback/components/Card';
 import useAnswers from './hooks/useAnswers';
-import useFeedbackMemo from './hooks/useFeedbackMemo';
 import usePatch from '../../shared/hooks/usePatch';
 import useStarred from './hooks/useStarred';
 import useLevel from './hooks/useLevel';
+import FeedbackMemo from '../../shared/components/Feedback/FeedbackMemo';
 
 export interface Question {
   questionId: number;
@@ -53,7 +53,6 @@ const FeedbackDetailPage = () => {
 
   const { question, feedback, memo, starred = false, level = 0, answerText } = useAnswers(id);
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
-  const { memoContent, setMemoContent, handleSaveMemo } = useFeedbackMemo({ memo, patchData });
   const { isStarred, handleStarredChange } = useStarred({ starred, patchData });
   const { questionLevel, handleLevelChange } = useLevel({ level, patchData });
 
@@ -118,21 +117,7 @@ const FeedbackDetailPage = () => {
         </Card>
       </SectionContainer>
 
-      <SectionContainer>
-        <Title>메모</Title>
-        <Card>
-          <MemoCardContent>
-            <MemoTextArea
-              value={memoContent}
-              onChange={(e) => setMemoContent(e.target.value)}
-              placeholder="메모를 작성해주세요."
-            />
-            <MemoSaveButton type="button" onClick={handleSaveMemo} disabled={false}>
-              메모 저장
-            </MemoSaveButton>
-          </MemoCardContent>
-        </Card>
-      </SectionContainer>
+      <FeedbackMemo id={id} memo={memo} />
 
       <SharedButton type="button" onClick={handleArchiveClick} disabled={false}>
         아카이브로 이동
@@ -202,20 +187,6 @@ const CardListItem = styled.li`
   }
 `;
 
-const MemoTextArea = styled.textarea`
-  width: 90%;
-  min-height: 120px;
-  padding: ${({ theme }) => theme.space.space16};
-  border-radius: ${({ theme }) => theme.radius.radius8};
-  font-size: ${({ theme }) => theme.typography.fontSizes.body};
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
 const FilterWrapper = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.space.space8};
@@ -242,26 +213,6 @@ const InfoWrapper = styled.div`
 const StyledStar = styled(Star)`
   cursor: pointer;
   transition: all 0.1s ease-in-out;
-`;
-
-const MemoSaveButton = styled(SharedButton)`
-  width: 90%;
-  margin-top: ${({ theme }) => theme.space.space16};
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
-
-const MemoCardContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  height: 90%; /* ◀ Card의 높이를 꽉 채움 */
-
-  padding: ${({ theme }) => theme.space.space24};
-  box-sizing: border-box;
 `;
 
 const AIFeedbackWrapper = styled.div`
