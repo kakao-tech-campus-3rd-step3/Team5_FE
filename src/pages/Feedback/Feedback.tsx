@@ -5,7 +5,6 @@ import Lottie from 'lottie-react';
 import { Heart } from 'lucide-react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
-import apiClient from '../../api/apiClient';
 import LoadingAnimation from '../../assets/lottie/loading3.json';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
