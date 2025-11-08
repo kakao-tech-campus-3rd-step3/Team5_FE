@@ -7,7 +7,6 @@ import type { AnswerItem } from '../Archive';
 const PinnedQuestionList = () => {
   const { items, pinnedItemWrapperRef, getItemRef, handleItemClick } = usePinnedQuestions();
 
-  // if (!items) return null;
   if (!items || items.length === 0) {
     return <EmptyMessage>즐겨찾기를 추가해 주세요</EmptyMessage>;
   }

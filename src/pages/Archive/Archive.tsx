@@ -33,8 +33,6 @@ const ArchivePage = () => {
     handlers: { handleDownClick, handleUpClick },
   } = useSectionScroll();
 
-  // const [showMode, setShowMode] = useState(false);
-
   return (
     <Wrapper>
       <SectionFirst ref={sectionFirstRef}>
