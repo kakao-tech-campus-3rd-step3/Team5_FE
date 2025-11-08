@@ -170,13 +170,6 @@ const FeedbackPage = () => {
 
   const question = data?.question;
 
-  const [memoContent, setMemoContent] = useState('');
-  useEffect(() => {
-    if (data?.memo !== undefined && data.memo !== memoContent) {
-      setMemoContent(data.memo || ''); // null이면 빈 문자열로 처리
-    }
-  }, [data?.memo, memoContent]);
-
   const [isStarred, setIsStarred] = useState<boolean | undefined>();
   useEffect(() => {
     setIsStarred(data?.starred);
