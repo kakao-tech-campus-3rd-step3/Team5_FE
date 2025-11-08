@@ -59,6 +59,7 @@ export default tseslint.config(globalIgnores(['dist']), {
           order: 'asc',
           caseInsensitive: true,
         },
+        endOfLine: 'auto',
       },
     ],
     'import/newline-after-import': 'error',
