@@ -72,20 +72,14 @@
 
 ### 5.0 회원가입 및 온보딩 플로우
 
-신규 사용자는 소셜 로그인을 통해 간편하게 가입하고, 온보딩 과정을 통해 맞춤형 서비스를 설정합니다.
-
 **주요 단계:**
 
-1. **소셜 로그인 시작**: 사용자가 구글 또는 카카오 로그인 버튼을 클릭합니다.
-2. **OAuth2 인증**: Spring Security가 OAuth2 인증 플로우를 시작하고, 사용자를 구글/카카오 인증 페이지로 리다이렉트합니다.
-3. **사용자 인증**: 사용자가 구글/카카오에서 로그인하고 정보 제공에 동의합니다.
-4. **사용자 정보 조회**: `CustomOAuth2UserService`가 Authorization Code를 Access Token으로 교환하고, 사용자 정보 API를 호출합니다.
-5. **사용자 저장/업데이트**: 이메일로 기존 사용자를 조회하고, 없으면 신규 생성, 있으면 이름만 업데이트합니다.
-6. **신규 사용자 초기화**: 신규 사용자인 경우 `UserPreferences`와 `UserFlowProgress`를 기본값으로 생성합니다.
-7. **JWT 토큰 발급**: `OAuth2AuthenticationSuccessHandler`에서 Access Token과 Refresh Token을 생성합니다.
-8. **토큰 저장**: Refresh Token은 HttpOnly 쿠키에 저장되고, Access Token은 URL 파라미터로 프론트엔드에 전달됩니다.
-9. **온보딩 진행**: 신규 사용자는 직군 선택, 질문 모드 선택, 답변 방식 설정을 진행합니다.
-10. **서비스 이용 시작**: 온보딩 완료 후 메인 페이지에서 오늘의 질문을 받아 답변을 시작할 수 있습니다.
+1. **소셜 로그인 시작**: '카카오/구글 로그인' 버튼 클릭 시 백엔드 인증 URL로 리다이렉트합니다.
+2. **토큰 수신**: 인증 완료 후 콜백 URL의 쿼리 파라미터로 전달된 Access Token을 파싱합니다.
+3. **토큰 저장**: Access Token을 localStorage와 Axios 인스턴스 헤더에 저장 및 설정합니다.
+4. **온보딩 여부 확인**: `GET /api/user API` 를 호출하여 사용자 온보딩 완료 여부를 확인합니다.
+5. **온보딩 진행**: 신규 사용자일 경우 `PUT /api/user/jobs`, `PUT /api/user/preferences` API로 설정을 저장합니다.
+6. **토큰 갱신**: (Axios 인터셉터) 401 에러 발생 시 `POST /api/token/refresh`로 토큰을 자동 갱신합니다.
 
 **토큰 갱신 플로우:**
 - Access Token 만료 시: `POST /api/token/refresh`로 Refresh Token을 사용해 새로운 Access Token 발급
@@ -99,39 +93,24 @@
 
 **주요 단계:**
 
-1. **질문 요청**: 클라이언트가 `GET /api/questions/random` 엔드포인트로 랜덤 질문을 요청합니다.
-2. **사용자 설정 조회**: 서버가 `UserPreferences`를 조회하여 사용자의 질문 모드(TECH/FLOW), 직군, 시간 제한 등을 확인합니다.
-3. **일일 한도 검증**: 오늘 이미 답변한 질문 수를 확인하여 일일 질문 한도를 초과하지 않았는지 검증합니다.
-4. **질문 모드별 처리**:
-   - **TECH 모드**: 사용자의 직군에 맞는 기술 질문을 랜덤으로 선택합니다. 이미 답변한 질문은 제외됩니다.
-   - **FLOW 모드**: 사용자의 현재 면접 단계(INTRO → MOTIVATION → TECH → PERSONALITY)에 맞는 질문을 선택합니다. `UserFlowProgress`를 통해 현재 단계를 추적합니다.
-5. **꼬리 질문 우선 처리**: 미답변 꼬리 질문이 있으면 일반 질문보다 우선적으로 제공합니다.
-6. **질문 반환**: 선택된 질문과 함께 질문 모드, 현재 단계, 시간 제한 등의 정보를 포함한 `RandomQuestionResponse`를 반환합니다.
+1. **질문 요청**: 메인 페이지 진입 시 `GET /api/questions/random` API를 호출하여 질문을 받아옵니다.
+2. **질문 렌더링**: 응답받은 질문 데이터를 React `useState`에 저장하여 화면에 렌더링합니다.
 
 ---
 
 ### 5.2 음성 답변 플로우
 
-음성 답변의 경우 비동기 STT 처리와 실시간 알림을 통해 사용자 경험을 최적화합니다.
-
 **주요 단계:**
 
-1. **음성 녹음**: 사용자가 브라우저에서 음성을 녹음합니다.
-2. **Presigned URL 요청**: 클라이언트가 서버에 업로드용 Presigned URL을 요청합니다.
-3. **직접 업로드**: 클라이언트가 Presigned URL을 사용해 NCP Object Storage에 음성 파일을 직접 업로드합니다. (서버 부하 감소)
-4. **답변 등록**: 음성 파일 URL과 함께 `/api/answers` 엔드포인트로 답변을 등록합니다.
-5. **Answer 생성**: 서버에서 Answer 엔티티를 생성하지만, 아직 텍스트는 없고 STT 상태는 `PENDING`입니다.
-6. **STT 작업 시작**: `SttTask`를 생성하고 NCP CLOVA STT API를 호출하여 비동기 변환 작업을 시작합니다.
-7. **SSE 연결**: 클라이언트가 `/api/sse/connect`로 SSE 연결을 수립하여 실시간 알림을 받을 준비를 합니다.
-8. **STT 콜백 처리**: NCP CLOVA가 변환을 완료하면 `/api/stt/callback`으로 콜백을 보냅니다.
-9. **텍스트 업데이트**: 콜백에서 받은 텍스트로 Answer를 업데이트하고 `SttCompletedEvent`를 발행합니다.
-10. **AI 피드백 생성**: `FeedbackService`가 OpenAI GPT API를 호출하여 피드백을 생성합니다. (비동기)
-11. **실시간 알림**: SSE를 통해 클라이언트에 `stt_completed`, `feedback_ready` 이벤트를 전송합니다.
-12. **결과 조회**: 클라이언트가 `/api/answers/{id}`로 최종 답변과 피드백을 조회합니다.
-
-**에러 처리:**
-- STT 실패 시: `SttFailedEvent` 발행 → SSE로 알림 → 클라이언트가 `/api/answers/{id}/retry-stt`로 재시도 가능
-- 피드백 생성 실패 시: Feedback 상태를 `FAILED`로 업데이트 → 재시도 가능
+1. **음성 녹음**: AnsweringSection에서 `MediaRecorder` API 등을 사용해 음성 녹음을 시작합니다.
+2. **Presigned URL 요청**: 녹음 완료 시, AnswerInput이 `GET /api/answers/upload-url` API를 내부적으로 호출합니다.
+3. **직접 업로드**: `AnswerInput`이 발급받은 URL로 NCP Object Storage에 음성 파일을 직접 PUT합니다.
+4. **audioUrl 확보**: `AnswerInput`이 업로드된 파일의 `audioUrl`(또는 Key)을 확보합니다.
+5. **자동 답변 제출**: `AnswerInput`이 `POST /api/answer`s API를 `audioUrl`과 함께 자동으로 호출합니다.
+6. **피드백 ID 수신**: `AnswerInput`이 POST 응답으로 feedbackId를 수신합니다.
+7. **onAnswerComplete 콜백**: AnswerInput이 부모의 onAnswerComplete 함수를 feedbackId와 함께 호출합니다.
+8. **상태 저장**: AnsweringSection은 handleAnswerComplete 함수에서 submittedFeedbackId를 state에 저장합니다.
+9. **피드백 페이지 이동**: 클라이언트가 `/api/answers/{id}`로 최종 답변과 피드백을 조회합니다.
 
 ---
 
@@ -142,14 +121,11 @@
 **주요 단계:**
 
 1. **텍스트 입력**: 사용자가 브라우저에서 텍스트로 답변을 입력합니다.
-2. **답변 등록**: 클라이언트가 `POST /api/answers` 엔드포인트로 답변을 등록합니다. 요청 본문에는 `questionId`, `answerText` 등이 포함됩니다.
-3. **Answer 생성**: 서버에서 Answer 엔티티를 생성합니다. 이 시점에 이미 텍스트가 포함되어 있으며, `sttStatus`는 N/A이고 `feedback` 상태는 `PENDING`입니다.
-4. **Feedback 생성**: `FeedbackService`가 PENDING 상태의 Feedback을 생성합니다.
-5. **응답 반환**: 서버가 `AnswerInfoResponse`를 반환하며, 여기에는 `answerId`와 현재 상태 정보가 포함됩니다.
-6. **SSE 연결**: 클라이언트가 `GET /api/sse/connect`로 SSE 연결을 수립하여 실시간 알림을 받을 준비를 합니다.
-7. **AI 피드백 생성**: `FeedbackService`가 OpenAI GPT API를 호출하여 피드백을 생성합니다. 이 과정은 비동기로 처리됩니다.
-8. **실시간 알림**: 피드백 생성이 완료되면 SSE를 통해 클라이언트에 `feedback_ready` 이벤트를 전송합니다.
-9. **결과 조회**: 클라이언트가 `GET /api/answers/{id}`로 최종 답변과 피드백을 조회합니다. 응답에는 `answerText`, `feedback` (AI 피드백), `question` 정보가 포함됩니다.
+2. **답변 등록**: `POST /api/answers` API를 호출하여 answerText와 questionId를 서버에 전송합니다.
+3. **SSE 연결**: POST 성공 시, UI를 '피드백 생성 중'으로 변경하고 `GET /api/sse/connect`에 연결합니다.
+4. **AI 피드백 생성**: `FeedbackService`가 OpenAI GPT API를 호출하여 피드백을 생성합니다. 이 과정은 비동기로 처리됩니다.
+5. **실시간 이벤트 수신**: feedback_ready SSE 이벤트를 수신할 때까지 대기합니다.
+6. **결과 조회**: feedback_ready 이벤트 수신 후, `GET /api/answers/{id}` API로 피드백을 조회합니다.
 
 **음성 답변과의 차이점:**
 - STT 단계가 없어 더 빠른 처리
@@ -164,12 +140,8 @@
 
 **주요 단계:**
 
-1. **꼬리 질문 생성 요청**: 사용자가 답변에 대한 피드백을 확인한 후, `POST /api/questions/followUp/{answerId}` 엔드포인트로 꼬리 질문 생성을 요청합니다.
-2. **답변 및 질문 조회**: 서버가 해당 Answer와 원본 Question 정보를 조회합니다.
-3. **AI 질문 생성**: `FollowUpQuestionService`가 OpenAI GPT API를 호출하여 사용자의 답변을 분석하고, 답변을 더 깊이 있게 탐구할 수 있는 꼬리 질문을 생성합니다.
-4. **꼬리 질문 저장**: 생성된 꼬리 질문들을 `FollowUpQuestion` 엔티티로 저장하고, 원본 Answer와 연결합니다.
-5. **응답 반환**: 생성된 꼬리 질문의 개수를 포함한 `FollowUpGenerationResponse`를 반환합니다.
-6. **질문 조회 시 우선 제공**: 이후 사용자가 `GET /api/questions/random`을 호출하면, 미답변 꼬리 질문이 일반 질문보다 우선적으로 제공됩니다.
+1. **꼬리 질문 생성 요청**: '꼬리 질문 받기' 버튼 클릭 시 `POST /api/questions/followUp/{answerId}` API를 호출합니다.
+2. **생성 완료 처리**: API 호출 성공 시, 사용자에게 '꼬리 질문 생성 완료' 알림(Toast)을 표시합니다.
 
 **꼬리 질문의 특징:**
 - 사용자의 답변 내용을 바탕으로 맥락에 맞는 추가 질문 생성
@@ -184,226 +156,49 @@
 
 **주요 단계:**
 
-1. **상태 조회 요청**: 클라이언트가 `GET /api/answers/{id}/status` 엔드포인트로 답변의 현재 상태를 조회합니다.
-2. **상태 응답**: 서버가 `AnswerInfoResponse`를 반환하며, 여기에는 `answerId`, `sttStatus`, `feedbackStatus` 등의 상태 정보가 포함됩니다.
-
-**상태 값:**
-- `sttStatus`: `PENDING` → `COMPLETED` / `FAILED`
-- `feedbackStatus`: `PENDING` → `PROCESSING` → `DONE` / `FAILED`
+1. **상태 폴링(Polling)**: SSE 연결 실패 시, `GET /api/answers/{id}/status` API를 setInterval로 주기적 호출합니다.
+2. **상태 확인**: 응답받은 sttStatus, feedbackStatus 값에 따라 UI 상태를 동기화합니다.
+3. **폴링 중지 및 결과 조회**: feedbackStatus가 DONE이 되면 폴링을 중지하고 `GET /api/answers/{answerId}`로 최종 결과를 조회합니다.
 
 ---
 
 ## 6. 핵심 이슈
 <details>
-  <summary>SSE + virtual thread</summary>
+  <summary>STT 비동기 처리: FFMPEG, Pre-Signed URL, SSE</summary>
     
 ### 문제점
-  CLOVA STT 변환은 비동기 작업으로 이 결과를 사용자에게 '실시간'으로 알려주기 위해 SSE를 도입했음.
-  SSE는 특성상 각 사용자가 접속해 있는 내내 서버 스레드 1개를 점유.
-    
-### 실제 상황
-  프론트 테스트에서 동시 접속자가 200명만 넘어가도 모든 OS 쓰레드가 고갈되는 문제가 발생하여 서버 전체가 다운되는 현상 발생.
+  1. 데이터 표준화 필요: 브라우저 녹음(.WebM) 포맷은 STT 서비스 인식률 불안정. STT 엔진이 안정적으로 인식하는 PCM .WAV 포맷으로 변환 필요.
+  2. 서버 부하: FE → BE → 스토리지로 음성 파일을 중계하는 방식은 서버 트래픽 부하 유발.
+  3. 비효율적 상태 조회: STT 비동기 처리 완료 여부를 알기 위해 주기적 폴링(Polling) 사용. 비효율적 UX 및 서버 자원 낭비 발생.
 
 ### 해결방안
-  Virtual Thread를 도입하여 SSE연결을 유지하더라도 OS 를 점유하지 않고 10~20개의 적은 OS 쓰레드 만으로 n천개의 SSE 동시 연결을 처리하도록 함.
+  1. 클라이언트 표준화 (FFMPEG): FFMPEG.js 라이브러리 도입. 업로드 직전 브라우저 단에서 .WebM을 .WAV로 직접 변환.
+  2. 직접 업로드 (Pre-Signed URL): BE에 임시 URL(Pre-Signed URL)을 요청. FE가 스토리지로 음성 파일을 직접 업로드하여 서버 중계 부하 제거.
+  3. 실시간 수신 (SSE): 업로드 후 FE가 EventSource로 SSE 연결 수립. BE가 STT/피드백 완료 시점에 FE로 이벤트(stt_completed 등)를 실시간 푸시.
 
 ### 기대 효과 및 검증
-- 30초간 쓰레드를 강제로 대기시키는 즉, stt api의 긴 대기 시간 시뮬레이션을 위한 테스트용 API를 구현.
-- 기존 os 쓰레드의 한계치를 넘기게 3000명이 동시요청하도록 설정하여 테스트.
-- 즉 서버가 3000개의 쓰레드가 동시에 블로킹된 상태를 버티도록 구성.
-<img width="1492" height="573" alt="image" src="https://github.com/user-attachments/assets/3909c436-d52c-4e3d-afa7-0be03df4d652" />
-
-- 사진(위) virtual thread를 켠 경우 OS 쓰레드 고갈 없이 모두 성공.
-- 사진 (아래) 가상유저가 204명에 도달하자마자 OS 쓰레드 고갈로 나머지 요청 모두 실패.
-</details>
-
-<details>
-    <summary>nGrinder 도입</summary>
-
-### 도입 계기
-- FE가 API가 느리다고 리포트하여, BE팀은 정확한 원인(API 문제? DB 문제? 인프라 문제?)을 재현하길 원함.
-
-### 해결책
-- Groovy 스크립트 기반 시나리오: VUser(가상 유저)별로 복잡한 로직을 코드로 작성.
-- 추적 및 관리 : API 엔드포인트별로 분리.
-- 명확한 병목 시각화: VUser 증가에 따른 Error Rate, TPS, Mean Test Time(MTT)을 실시간 그래프로 확인.
-
-
-### 기대효과
-명확한 SLA제공(BE) - 데이터에 기반한 명확한 SLA(Service Level Agreement) 제공.
-안티패턴 방지 및 신뢰 구축(FE) - FE팀이 "API가 느릴 것"이라 지레짐작하여 불필요한 클라이언트 사이드 캐싱이나 복잡한 상태 관리를 구현하는 안티패턴을 방지.
+- STT 엔진에 최적화된 .WAV 포맷 제공으로 인식률 및 안정성 향상.
+- FE의 스토리지 직접 업로드로 서버 트래픽 부하 제거.
+- 불필요한 폴링 제거. SSE로 실시간 이벤트를 수신하여 신속한 사용자 경험 제공.
 
 </details>
 
 <details>
-    <summary>JWT 기반 로그인 인증/인가</summary>
-
-### 도입 계기
-- JWT(JSON Web Token) 도입의 주된 이유는 기존 세션(Session) 기반 인증 방식의 한계점을 극복하고, 확장성 및 효율성을 개선하기 위함
-
-### 해결책
-- 로그인 성공 시 서버가 비밀키를 사용해 JWT를 발급하고, 클라이언트는 해당 토큰을 저장 후 요청 시 헤더`(Authorization: Bearer <token>)`에 포함.
-- 서버는 토큰 검증만 수행하며, 별도의 세션 상태를 유지하지 않음 **(Stateless 인증 구조)**
-- 토큰에 사용자 권한(Role) 및 만료 시간(Expiration Time)을 포함하여 **인가(Authorization)** 를 간편하게 처리
-- Refresh Token을 활용해 Access Token 재발급 프로세스 구현으로 보안성과 편의성 강화
-
-### 기대효과
-- 서버에 세션 저장이 불필요하므로 **확장성과 성능 향상**
-- REST API, 모바일, 프론트엔드 등 다양한 클라이언트 환경에서 **일관된 인증 체계** 유지
-- 토큰 기반 검증으로 **보안성 강화**(만료 시간, 서명 검증, HTTPS 연동 등)
-  
-</details>
-
-<details>
-    <summary>관리자 페이지 구현</summary>
-
-### 도입 계기
-- 시스템 운영 중 직접 DB 접근이나 개발자 의존적 절차로 수행해야 하는 비효율 존재
-- 보안·정책·콘텐츠 관리 등 운영자가 직접 제어할 수 있는 인터페이스 부재.
-
-### 해결책
-- **JWT 기반 인증/인가** 연동으로 접근 제어 강화
-- 회원 조회 및 수정/삭제
-  - 이름 및 역할(Role)별 접근 권한 관리 기능 제공 (관리자/구독자/일반사용자)
-- 직군/직업 조회 및 추가/삭제
-- 질문 조회 및 추가/수정/삭제
-  - 질문 내용, 질문 타입(TECH/INTRO/MOTIVATION/PERSONALITY), 연결된 직업 종류, 활성화 여부(활성/비활성) 관리 제공
- 
-### 기대효과
-- 운영자가 직접 관리 가능한 인터페이스 제공으로 **운영 효율성 향상**
-- 관리자 권한 분리 및 인증 강화로 **보안 강화**
-- 데이터 및 사용자 관리 자동화로 **개발자 의존도 감소**
-- 장애 대응 및 정책 변경 속도 향상으로 **운영 민첩성 확보**
-</details>
-
-<details>
-    <summary>전역 에러 핸들러</summary>
-
-### 도입 계기
-- 보일러 플레이트 코드 발생 : API 컨트롤러마다 ``try-catch``문이 반복
-- 일관성 없는 에러 응답 : API는 
-- 디버깅에 도움이 되지 않는 로그 : log.error("유저를 찾지 못함")은 도움이 되지 않음
-### 해결책
-
-### 기대효과
-</details>
-
-<details>
-    <summary>템플릿 메서드 패턴</summary>
+    <summary>Cursor 기반 무한 스크롤: Intersection Observer + Cursor API</summary>
 
 ### 문제점
-`AnswerCommandService`의 `submitAnswer` 메서드에서 일반 질문과 꼬리 질문 처리가 하나의 메서드에 혼재되어 있었습니다.
-- 코드 중복: 공통 로직(답변 객체 생성, 저장, STT 처리)이 반복됨
-- 복잡한 분기: if-else로 일반/꼬리 질문을 구분하며 가독성 저하
-- 확장성 부족: 새로운 답변 타입 추가 시 메서드 수정 필요
-- 단일 책임(SRP) 위반: 하나의 메서드가 여러 타입의 답변 처리 로직을 포함
-- 
-### 해결책
-- 템플릿 메서드 패턴을 적용해 공통 흐름은 추상 클래스에서 정의하고, 차이점은 하위 클래스에서 구현하도록 분리했습니다:
+  1. "언제" 요청할 것인가? (FE 성능): onScroll 이벤트 사용 시 스크롤마다 이벤트가 과다 발생. 브라우저 성능 저하 유발.
+  2. "어떻게" 요청할 것인가? (BE 성능): 전통적 페이지네이션(page=100)은 BE의 OFFSET 스캔으로 인해 성능 저하 발생.
+
+### 해결방안
+  1. "언제" → Intersection Observer: IntersectionObserver API 도입. 리스트 마지막 요소가 뷰포트에 진입하는 시점에만 다음 데이터 요청 신호 발생.
+  2. "어떻게" → Cursor 기반 API: page 번호 대신, 현재 가진 마지막 데이터의 ID(Cursor)를 API 요청에 포함.
+
 
 ### 기대효과
-- 코드 재사용성 향상: 공통 로직을 한 곳에서 관리
-- 가독성 개선: 각 핸들러가 자신의 책임만 담당
-- 확장성: 새로운 답변 타입 추가 시 핸들러만 추가하면 됨
-- 유지보수성: 변경 영향 범위가 명확해짐
-- 테스트 용이성: 각 핸들러를 독립적으로 테스트 가능
-- 현재 `AnswerCommandService`는 팩토리에서 핸들러를 받아 `handle()`만 호출하면 됩니다.
+- onScroll 이벤트 제거. IntersectionObserver 활용으로 브라우저 부하 감소 및 부드러운 스크롤 경험 보장.
+- BE의 Cursor 기반 조회로 데이터 규모와 상관없이 항상 일정한 속도로 다음 데이터 로딩 가능.
 
-</details>
-
-<details>
-    <summary>cursor 기반 랜덤 질문 </summary>
-
-### 도입 계기
-기존 방식(전체 질문 조회 후 랜덤 선택)은 질문 수가 증가할수록 O(n) 메모리 사용과 느린 쿼리 성능 문제가 발생합니다.
-특히 사용자가 이미 답변한 질문을 제외하는 조건을 포함할 경우 쿼리 비용이 비약적으로 증가합니다.
-
-### 해결책
-MAX ID를 먼저 조회하여 사용 가능한 질문의 ID 범위를 파악
-1부터 MAX ID 사이의 랜덤 ID 생성
-Cursor 기반 조회(id >= randomId)로 해당 범위에서 첫 번째 질문 선택
-인덱스를 활용한 효율적인 쿼리 (ORDER BY id, LIMIT 1)
-
-### 기대효과
-O(1) 메모리 사용: 전체 질문을 메모리에 로드하지 않음
-빠른 쿼리 성능: 인덱스 기반 범위 스캔으로 O(log n) 시간 복잡도
-확장성 향상: 질문 수가 수만 개로 증가해도 일정한 성능 유지
-랜덤성 보장: 각 질문이 동일한 확률로 선택됨
-</details>
-
-<details>
-    <summary>QueryDSL이 아닌 JPA Specification 도입으로 cursor 기반 무한스크롤 구현 + Slice</summary>
-
-### 도입 계기
-- 전통적 Pagination(Offset)의 한계: '아카이브' 기능은 사용자의 모든 답변을 조회해야 함.
-    - 페이지 번호가 늘어날 수록 OFFSET N개 만큼의 데이터 스캔이 발생하여 조회 성능 저하
-    - UX 관점에서 안티패턴이 발생
-- 동적 필터 요구 : FE에서 날짜, 직무, 질문 타입, 즐겨찾기, 난이도 등 다양한 조건으로 동적 검색 요구
-
-### 해결책
-- JPA Specification : JPA 표준 기능으로 의존성, 빌드, 학습 비용 최소화
-    - ``DTO``를 구성하여 ``Predicate``를 조합하는 ``createSpecification`` 메서드를 통해 유지보수 확보
-- 무한 스크롤 : Cursor + Slice
-    - OFFSET 대신 lastId와 lastCreatedAt을 조합하여 마지막으로 본 데이터 다음 10개를 조회하는 방식 채택
-    - Page는 불필요한 COUNT(*) 쿼리를 추가로 실행하여 성능 저하 -> Slice를 통해 COUNT쿼리를 제거하고 hasNext를 FE에게 전달
-### 기대효과
-- BE 성능 : 데이터가 수만 건이 존재하여도 OFFSET 스캔이 없으므로, 항상 일정하고 빠른 조회 성능 보장
-- BE 유지보수 : QueryDSL 도입 대비 학습 비용 낮추기
-- FE/UX : 사용자에게 끊임 없는 무한 스크롤 경험 제공
-
-    
-</details>
-
-<details>
-    <summary>NCP Object Storage 보안 : Pre-Signed URL 도입</summary>
-
-### 문제점
-CLOVA STT API는 파일 경로(dataKey)를 인자로 받기 때문에, 음성 파일이 Object Storage에 먼저 업로드되어야 합니다.
-⦁   서버 부하: FE → BE → Storage로 파일을 중계하면 백엔드 부하가 심각합니다.
-⦁   보안 취약: FE → Storage로 직접 업로드하려면, FE에 Secret Key가 노출되어 치명적입니다.
-
-### 해결책
-Pre-signed URL (임시 허가증)
-백엔드가 Secret Key를 안전하게 보관하면서, FE에게 "10분 동안, 특정 경로에, PUT 요청만 허용하는" 임시 업로드 URL을 발급합니다.
-⦁   FE → BE: 업로드 요청 (/api/answers/upload-url)
-⦁   BE → FE: Pre-signed URL 생성 및 반환
-⦁   FE → NCP Storage: FE가 이 임시 URL을 사용해 스토리지로 파일을 직접 PUT (업로드)
-⦁   (이후) FE → BE: "업로드 완료" 신호와 함께 STT 요청 (이때 BE가 Clova API 호출)
-
-핵심 보안 강화 조치
-⦁   사용자별 경로 격리 (User Scoping)
-문제: 모든 사용자가 같은 곳에 업로드하면 파일이 덮어써지거나 경로 조작 공격이 가능합니다.
-해결: 파일 경로(objectKey)를 **uploads/{userId}/{UUID}.[확장자]**로 강제하여 논리적으로 격리시켰습니다.
-
-⦁   파일 확장자 검증 (Allow-list)
-문제: .html, .exe 같은 악성 파일 업로드 시도
-해결: Clova가 지원하는 오디오 형식(.mp3, .m4a 등)의 '허용 목록'과 비교 검증합니다. 목록에 없으면 400 Bad Request를 반환하여 업로드를 원천 차단합니다.
-</details>
-
-<details>
-    <summary>CORS정책 및 Preflight 해결</summary>
-
-### 문제점
-- CORS 정책 위반: 브라우저와 서버의 Origin이 달라, 브라우저의 동일 출처 정책(SOP)에 의해 API 요청이 기본적으로 차단됨.
-- Preflight (OPTIONS) 요청 발생: 본 요청(POST, PUT 등)에 Authorization 헤더(JWT 토큰)를 포함시킴.
-- Authorization 헤더는 Simple Request 조건에 해당하지 않으므로, 브라우저는 본 요청 전 서버의 허용 여부를 묻는 OPTIONS 메서드(Preflight) 요청을 먼저 전송함.
-- 브라우저가 보낸 OPTIONS 요청에는 인증 토큰(Authorization 헤더)이 없음.
-    - 따라서 JwtAuthenticationFilter 이전에 Spring Security의 인증 체인이 먼저 동작하여, 이 OPTIONS 요청을 401 Unauthorized 또는 403 Forbidden으로 차단함.
-- 브라우저는 Preflight 요청이 실패(200 OK가 아님)했으므로, 본 요청(POST 등)을 보내지 않고 CORS 에러를 발생시킴.
-### 해결책
-- OPTIONS 요청에 대한 Spring Security 인증 해제
-    - filterChain 메서드 내에서 authorizeHttpRequests 설정을 통해 모든 OPTIONS 메서드 요청은 인증 절차 없이 통과(permit)시킴.
-- 구체적인 CORS 정책 정의 및 적용
-    - 허용 출처 (Origins): application.yml에 정의된 프론트엔드 도메인 목록을 허용 
-    - 허용 메서드 (Methods): OPTIONS를 포함한 GET, POST, PUT, DELETE 등 모든 메서드 허용 
-    - 허용 헤더 (Headers): Authorization 헤더를 포함한 모든 헤더 허용 (setAllowedHeaders(List.of("*"))).
-    - 자격 증명 (Credentials): 쿠키(예: OAuth refresh_token)를 주고받을 수 있도록 허용 (setAllowCredentials(true)).
-    - filterChain 내에서 .cors(cors -> cors.configurationSource(corsConfigurationSource))를 호출하여, Spring Security가 이 CORS 규칙을 사용하도록 설정함.
-### 기대효과
-- Preflight 요청 처리: 브라우저가 OPTIONS 요청을 보내면, Spring Security의 permitAll 규칙 덕분에 인증 없이 통과됨.
-- 본 요청 처리: 브라우저가 Preflight 성공을 확인하고 Authorization 헤더가 포함된 실제 POST 요청을 전송함.
-- 이 요청은 OPTIONS가 아니므로 permitAll 규칙에 걸리지 않고, anyRequest().authenticated() 규칙에 따라 인증이 필요하게 됨.
-- JwtAuthenticationFilter가 토큰을 성공적으로 검증하여 인증을 완료시키고, 컨트롤러까지 요청이 정상적으로 도달함.
 </details>
   
 ## 7. 기술 스택
