@@ -33,8 +33,8 @@ const PinnedItemWrapper = styled.div`
 
 const PinnedItem = styled.div`
   position: absolute;
-  width: 130px;
-  height: 230px;
+  width: 110px;
+  height: 200px;
   background: ${({ theme }) => theme.colors.secondary};
   border-radius: ${({ theme }) => theme.radius.radiusFull};
 
