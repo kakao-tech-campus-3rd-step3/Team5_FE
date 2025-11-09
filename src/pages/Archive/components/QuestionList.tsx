@@ -96,6 +96,12 @@ const ListItem = styled.li`
   font-size: ${({ theme }) => theme.typography.fontSizes.bodys};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   margin: ${({ theme }) => theme.space.space12};
+
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
+  border-radius: ${({ theme }) => theme.radius.radius24};
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 `;
 
 const LottieWrapper = styled.div`
