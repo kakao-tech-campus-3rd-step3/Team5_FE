@@ -1,16 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 
-import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { generatePath, useNavigate } from 'react-router-dom';
 
-import {
-  searchRival,
-  getRivalProfile,
-  getFollowingList,
-  getFollowerList,
-  addRival,
-} from '../../api/rivals';
+import { searchRival, getRivalProfile, getFollowingList, addRival, deleteRival } from '../../api/rivals';
 import { ROUTE_PATH } from '../../routes/routePath';
 
 import type { RivalProfileResponse, RivalSearchResponse, RivalUserItem } from '../../api/rivals';
@@ -18,11 +11,7 @@ import type { RivalProfileResponse, RivalSearchResponse, RivalUserItem } from '.
 const RivalPage = () => {
   const navigate = useNavigate();
   const [searchEmail, setSearchEmail] = useState('');
-  const [profile, setProfile] = useState<RivalProfileResponse | null>(null);
   const [myFollowingList, setMyFollowingList] = useState<RivalUserItem[]>([]);
-  const [followingList, setFollowingList] = useState<RivalUserItem[]>([]);
-  const [followerList, setFollowerList] = useState<RivalUserItem[]>([]);
-  const [activeTab, setActiveTab] = useState<'following' | 'follower'>('following');
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalSearchResult, setModalSearchResult] = useState<RivalSearchResponse | null>(null);
@@ -65,13 +54,6 @@ const RivalPage = () => {
       try {
         const searchResult = await searchRival(searchEmail.trim());
         const profileData = await getRivalProfile(searchResult.userId);
-        setProfile(profileData);
-
-        // 검색한 사용자의 팔로잉/팔로워 목록 로드
-        const following = await getFollowingList(undefined, 10);
-        const follower = await getFollowerList(undefined, 10);
-        setFollowingList(following.items);
-        setFollowerList(follower.items);
 
         setModalSearchResult(searchResult);
         setModalProfile(profileData);
@@ -108,6 +90,17 @@ const RivalPage = () => {
   const handleNavigateToDetail = (userId: number) => {
     closeModal();
     navigate(generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: userId.toString() }));
+  };
+
+  const handleRemoveRival = async (userId: number) => {
+    if (!window.confirm('정말로 이 라이벌을 제거할까요?')) return;
+    try {
+      await deleteRival(userId);
+      await loadMyFollowing();
+    } catch (error) {
+      console.error('라이벌 제거 실패:', error);
+      alert('라이벌 제거에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   return (
@@ -167,19 +160,24 @@ const RivalPage = () => {
         <MyFollowingGrid>
           {myFollowingList && myFollowingList.length > 0 ? (
             myFollowingList.map((user) => (
-              <FriendCard
-                key={user.userId}
-                onClick={() =>
-                  navigate(
-                    generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() })
-                  )
-                }
-              >
-                <FriendIcon>👤</FriendIcon>
-                <FriendInfo>
-                  <FriendName>{user.name}</FriendName>
-                  <FriendEmail>{user.email}</FriendEmail>
-                </FriendInfo>
+              <FriendCard key={user.userId}>
+                <FriendContent
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() })
+                    )
+                  }
+                >
+                  <FriendIcon>👤</FriendIcon>
+                  <FriendInfo>
+                    <FriendName>{user.name}</FriendName>
+                    <FriendEmail>{user.email}</FriendEmail>
+                  </FriendInfo>
+                </FriendContent>
+                <RemoveButton type="button" onClick={() => handleRemoveRival(user.userId)}>
+                  제거
+                </RemoveButton>
               </FriendCard>
             ))
           ) : (
@@ -188,75 +186,6 @@ const RivalPage = () => {
         </MyFollowingGrid>
 
         {isLoading && <LoadingText>검색 중...</LoadingText>}
-
-        {profile && (
-          <>
-            <ProfileCard>
-              <ProfileIcon>👤</ProfileIcon>
-              <ProfileInfo>
-                <Nickname>{profile.name}</Nickname>
-                <Email>{profile.email}</Email>
-                <Intro>{profile.intro || '한줄소개'}</Intro>
-              </ProfileInfo>
-            </ProfileCard>
-
-            <StatsContainer>
-              <StatCard>
-                <StatLabel>DailyQ</StatLabel>
-                <StatContent>Keep Going!!</StatContent>
-                <StatMeta>{profile.dailyQDays || 0} days +</StatMeta>
-              </StatCard>
-              <StatCard>
-                <StatLabel>답변한 질문 개수</StatLabel>
-                <StatContent>{profile.answeredQuestions || 0}</StatContent>
-              </StatCard>
-            </StatsContainer>
-
-            <TabContainer>
-              <TabButton
-                active={activeTab === 'following'}
-                onClick={() => setActiveTab('following')}
-              >
-                팔로잉 ({followingList?.length || 0})
-              </TabButton>
-              <TabButton active={activeTab === 'follower'} onClick={() => setActiveTab('follower')}>
-                팔로워 ({followerList?.length || 0})
-              </TabButton>
-            </TabContainer>
-
-            <UserListCard>
-              {activeTab === 'following' ? (
-                followingList && followingList.length > 0 ? (
-                  followingList.map((user) => (
-                    <UserItem key={user.userId} onClick={() => handleNavigateToDetail(user.userId)}>
-                      <UserIcon>👤</UserIcon>
-                      <UserInfo>
-                        <UserName>{user.name}</UserName>
-                        <UserEmail>{user.email}</UserEmail>
-                      </UserInfo>
-                    </UserItem>
-                  ))
-                ) : (
-                  <EmptyText>팔로잉한 사용자가 없습니다.</EmptyText>
-                )
-              ) : followerList && followerList.length > 0 ? (
-                followerList.map((user) => (
-                  <UserItem key={user.userId} onClick={() => handleNavigateToDetail(user.userId)}>
-                    <UserIcon>👤</UserIcon>
-                    <UserInfo>
-                      <UserName>{user.name}</UserName>
-                      <UserEmail>{user.email}</UserEmail>
-                    </UserInfo>
-                  </UserItem>
-                ))
-              ) : (
-                <EmptyText>팔로워가 없습니다.</EmptyText>
-              )}
-            </UserListCard>
-
-            <CheerButton type="button">응원하기</CheerButton>
-          </>
-        )}
       </Wrapper>
     </>
   );
@@ -310,13 +239,10 @@ const FriendCard = styled.div`
   background-color: rgba(255, 255, 255, 0.6);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border-radius: 16px;
-  padding: 16px;
+  padding: 12px 12px 12px 16px;
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
   width: 100%;
   position: relative;
   overflow: hidden;
@@ -359,6 +285,21 @@ const FriendCard = styled.div`
   }
 `;
 
+const FriendContent = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &:focus {
+    outline: none;
+  }
+`;
+
 const FriendIcon = styled.div`
   font-size: 32px;
 `;
@@ -384,160 +325,20 @@ const FriendEmail = styled.p`
   word-break: break-all;
 `;
 
-const cardBaseStyles = css`
-  background-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border-radius: 24px;
-  width: 100%;
-  max-width: 400px;
-  max-height: 200vh;
-  box-sizing: border-box;
-`;
-
-const ProfileCard = styled.div`
-  ${cardBaseStyles};
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  height: 100%;
-  gap: 16px;
-  min-height: 120px;
-`;
-
-const ProfileIcon = styled.div`
-  font-size: 32px;
-`;
-
-const ProfileInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Nickname = styled.p`
-  font-size: 1rem;
-  font-weight: 700;
-  color: #333;
-`;
-
-const Intro = styled.p`
-  font-size: 1rem;
-  color: #777;
-`;
-
-const Email = styled.p`
-  font-size: 0.875rem;
-  color: #999;
-  margin: 4px 0;
-`;
-
-const StatsContainer = styled.div`
-  display: flex;
-  gap: 16px;
-  width: 100%;
-  max-width: 400px;
-`;
-
-const StatCard = styled.div`
-  ${cardBaseStyles};
-  flex: 1;
-  padding: 25px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 150px;
-`;
-
-const StatLabel = styled.p`
-  font-size: 1rem;
-  color: #555;
-  margin-bottom: 8px;
-`;
-
-const StatContent = styled.p`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #333;
-`;
-
-const StatMeta = styled.p`
-  font-size: 0.875rem;
-  color: #777;
-  margin-top: 8px;
-`;
-
-const TabContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  max-width: 400px;
-`;
-
-interface TabButtonProps {
-  active: boolean;
-}
-
-const TabButton = styled.button<TabButtonProps>`
-  flex: 1;
-  padding: 12px;
+const RemoveButton = styled.button`
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  background-color: ${({ active }) => (active ? '#333' : '#f0f0f0')};
-  color: ${({ active }) => (active ? '#ffffff' : '#666')};
-
-  &:hover {
-    background-color: ${({ active }) => (active ? '#555' : '#e0e0e0')};
-  }
-`;
-
-const UserListCard = styled.div`
-  ${cardBaseStyles};
-  padding: 16px;
-  min-height: 200px;
-  max-height: 400px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const UserItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  background-color: rgba(255, 255, 255, 0.5);
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.8);
-  }
-`;
-
-const UserIcon = styled.div`
-  font-size: 24px;
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const UserName = styled.p`
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #333;
-`;
-
-const UserEmail = styled.p`
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
   font-size: 0.75rem;
-  color: #777;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.15);
+  }
 `;
 
 const LoadingText = styled.p`
@@ -551,24 +352,6 @@ const EmptyText = styled.p`
   color: #999;
   text-align: center;
   padding: 24px;
-`;
-
-const CheerButton = styled.button`
-  width: 100%;
-  max-width: 400px;
-  padding: 16px;
-  border-radius: 12px;
-  background-color: #333;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #555;
-  }
 `;
 
 const ModalOverlay = styled.div`
