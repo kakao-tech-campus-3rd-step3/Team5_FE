@@ -128,7 +128,7 @@ const FeedbackPage = () => {
   console.log('followUp 값:', followUp);
 
   // 꼬리 질문 훅 분리(창목)
-  const { followUpQuestion, handleRequestFollowUp } = useFollowUpQuestion(id);
+  const { followUpQuestion, followedQLoading, handleRequestFollowUp } = useFollowUpQuestion(id);
 
   const question = data?.question;
 
@@ -248,7 +248,10 @@ const FeedbackPage = () => {
 
       {/* TODO: 테스트 해보기(창목) */}
       {!followUp && (
-        <QButton onClick={handleRequestFollowUp}>
+        <QButton
+          onClick={handleRequestFollowUp}
+          disabled={followedQLoading || followUpQuestion !== null}
+        >
           {followUpQuestion === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
         </QButton>
       )}

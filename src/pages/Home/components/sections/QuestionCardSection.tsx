@@ -27,14 +27,10 @@ const QuestionCardSection = ({ answerState, question }: QuestionCardSectionProps
       <QuestionCard>
         <QuestionGlassCard>
           {answerState === 'before-answer'
-            ? // 1. question.followUp이 null/undefined가 아니면 그 값을 사용하고,
-              // 2. null/undefined라면 '오늘의 질문을 확인하세요!'를 사용합니다.
-              question?.followUp
+            ? question?.followUp
               ? '꼬리 질문을 확인하세요'
               : '오늘의 질문을 확인하세요!'
-            : // answerState가 'before-answer'가 아니면(e.g., 'answering')
-              // question.questionText를 보여줍니다.
-              question.questionText}
+            : question.questionText}
         </QuestionGlassCard>
       </QuestionCard>
     </section>
@@ -52,7 +48,6 @@ const QuestionCard = styled.div`
 `;
 
 const QuestionGlassCard = styled.div`
-  /* 글래스모피즘 핵심 효과 */
   background: linear-gradient(
     135deg,
     ${({ theme }) => theme.colors.primary} 0%,
@@ -61,17 +56,14 @@ const QuestionGlassCard = styled.div`
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
 
-  /* 다층 그림자 효과 */
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
     inset 0 -1px 0 rgba(255, 255, 255, 0.2);
 
-  /* 경계선 */
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.5);
 
-  /* 레이아웃 */
   width: 100%;
   height: 100%;
   color: #ffffff;
@@ -81,13 +73,11 @@ const QuestionGlassCard = styled.div`
   justify-content: center;
   padding: 24px;
 
-  /* 타이포그래피 */
   font-size: ${({ theme }) => theme.typography.fontSizes.h4};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   text-align: center;
   line-height: 1.6;
 
-  /* 호버 효과 */
   transition: all 0.3s ease;
 
   &:hover {
