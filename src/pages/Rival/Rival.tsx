@@ -87,11 +87,6 @@ const RivalPage = () => {
     }
   };
 
-  const handleNavigateToDetail = (userId: number) => {
-    closeModal();
-    navigate(generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: userId.toString() }));
-  };
-
   const handleRemoveRival = async (userId: number) => {
     if (!window.confirm('정말로 이 라이벌을 제거할까요?')) return;
     try {
@@ -133,12 +128,6 @@ const RivalPage = () => {
               {modalMessage && <ModalMessage>{modalMessage}</ModalMessage>}
             </ModalBody>
             <ModalActions>
-              <ModalButton
-                type="button"
-                onClick={() => handleNavigateToDetail(modalProfile.userId)}
-              >
-                상세 보기
-              </ModalButton>
               <PrimaryModalButton type="button" disabled={isAddingRival} onClick={handleAddRival}>
                 {isAddingRival ? '등록 중...' : '라이벌로 등록'}
               </PrimaryModalButton>
@@ -465,32 +454,11 @@ const ModalMessage = styled.p`
 `;
 
 const ModalActions = styled.div`
-  display: flex;
-  gap: 12px;
   margin-top: 4px;
 `;
 
-const ModalButton = styled.button`
-  flex: 1;
-  border-radius: 12px;
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  color: #374151;
-  font-weight: 600;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
-
-  &:hover {
-    background: #f9fafb;
-    transform: translateY(-1px);
-  }
-`;
-
 const PrimaryModalButton = styled.button<{ disabled?: boolean }>`
-  flex: 1;
+  width: 100%;
   border-radius: 12px;
   border: none;
   background: ${({ disabled }) => (disabled ? '#9ca3af' : '#2563eb')};
