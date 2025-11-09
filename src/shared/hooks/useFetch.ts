@@ -4,7 +4,7 @@ import apiClient from '../../api/apiClient';
 
 import type { AxiosRequestConfig } from 'axios';
 
-const useFetch = <T>(url: string, options?: AxiosRequestConfig) => {
+const useFetch = <T>(url: string | null, options?: AxiosRequestConfig) => {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const optionsString = JSON.stringify(options);

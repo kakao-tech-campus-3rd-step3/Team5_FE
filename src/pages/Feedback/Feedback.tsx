@@ -3,9 +3,8 @@ import { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Lottie from 'lottie-react';
 import { Heart } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
-import apiClient from '../../api/apiClient';
 import LoadingAnimation from '../../assets/lottie/loading3.json';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
@@ -15,6 +14,8 @@ import { theme } from '../../styles/theme';
 
 import Card from './components/Card';
 import LevelModal from './components/LevelModal';
+import FeedbackMemo from '../../shared/components/Feedback/FeedbackMemo';
+import useFollowUpQuestion from './hooks/useFollowUpQuestion';
 
 export interface Question {
   questionId: number;
@@ -62,19 +63,10 @@ export interface Feedback {
   updatedAt: string;
 }
 
-interface IFollowUpPayload {
-  message: string;
-  generatedCount: number;
-}
-interface IFollowUpResponse {
-  nextQuestionId: number;
-  questionText: string;
-  // ... 기타 응답 필드
-}
-
 const FeedbackPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  if (!id) return <Navigate to={ROUTE_PATH.HOME} replace />;
 
   // id가 유효한지 엄격하게 확인
   // :id, undefined, 빈 문자열, 숫자가 아닌 문자열 모두 제외
@@ -130,50 +122,15 @@ const FeedbackPage = () => {
   const { data: feedback } = useFetch<Feedback>(feedbackUrl);
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerUrl);
   console.log('FeedbackPage API 응답 데이터:', data);
+
+  // 꼬리 질문 여부(창목)
   const followUp = data?.followUp;
   console.log('followUp 값:', followUp);
 
-  // 꼬리 질문
-  const [followedQ, setFollowedQ] = useState<IFollowUpResponse | null>(null);
-  const [followedQLoading, setFollowedQLoading] = useState(false);
-  console.log(followedQ);
-  console.log(followedQLoading);
-
-  const [answer, setAnswer] = useState('');
-
-  const handleRequestFollowUp = async () => {
-    const payload: IFollowUpPayload = {
-      message: answer,
-      generatedCount: 1,
-    };
-
-    setFollowedQLoading(true);
-
-    try {
-      const response = await apiClient.post<IFollowUpResponse>(
-        `api/questions/followUp/${id}`,
-        payload
-      );
-
-      setFollowedQ(response.data);
-      console.log('요청 성공:', response.data);
-      setAnswer('');
-    } catch (err) {
-      console.error('요청 실패:', err);
-    } finally {
-      setFollowedQLoading(false);
-    }
-  };
-  // handleRequestFollowUp();
+  // 꼬리 질문 훅 분리(창목)
+  const { followUpQuestion, handleRequestFollowUp } = useFollowUpQuestion(id);
 
   const question = data?.question;
-
-  const [memoContent, setMemoContent] = useState('');
-  useEffect(() => {
-    if (data?.memo !== undefined && data.memo !== memoContent) {
-      setMemoContent(data.memo || ''); // null이면 빈 문자열로 처리
-    }
-  }, [data?.memo, memoContent]);
 
   const [isStarred, setIsStarred] = useState<boolean | undefined>();
   useEffect(() => {
@@ -210,17 +167,6 @@ const FeedbackPage = () => {
     } catch (e) {
       alert('난이도 저장에 실패했습니다.');
       setIsLevelModalOpen(false);
-    }
-  };
-
-  const handleSaveMemo = async () => {
-    const payload: AnswerPayload = { memo: memoContent };
-    try {
-      await patchData(payload);
-      alert('메모가 저장되었습니다.');
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
-      alert('메모 저장에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -298,26 +244,12 @@ const FeedbackPage = () => {
         </Card>
       </SectionContainer>
 
-      <SectionContainer>
-        <Title>메모</Title>
-        <Card>
-          <MemoCardContent>
-            <MemoTextArea
-              value={memoContent}
-              onChange={(e) => setMemoContent(e.target.value)}
-              placeholder="메모를 작성해주세요."
-            />
-            <MemoSaveButton type="button" onClick={handleSaveMemo} disabled={false}>
-              메모 저장
-            </MemoSaveButton>
-          </MemoCardContent>
-        </Card>
-      </SectionContainer>
+      <FeedbackMemo id={id} memo={data?.memo} />
 
-      {/* TODO: 테스트 해보기 */}
+      {/* TODO: 테스트 해보기(창목) */}
       {!followUp && (
         <QButton onClick={handleRequestFollowUp}>
-          {followedQ === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
+          {followUpQuestion === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
         </QButton>
       )}
 
@@ -444,27 +376,6 @@ const CardListItem = styled.li`
   }
 `;
 
-const MemoTextArea = styled.textarea`
-  width: 90%;
-  min-height: 120px;
-  padding: ${({ theme }) => theme.space.space16};
-  border-radius: ${({ theme }) => theme.radius.radius8};
-  font-size: ${({ theme }) => theme.typography.fontSizes.body};
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.text};
-  }
-
-  @media (max-width: 768px) {
-    width: 100%; /* ◀ 카드 안쪽 꽉 채우기 */
-    box-sizing: border-box;
-    font-size: ${({ theme }) => theme.typography.fontSizes.small};
-    min-height: 100px;
-  }
-`;
-
 const FilterWrapper = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.space.space8};
@@ -486,26 +397,6 @@ const InfoWrapper = styled.div`
   gap: ${({ theme }) => theme.space.space16};
   align-items: center;
   justify-content: center;
-`;
-
-const MemoSaveButton = styled(SharedButton)`
-  width: 90%;
-  margin-top: ${({ theme }) => theme.space.space16};
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
-
-const MemoCardContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  height: 90%; /* ◀ Card의 높이를 꽉 채움 */
-
-  padding: ${({ theme }) => theme.space.space24};
-  box-sizing: border-box;
 `;
 
 const AIFeedbackWrapper = styled.div`

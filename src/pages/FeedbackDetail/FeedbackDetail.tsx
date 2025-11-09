@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
-
 import styled from '@emotion/styled';
 import { Heart, Star } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
-
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ROUTE_PATH } from '../../routes/routePath';
-import useFetch from '../../shared/hooks/useFetch';
-import usePatch from '../../shared/hooks/usePatch';
 import SharedButton from '../../shared/ui/SharedButton';
 import { theme } from '../../styles/theme';
 import Card from '../Feedback/components/Card';
+import useAnswers from './hooks/useAnswers';
+import usePatch from '../../shared/hooks/usePatch';
+import useStarred from './hooks/useStarred';
+import useLevel from './hooks/useLevel';
+import FeedbackMemo from '../../shared/components/Feedback/FeedbackMemo';
 
 export interface Question {
   questionId: number;
@@ -40,101 +40,41 @@ export interface FeedbackDetailResponse {
   feedback: Feedback;
 }
 
-interface AnswerPayload {
+export interface AnswerPayload {
   memo?: string;
   starred?: boolean;
   level?: number;
 }
 
 const FeedbackDetailPage = () => {
-  const { id } = useParams();
-  const { data } = useFetch<FeedbackDetailResponse>(`/api/answers/${id}`);
-
-  const question = data?.question;
-  const feedback = data?.feedback;
-
-  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
-
   const navigate = useNavigate();
+  const { id } = useParams();
+  if (!id) return <Navigate to={ROUTE_PATH.ARCHIVE} replace />;
 
-  const [memoContent, setMemoContent] = useState('');
-  useEffect(() => {
-    if (data?.memo !== undefined && data.memo !== memoContent) setMemoContent(data?.memo);
-  }, [data?.memo, memoContent]);
-
-  const [isStarred, setIsStarred] = useState<boolean | undefined>();
-  useEffect(() => {
-    setIsStarred(data?.starred);
-  }, [data?.starred]);
+  const { question, feedback, memo, starred = false, level = 0, answerText } = useAnswers(id);
+  const { patchData } = usePatch<AnswerPayload, AnswerPayload>(`/api/answers/${id}`);
+  const { isStarred, handleStarredChange } = useStarred({ starred, patchData });
+  const { questionLevel, handleLevelChange } = useLevel({ level, patchData });
 
   const handleArchiveClick = () => {
     navigate(ROUTE_PATH.ARCHIVE);
   };
 
-  const handleSaveMemo = async () => {
-    const payload: AnswerPayload = {
-      memo: memoContent,
-    };
-
-    try {
-      const responseData = await patchData(payload);
-      alert(`수정 완료: ${responseData.memo}`);
-    } catch (error) {
-      alert('수정 실패');
-      console.error(error);
-    }
-  };
-
-  const handleStarredChange = async (starred: boolean) => {
-    const payload: AnswerPayload = {
-      starred: starred,
-    };
-
-    try {
-      await patchData(payload);
-      setIsStarred(starred);
-    } catch (error) {
-      alert('저장 실패');
-      console.error(error);
-    }
-  };
-
-  const [level, setLevel] = useState<number>(data?.level || 0);
-  useEffect(() => {
-    if (data?.level !== undefined) {
-      setLevel(data?.level);
-    }
-  }, [data?.level]);
-  const handleLevelChange = async (level: number) => {
-    const payload: AnswerPayload = {
-      level: level,
-    };
-
-    try {
-      await patchData(payload);
-      setLevel(level);
-    } catch (error) {
-      alert('저장 실패');
-      console.error(error);
-    }
-  };
-
-  if (!data || !question || !feedback) return null;
   return (
     <Wrapper>
       <SectionContainer>
-        <QuestionText>{question.questionText}</QuestionText>
+        <QuestionText>{question?.questionText}</QuestionText>
       </SectionContainer>
 
       <SectionContainer>
         <InfoWrapper>
-          <FilterWrapper>{question.questionType}</FilterWrapper>
+          <FilterWrapper>{question?.questionType}</FilterWrapper>
           <FilterWrapper>
             {[1, 2, 3, 4, 5].map((starIndex) => (
               <StyledStar
                 key={starIndex}
                 onClick={() => handleLevelChange(starIndex)}
-                fill={starIndex <= level ? '#FFD700' : 'none'}
+                fill={starIndex <= questionLevel ? '#FFD700' : 'none'}
                 color="#FFD700"
               />
             ))}
@@ -148,7 +88,7 @@ const FeedbackDetailPage = () => {
       <SectionContainer>
         <Title>나의 답변</Title>
         <Card>
-          <CardParagraph>{data.answerText}</CardParagraph>
+          <CardParagraph>{answerText}</CardParagraph>
         </Card>
       </SectionContainer>
 
@@ -177,21 +117,7 @@ const FeedbackDetailPage = () => {
         </Card>
       </SectionContainer>
 
-      <SectionContainer>
-        <Title>메모</Title>
-        <Card>
-          <MemoCardContent>
-            <MemoTextArea
-              value={memoContent}
-              onChange={(e) => setMemoContent(e.target.value)}
-              placeholder="메모를 작성해주세요."
-            />
-            <MemoSaveButton type="button" onClick={handleSaveMemo} disabled={false}>
-              메모 저장
-            </MemoSaveButton>
-          </MemoCardContent>
-        </Card>
-      </SectionContainer>
+      <FeedbackMemo id={id} memo={memo} />
 
       <SharedButton type="button" onClick={handleArchiveClick} disabled={false}>
         아카이브로 이동
@@ -261,20 +187,6 @@ const CardListItem = styled.li`
   }
 `;
 
-const MemoTextArea = styled.textarea`
-  width: 90%;
-  min-height: 120px;
-  padding: ${({ theme }) => theme.space.space16};
-  border-radius: ${({ theme }) => theme.radius.radius8};
-  font-size: ${({ theme }) => theme.typography.fontSizes.body};
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
 const FilterWrapper = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.space.space8};
@@ -298,35 +210,9 @@ const InfoWrapper = styled.div`
   justify-content: center;
 `;
 
-// const StarRatingContainer = styled.div`
-//   display: flex;
-//   align-items: center;
-//   gap: 4px;
-// `;
-
 const StyledStar = styled(Star)`
   cursor: pointer;
   transition: all 0.1s ease-in-out;
-`;
-
-const MemoSaveButton = styled(SharedButton)`
-  width: 90%;
-  margin-top: ${({ theme }) => theme.space.space16};
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
-
-const MemoCardContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  height: 90%; /* ◀ Card의 높이를 꽉 채움 */
-
-  padding: ${({ theme }) => theme.space.space24};
-  box-sizing: border-box;
 `;
 
 const AIFeedbackWrapper = styled.div`
