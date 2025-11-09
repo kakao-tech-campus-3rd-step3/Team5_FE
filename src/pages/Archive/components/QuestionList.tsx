@@ -99,6 +99,7 @@ const ListItem = styled.li`
   cursor: pointer;
 
   // TODO: 스타일링 수정 배포 후 확인 필요
+  padding: ${({ theme }) => theme.space.space8};
   background-color: rgba(255, 255, 255, 0.08);
   backdrop-filter: ${({ theme }) => theme.blurs.blur4};
   border-radius: ${({ theme }) => theme.radius.radius24};
