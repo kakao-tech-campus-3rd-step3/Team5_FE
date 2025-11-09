@@ -21,6 +21,8 @@ export const typography = {
     h2: '1.5rem',
     /** 21px */
     h3: '1.3125rem',
+    /** 18px */
+    h4: '1.125rem',
     /** 16px */
     body: '1rem',
   },

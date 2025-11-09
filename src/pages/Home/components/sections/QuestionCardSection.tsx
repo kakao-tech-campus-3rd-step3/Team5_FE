@@ -82,7 +82,7 @@ const QuestionGlassCard = styled.div`
   padding: 24px;
 
   /* 타이포그래피 */
-  font-size: ${({ theme }) => theme.typography.fontSizes.h3};
+  font-size: ${({ theme }) => theme.typography.fontSizes.h4};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   text-align: center;
   line-height: 1.6;
