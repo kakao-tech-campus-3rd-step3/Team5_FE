@@ -11,7 +11,7 @@ const useFeedbackMemo = ({ memo, patchData }: useFeedbackMemoProps) => {
 
   useEffect(() => {
     if (memo !== undefined && memo !== memoContent) setMemoContent(memo);
-  }, [memo, memoContent]);
+  }, [memo]);
 
   const handleSaveMemo = async () => {
     const payload: AnswerPayload = {
