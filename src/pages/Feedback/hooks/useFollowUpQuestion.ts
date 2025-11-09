@@ -13,8 +13,6 @@ interface IFollowUpResponse {
 const useFollowUpQuestion = (id: string) => {
   const [followUpQuestion, setFollowUpQuestion] = useState<IFollowUpResponse | null>(null);
   const [followedQLoading, setFollowedQLoading] = useState(false);
-  console.log(followUpQuestion);
-  console.log(followedQLoading);
 
   const [answer, setAnswer] = useState('');
 
