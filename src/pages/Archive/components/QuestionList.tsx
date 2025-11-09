@@ -105,6 +105,19 @@ const ListItem = styled.li`
   border-radius: ${({ theme }) => theme.radius.radius24};
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
 `;
 
 const LottieWrapper = styled.div`
