@@ -140,14 +140,13 @@ const RivalPage = () => {
               {modalMessage && <ModalMessage>{modalMessage}</ModalMessage>}
             </ModalBody>
             <ModalActions>
-              <ModalButton type="button" onClick={() => handleNavigateToDetail(modalProfile.userId)}>
+              <ModalButton
+                type="button"
+                onClick={() => handleNavigateToDetail(modalProfile.userId)}
+              >
                 상세 보기
               </ModalButton>
-              <PrimaryModalButton
-                type="button"
-                disabled={isAddingRival}
-                onClick={handleAddRival}
-              >
+              <PrimaryModalButton type="button" disabled={isAddingRival} onClick={handleAddRival}>
                 {isAddingRival ? '등록 중...' : '라이벌로 등록'}
               </PrimaryModalButton>
             </ModalActions>
@@ -171,7 +170,9 @@ const RivalPage = () => {
               <FriendCard
                 key={user.userId}
                 onClick={() =>
-                  navigate(generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() }))
+                  navigate(
+                    generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() })
+                  )
                 }
               >
                 <FriendIcon>👤</FriendIcon>
@@ -227,10 +228,7 @@ const RivalPage = () => {
               {activeTab === 'following' ? (
                 followingList && followingList.length > 0 ? (
                   followingList.map((user) => (
-                    <UserItem
-                      key={user.userId}
-                      onClick={() => handleNavigateToDetail(user.userId)}
-                    >
+                    <UserItem key={user.userId} onClick={() => handleNavigateToDetail(user.userId)}>
                       <UserIcon>👤</UserIcon>
                       <UserInfo>
                         <UserName>{user.name}</UserName>
@@ -698,7 +696,9 @@ const ModalButton = styled.button`
   font-weight: 600;
   padding: 12px 16px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     background: #f9fafb;
@@ -715,7 +715,9 @@ const PrimaryModalButton = styled.button<{ disabled?: boolean }>`
   font-weight: 700;
   padding: 12px 16px;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     background: ${({ disabled }) => (disabled ? '#9ca3af' : '#1d4ed8')};
