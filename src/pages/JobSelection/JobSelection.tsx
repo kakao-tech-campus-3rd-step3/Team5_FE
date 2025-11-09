@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import styled from '@emotion/styled';
 
@@ -12,6 +12,8 @@ import JobDetailSelectionPage from '../JobDetailSelection/JobDetailSelection';
 const JobSelectionPage = () => {
   const [selectedJob, setSelectedJob] = useState('');
   const [step, setStep] = useState(1);
+  const [toastMessage, setToastMessage] = useState('');
+  const toastTimerRef = useRef<number | null>(null);
 
   const jobs = [
     { id: 'IT', label: 'IT' },
@@ -19,7 +21,31 @@ const JobSelectionPage = () => {
     { id: 'BROADCASTING', label: '방송' },
   ];
 
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastMessage('');
+      toastTimerRef.current = null;
+    }, 2000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleJobSelect = (jobId: string) => {
+    if (jobId !== 'IT') {
+      showToast('해당 직군은 추후 구현 예정입니다.');
+      return;
+    }
+
     setSelectedJob(jobId);
     setStep(2);
   };
@@ -62,6 +88,8 @@ const JobSelectionPage = () => {
           ))}
         </JobList>
       </Card>
+
+      {toastMessage && <Toast>{toastMessage}</Toast>}
     </Wrapper>
   );
 };
@@ -136,4 +164,21 @@ const JobButton = styled.button<{ isSelected: boolean }>`
   &:active {
     transform: translateY(1px);
   }
+`;
+
+const Toast = styled.div`
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  background: rgba(51, 51, 51, 0.9);
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  z-index: 1000;
 `;
