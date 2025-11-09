@@ -40,7 +40,7 @@ const Wrapper = styled.div`
 `;
 
 const Text = styled.h2`
-  font-size: ${({ theme }) => theme.typography.fontSizes.h3};
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   color: ${({ theme }) => theme.colors.textBrown};
   margin-bottom: ${({ theme }) => theme.space.space16};
