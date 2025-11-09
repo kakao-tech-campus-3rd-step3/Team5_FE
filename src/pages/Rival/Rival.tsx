@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
 import { generatePath, useNavigate } from 'react-router-dom';
 
-import { searchRival, getRivalProfile, getFollowingList, addRival } from '../../api/rivals';
+import { searchRival, getRivalProfile, getFollowingList, addRival, deleteRival } from '../../api/rivals';
 import { ROUTE_PATH } from '../../routes/routePath';
 
 import type { RivalProfileResponse, RivalSearchResponse, RivalUserItem } from '../../api/rivals';
@@ -92,6 +92,17 @@ const RivalPage = () => {
     navigate(generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: userId.toString() }));
   };
 
+  const handleRemoveRival = async (userId: number) => {
+    if (!window.confirm('정말로 이 라이벌을 제거할까요?')) return;
+    try {
+      await deleteRival(userId);
+      await loadMyFollowing();
+    } catch (error) {
+      console.error('라이벌 제거 실패:', error);
+      alert('라이벌 제거에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
   return (
     <>
       {isModalOpen && modalProfile && (
@@ -149,19 +160,24 @@ const RivalPage = () => {
         <MyFollowingGrid>
           {myFollowingList && myFollowingList.length > 0 ? (
             myFollowingList.map((user) => (
-              <FriendCard
-                key={user.userId}
-                onClick={() =>
-                  navigate(
-                    generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() })
-                  )
-                }
-              >
-                <FriendIcon>👤</FriendIcon>
-                <FriendInfo>
-                  <FriendName>{user.name}</FriendName>
-                  <FriendEmail>{user.email}</FriendEmail>
-                </FriendInfo>
+              <FriendCard key={user.userId}>
+                <FriendContent
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      generatePath(ROUTE_PATH.RIVAL_DETAIL, { userId: user.userId.toString() })
+                    )
+                  }
+                >
+                  <FriendIcon>👤</FriendIcon>
+                  <FriendInfo>
+                    <FriendName>{user.name}</FriendName>
+                    <FriendEmail>{user.email}</FriendEmail>
+                  </FriendInfo>
+                </FriendContent>
+                <RemoveButton type="button" onClick={() => handleRemoveRival(user.userId)}>
+                  제거
+                </RemoveButton>
               </FriendCard>
             ))
           ) : (
@@ -223,13 +239,10 @@ const FriendCard = styled.div`
   background-color: rgba(255, 255, 255, 0.6);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border-radius: 16px;
-  padding: 16px;
+  padding: 12px 12px 12px 16px;
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
   width: 100%;
   position: relative;
   overflow: hidden;
@@ -272,6 +285,21 @@ const FriendCard = styled.div`
   }
 `;
 
+const FriendContent = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &:focus {
+    outline: none;
+  }
+`;
+
 const FriendIcon = styled.div`
   font-size: 32px;
 `;
@@ -295,6 +323,22 @@ const FriendEmail = styled.p`
   font-size: 0.75rem;
   color: #777;
   word-break: break-all;
+`;
+
+const RemoveButton = styled.button`
+  border: none;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.15);
+  }
 `;
 
 const LoadingText = styled.p`
