@@ -1268,12 +1268,16 @@ const RecordAnswer = ({
 
       // 에러 타입별 상세 메시지
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        errorMsg = '마이크 접근 권한이 거부되었습니다. 브라우저 설정에서 마이크 권한을 허용해주세요.';
+        errorMsg =
+          '마이크 접근 권한이 거부되었습니다. 브라우저 설정에서 마이크 권한을 허용해주세요.';
       } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
         errorMsg = '마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.';
       } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
         errorMsg = '마이크에 접근할 수 없습니다. 다른 애플리케이션에서 사용 중일 수 있습니다.';
-      } else if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+      } else if (
+        err.name === 'OverconstrainedError' ||
+        err.name === 'ConstraintNotSatisfiedError'
+      ) {
         errorMsg = '요청한 오디오 설정을 지원하지 않습니다.';
       } else if (err.name === 'SecurityError') {
         errorMsg =
