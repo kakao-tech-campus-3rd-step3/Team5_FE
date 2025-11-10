@@ -50,6 +50,13 @@ const JobDetailSelectionPage = ({ selectedJob, onNext }: JobDetailSelectionPageP
 
   const handleNext = () => {
     onNext(selectedDetail);
+    const userInfo = {
+      job: {
+        main: selectedJob,
+        sub: selectedDetail,
+      },
+    };
+    localStorage.setItem('userInfo', JSON.stringify(userInfo));
     localStorage.setItem('isJobSelected', 'true');
     navigate(ROUTE_PATH.HOME);
   };
