@@ -33,27 +33,15 @@ const MyPage = () => {
 
   const { data } = useFetch<UserSummary>(profileApiUrl);
 
-  const getTodayString = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  };
-
-  const todayString = getTodayString();
-  const todayData = data?.dailySolveCounts?.find((d) => d.date === todayString);
-  const todayCount = todayData?.count || 0;
-
   if (!data) {
     return null;
   }
   return (
     <Wrapper>
-      <SearchBar placeholder="🔍" />
-
       <ProfileCard>
         <ProfileIcon>👤</ProfileIcon>
         <ProfileInfo>
           <Nickname>{data?.name}</Nickname>
-          <div>{todayCount} 개</div>
         </ProfileInfo>
       </ProfileCard>
 

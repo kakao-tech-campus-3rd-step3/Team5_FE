@@ -22,15 +22,6 @@ const RivalDetail = () => {
   const { userId } = useParams<{ userId: string }>();
   const { data } = useFetch<UserSummary>(`/api/rivals/${userId}/profile`);
 
-  const getTodayString = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  };
-
-  const todayString = getTodayString();
-  const todayData = data?.dailySolveCounts?.find((d) => d.date === todayString);
-  const todayCount = todayData?.count || 0;
-
   if (!data) {
     return null;
   }
@@ -42,7 +33,6 @@ const RivalDetail = () => {
         <ProfileIcon>👤</ProfileIcon>
         <ProfileInfo>
           <Nickname>{data?.name}</Nickname>
-          <div>{todayCount} 개</div>
         </ProfileInfo>
       </ProfileCard>
 
