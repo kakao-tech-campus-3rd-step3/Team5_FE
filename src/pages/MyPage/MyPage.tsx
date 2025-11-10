@@ -84,19 +84,6 @@ const Wrapper = styled.div`
   gap: 24px;
 `;
 
-const SearchBar = styled.input`
-  width: 100%;
-  max-width: 400px;
-  padding: 12px 16px;
-  border-radius: 100px;
-  border: 1px solid rgb(117, 117, 117);
-  font-size: 1rem;
-
-  &::placeholder {
-    color: hsl(0, 0%, 0%);
-  }
-`;
-
 const cardBaseStyles = css`
   background-color: rgba(255, 255, 255, 0.6);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
