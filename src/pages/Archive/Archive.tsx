@@ -82,6 +82,7 @@ const SectionFirst = styled.section`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  touch-action: pan-y;
 `;
 
 const SectionSecond = styled.section`
