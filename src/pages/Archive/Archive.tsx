@@ -101,6 +101,10 @@ const ButtonWrapper = styled.div`
   bottom: 110px;
   left: 50%;
   transform: translate(-50%, -50%);
+
+  @media (max-width: 768px) {
+    bottom: 170px;
+  }
 `;
 
 const ScrollButton = styled.button`

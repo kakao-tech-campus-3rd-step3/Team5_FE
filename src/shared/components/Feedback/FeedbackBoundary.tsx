@@ -11,7 +11,7 @@ interface FeedbackBoundaryProps {
 }
 
 const FeedbackBoundary = ({ data, children }: FeedbackBoundaryProps) => {
-  const isLoading = !data;
+  const isLoading = data === null || data === undefined;
 
   if (isLoading) {
     return (
