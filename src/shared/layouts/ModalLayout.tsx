@@ -19,5 +19,4 @@ export default ModalLayout;
 const Wrapper = styled.main`
   height: auto;
   background: ${({ theme }) => theme.colors.backgroundGradient};
-  padding-bottom: ${({ theme }) => theme.space.space128};
 `;
