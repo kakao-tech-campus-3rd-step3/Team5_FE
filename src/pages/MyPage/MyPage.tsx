@@ -42,7 +42,9 @@ const MyPage = () => {
       <ProfileCard>
         <ProfileIcon>👤</ProfileIcon>
         <ProfileInfo>
+          <FeedbackBoundary data={data?.streak}>
           <Nickname>{data?.name}</Nickname>
+          </FeedbackBoundary>
         </ProfileInfo>
       </ProfileCard>
 
@@ -62,7 +64,8 @@ const MyPage = () => {
       </StatsContainer>
 
       <StreakCard>
-        <FeedbackBoundary data={data}>
+        {/* UserSummary */}
+        <FeedbackBoundary data={data?.totalAnswerCount}>
           <StreakSection data={data} />
         </FeedbackBoundary>
       </StreakCard>
@@ -77,7 +80,7 @@ export default MyPage;
 const Wrapper = styled.div`
   min-height: 100vh;
   padding: 24px;
-  padding-bottom: calc(24px + 65px + 20px);
+  padding-bottom: calc(24px + 65px + 20px); /* 네비게이션 바 높이(65px) + 여유 공간(20px) */
   display: flex;
   flex-direction: column;
   align-items: center;
