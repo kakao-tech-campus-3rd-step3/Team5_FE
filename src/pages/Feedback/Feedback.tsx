@@ -61,6 +61,7 @@ export interface Feedback {
   status: string; // "PENDING", "COMPLETED" 등
   content: FeedbackContent;
   updatedAt: string;
+  followUp: boolean;
 }
 
 const FeedbackPage = () => {
@@ -124,8 +125,7 @@ const FeedbackPage = () => {
   console.log('FeedbackPage API 응답 데이터:', data);
 
   // 꼬리 질문 여부(창목)
-  const followUp = data?.followUp;
-  console.log('followUp 값:', followUp);
+  console.log('followUp 값:', feedback?.followUp);
 
   // 꼬리 질문 훅 분리(창목)
   const { followUpQuestion, followedQLoading, handleRequestFollowUp } = useFollowUpQuestion(id);
@@ -247,7 +247,7 @@ const FeedbackPage = () => {
       <FeedbackMemo id={id} memo={data?.memo} />
 
       {/* TODO: 테스트 해보기(창목) */}
-      {!followUp && (
+      {!feedback?.followUp && (
         <QButton
           onClick={handleRequestFollowUp}
           disabled={followedQLoading || followUpQuestion !== null}
