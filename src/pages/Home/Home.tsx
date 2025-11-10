@@ -149,7 +149,7 @@ const HomePage = () => {
         </GridWrapper>
         <ContentCard>
           <span>DailyQ 모의 면접</span>
-          <GlassBackground>질문을 모두 소진하셨습니다</GlassBackground>
+          <GlassBackground>다음날 오전 9시에 새로운 질문이 생성됩니다</GlassBackground>
         </ContentCard>
       </Wrapper>
     );
