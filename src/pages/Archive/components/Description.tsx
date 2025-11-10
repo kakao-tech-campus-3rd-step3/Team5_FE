@@ -17,14 +17,14 @@ const DescriptionWrapper = styled.div`
   align-items: center;
 `;
 
-const Title = styled.h1`
-  font-size: ${({ theme }) => theme.typography.fontSizes.h1};
+const Title = styled.h2`
+  font-size: ${({ theme }) => theme.typography.fontSizes.h2};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
   margin-bottom: ${({ theme }) => theme.space.space8};
 `;
 
-const SubTitle = styled.h2`
-  font-size: ${({ theme }) => theme.typography.fontSizes.h3};
+const SubTitle = styled.h4`
+  font-size: ${({ theme }) => theme.typography.fontSizes.body};
   font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-  margin-bottom: ${({ theme }) => theme.space.space64};
+  margin-bottom: ${({ theme }) => theme.space.space24};
 `;

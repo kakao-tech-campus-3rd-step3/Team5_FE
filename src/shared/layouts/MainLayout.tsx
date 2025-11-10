@@ -19,4 +19,5 @@ export default MainLayout;
 const Wrapper = styled.main`
   background: ${({ theme }) => theme.colors.background};
   height: 100%;
+  padding-bottom: ${({ theme }) => theme.space.space128};
 `;

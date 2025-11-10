@@ -10,6 +10,7 @@ import usePatch from '../../shared/hooks/usePatch';
 import useStarred from './hooks/useStarred';
 import useLevel from './hooks/useLevel';
 import FeedbackMemo from '../../shared/components/Feedback/FeedbackMemo';
+import FeedbackBoundary from '../../shared/components/Feedback/FeedbackBoundary';
 
 export interface Question {
   questionId: number;
@@ -88,7 +89,9 @@ const FeedbackDetailPage = () => {
       <SectionContainer>
         <Title>나의 답변</Title>
         <Card>
-          <CardParagraph>{answerText}</CardParagraph>
+          <FeedbackBoundary data={answerText}>
+            <CardParagraph>{answerText}</CardParagraph>
+          </FeedbackBoundary>
         </Card>
       </SectionContainer>
 
@@ -97,22 +100,24 @@ const FeedbackDetailPage = () => {
 
         <Card>
           <AIFeedbackWrapper>
-            <div>
-              <CardTitle>좋은 점</CardTitle>
-              <CardList>
-                {feedback?.content.positivePoints.map((point, index) => (
-                  <CardListItem key={index}>{point}</CardListItem>
-                ))}
-              </CardList>
-            </div>
-            <div>
-              <CardTitle>개선 점</CardTitle>
-              <CardList>
-                {feedback?.content.pointsForImprovement.map((point, index) => (
-                  <CardListItem key={index}>{point}</CardListItem>
-                ))}
-              </CardList>
-            </div>
+            <FeedbackBoundary data={feedback}>
+              <div>
+                <CardTitle>좋은 점</CardTitle>
+                <CardList>
+                  {feedback?.content.positivePoints.map((point, index) => (
+                    <CardListItem key={index}>{point}</CardListItem>
+                  ))}
+                </CardList>
+              </div>
+              <div>
+                <CardTitle>개선 점</CardTitle>
+                <CardList>
+                  {feedback?.content.pointsForImprovement.map((point, index) => (
+                    <CardListItem key={index}>{point}</CardListItem>
+                  ))}
+                </CardList>
+              </div>
+            </FeedbackBoundary>
           </AIFeedbackWrapper>
         </Card>
       </SectionContainer>
