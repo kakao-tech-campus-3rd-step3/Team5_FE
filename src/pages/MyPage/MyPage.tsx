@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 import useFetch from '../../shared/hooks/useFetch';
 
 import StreakSection from './StreakSection';
+import FeedbackBoundary from '../../shared/components/Feedback/FeedbackBoundary';
 
 export interface DailySolveCount {
   date: string;
@@ -48,16 +49,22 @@ const MyPage = () => {
       <StatsContainer>
         <StatCard>
           <StatLabel>현재 스트릭</StatLabel>
-          <StatContent>{data?.streak} days +</StatContent>
+          <FeedbackBoundary data={data?.streak}>
+            <StatContent>{data?.streak} days +</StatContent>
+          </FeedbackBoundary>
         </StatCard>
         <StatCard>
           <StatLabel>답변한 질문 개수</StatLabel>
-          <StatContent>{data?.totalAnswerCount}</StatContent>
+          <FeedbackBoundary data={data?.totalAnswerCount}>
+            <StatContent>{data?.totalAnswerCount}</StatContent>
+          </FeedbackBoundary>
         </StatCard>
       </StatsContainer>
 
       <StreakCard>
-        <StreakSection data={data} />
+        <FeedbackBoundary data={data}>
+          <StreakSection data={data} />
+        </FeedbackBoundary>
       </StreakCard>
 
       <CheerButton type="button">응원하기</CheerButton>
@@ -70,7 +77,7 @@ export default MyPage;
 const Wrapper = styled.div`
   min-height: 100vh;
   padding: 24px;
-  padding-bottom: calc(24px + 65px + 20px); /* 네비게이션 바 높이(65px) + 여유 공간(20px) */
+  padding-bottom: calc(24px + 65px + 20px);
   display: flex;
   flex-direction: column;
   align-items: center;
