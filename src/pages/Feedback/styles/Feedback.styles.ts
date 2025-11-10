@@ -1,6 +1,4 @@
 import styled from '@emotion/styled';
-import Lottie from 'lottie-react';
-import { Star } from 'lucide-react'; 
 
 import SharedButton from '../../../shared/ui/SharedButton';
 
@@ -181,7 +179,6 @@ export const AIFeedbackWrapper = styled.div`
   display: flex;
   flex-direction: column; /* ◀ 1. "좋은 점" 그룹과 "개선할 점" 그룹을 세로로 쌓음 */
   width: 100%;
-  /* height: 100%; */
   padding: ${({ theme }) => theme.space.space24};
   box-sizing: border-box;
 
