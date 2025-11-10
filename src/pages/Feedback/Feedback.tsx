@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Lottie from 'lottie-react';
 import { Heart } from 'lucide-react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
+import apiClient from '../../api/apiClient';
 import LoadingAnimation from '../../assets/lottie/loading3.json';
 import { ROUTE_PATH } from '../../routes/routePath';
 import useFetch from '../../shared/hooks/useFetch';
@@ -14,8 +15,7 @@ import { theme } from '../../styles/theme';
 
 import Card from './components/Card';
 import LevelModal from './components/LevelModal';
-import FeedbackMemo from '../../shared/components/Feedback/FeedbackMemo';
-import useFollowUpQuestion from './hooks/useFollowUpQuestion';
+import * as S from './styles/Feedback.styles';
 
 export interface Question {
   questionId: number;
@@ -43,7 +43,6 @@ export interface FeedbackDetailResponse {
   starred: boolean;
   createdAt: string;
   feedback: Feedback;
-  followUp: boolean;
 }
 
 interface AnswerPayload {
@@ -61,13 +60,21 @@ export interface Feedback {
   status: string; // "PENDING", "COMPLETED" 등
   content: FeedbackContent;
   updatedAt: string;
-  followUp: boolean;
+}
+
+interface IFollowUpPayload {
+  message: string;
+  generatedCount: number;
+}
+interface IFollowUpResponse {
+  nextQuestionId: number;
+  questionText: string;
+  // ... 기타 응답 필드
 }
 
 const FeedbackPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  if (!id) return <Navigate to={ROUTE_PATH.HOME} replace />;
 
   // id가 유효한지 엄격하게 확인
   // :id, undefined, 빈 문자열, 숫자가 아닌 문자열 모두 제외
@@ -119,18 +126,52 @@ const FeedbackPage = () => {
       : '(호출 안함)',
   });
 
-  const { data } = useFetch<FeedbackDetailResponse>(answerId ? `/api/answers/${answerId}` : '');
+  const { data } = useFetch<FeedbackDetailResponse>(answerUrl);
   const { data: feedback } = useFetch<Feedback>(feedbackUrl);
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(answerUrl);
   console.log('FeedbackPage API 응답 데이터:', data);
 
-  // 꼬리 질문 여부(창목)
-  console.log('followUp 값:', feedback?.followUp);
+  // 꼬리 질문
+  const [followedQ, setFollowedQ] = useState<IFollowUpResponse | null>(null);
+  const [followedQLoading, setFollowedQLoading] = useState(false);
+  console.log(followedQ);
+  console.log(followedQLoading);
 
-  // 꼬리 질문 훅 분리(창목)
-  const { followUpQuestion, followedQLoading, handleRequestFollowUp } = useFollowUpQuestion(id);
+  const [answer, setAnswer] = useState('');
+
+  const handleRequestFollowUp = async () => {
+    const payload: IFollowUpPayload = {
+      message: answer,
+      generatedCount: 1,
+    };
+
+    setFollowedQLoading(true);
+
+    try {
+      const response = await apiClient.post<IFollowUpResponse>(
+        `api/questions/followUp/${id}`,
+        payload
+      );
+
+      setFollowedQ(response.data);
+      console.log('요청 성공:', response.data);
+      setAnswer('');
+    } catch (err) {
+      console.error('요청 실패:', err);
+    } finally {
+      setFollowedQLoading(false);
+    }
+  };
+  // handleRequestFollowUp();
 
   const question = data?.question;
+
+  const [memoContent, setMemoContent] = useState('');
+  useEffect(() => {
+    if (data?.memo !== undefined && data.memo !== memoContent) {
+      setMemoContent(data.memo || ''); // null이면 빈 문자열로 처리
+    }
+  }, [data?.memo, memoContent]);
 
   const [isStarred, setIsStarred] = useState<boolean | undefined>();
   useEffect(() => {
@@ -170,6 +211,17 @@ const FeedbackPage = () => {
     }
   };
 
+  const handleSaveMemo = async () => {
+    const payload: AnswerPayload = { memo: memoContent };
+    try {
+      await patchData(payload);
+      alert('메모가 저장되었습니다.');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      alert('메모 저장에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
   const handleStarredChange = async (starred: boolean) => {
     const payload: AnswerPayload = { starred: starred };
     try {
@@ -183,78 +235,86 @@ const FeedbackPage = () => {
   console.log(question);
 
   return (
-    <Wrapper>
-      <SectionContainer>
+    <S.Wrapper>
+      <S.SectionContainer>
         {/* TODO: API 응답에 질문 텍스트가 포함되어 있는지 확인 후 연결*/}
-        <QuestionText>{question?.questionText}</QuestionText>
-      </SectionContainer>
-      <SectionContainer>
-        <InfoWrapper>
-          <FilterWrapper>{question?.questionType}</FilterWrapper>
-          <FilterWrapper onClick={() => handleStarredChange(!isStarred)}>
+        <S.QuestionText>{question?.questionText}</S.QuestionText>
+      </S.SectionContainer>
+      <S.SectionContainer>
+        <S.InfoWrapper>
+          <S.FilterWrapper>{question?.questionType}</S.FilterWrapper>
+          <S.FilterWrapper onClick={() => handleStarredChange(!isStarred)}>
             <Heart fill={isStarred ? theme.colors.secondary : 'none'} />
-          </FilterWrapper>
-        </InfoWrapper>
-      </SectionContainer>
+          </S.FilterWrapper>
+        </S.InfoWrapper>
+      </S.SectionContainer>
 
-      <SectionContainer>
-        <Title>나의 답변</Title>
+      <S.SectionContainer>
+        <S.Title>나의 답변</S.Title>
         <Card>
           {!data ? (
-            <LottieWrapper>
+            <S.LottieWrapper>
               <Lottie animationData={LoadingAnimation} loop autoplay />
-            </LottieWrapper>
+            </S.LottieWrapper>
           ) : (
-            <CardParagraph>{data.answerText}</CardParagraph>
+            <S.CardParagraph>{data.answerText}</S.CardParagraph>
           )}
         </Card>
-      </SectionContainer>
+      </S.SectionContainer>
 
-      <SectionContainer>
-        <Title>AI 분석 레포트</Title>
+      <S.SectionContainer>
+        <S.Title>AI 분석 레포트</S.Title>
         <Card>
           {!feedback || feedback.status === 'PENDING' ? (
-            <LottieWrapper>
+            <S.LottieWrapper>
               <Lottie animationData={LoadingAnimation} loop autoplay />
-            </LottieWrapper>
+            </S.LottieWrapper>
           ) : (
-            <AIFeedbackWrapper>
+            <S.AIFeedbackWrapper>
               {feedback.content.positivePoints.length > 0 && (
                 <div>
-                  <CardTitle>좋은 점</CardTitle>
-                  <CardList>
+                  <S.CardTitle>좋은 점</S.CardTitle>
+                  <S.CardList>
                     {feedback.content.positivePoints.map((point, index) => (
-                      <CardListItem key={index}>{point}</CardListItem>
+                      <S.CardListItem key={index}>{point}</S.CardListItem>
                     ))}
-                  </CardList>
+                  </S.CardList>
                 </div>
               )}
               {feedback.content.pointsForImprovement.length > 0 && (
                 <div>
-                  <CardTitle>개선 점</CardTitle>
-                  <CardList>
+                  <S.CardTitle>개선 점</S.CardTitle>
+                  <S.CardList>
                     {feedback.content.pointsForImprovement.map((point, index) => (
-                      <CardListItem key={index}>{point}</CardListItem>
+                      <S.CardListItem key={index}>{point}</S.CardListItem>
                     ))}
-                  </CardList>
+                  </S.CardList>
                 </div>
               )}
-            </AIFeedbackWrapper>
+            </S.AIFeedbackWrapper>
           )}
         </Card>
-      </SectionContainer>
+      </S.SectionContainer>
 
-      <FeedbackMemo id={id} memo={data?.memo} />
+      <S.SectionContainer>
+        <S.Title>메모</S.Title>
+        <Card>
+          <S.MemoCardContent>
+            <S.MemoTextArea
+              value={memoContent}
+              onChange={(e) => setMemoContent(e.target.value)}
+              placeholder="메모를 작성해주세요."
+            />
+            <S.MemoSaveButton type="button" onClick={handleSaveMemo} disabled={false}>
+              메모 저장
+            </S.MemoSaveButton>
+          </S.MemoCardContent>
+        </Card>
+      </S.SectionContainer>
 
-      {/* TODO: 테스트 해보기(창목) */}
-      {!feedback?.followUp && (
-        <QButton
-          onClick={handleRequestFollowUp}
-          disabled={followedQLoading || followUpQuestion !== null}
-        >
-          {followUpQuestion === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
-        </QButton>
-      )}
+      <S.QButton type="button" onClick={handleRequestFollowUp} disabled={followedQLoading}>
+        {followedQ === null ? '꼬리 질문 생성' : '꼬리 질문이 생성 되었습니다'}
+      </S.QButton>
 
       <SharedButton type="button" onClick={handleModalClick} disabled={false}>
         아카이브로 이동
@@ -266,199 +326,8 @@ const FeedbackPage = () => {
           onSave={handleLevelSaveAndNavigate}
         />
       )}
-    </Wrapper>
+    </S.Wrapper>
   );
 };
-
-const SectionContainer = styled.section`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-`;
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 60px;
-
-  @media (max-width: 768px) {
-    gap: 32px;
-    width: 100%;
-    padding: 0 16px;
-    box-sizing: border-box;
-  }
-`;
-
-const Title = styled.h2`
-  font-size: ${({ theme }) => theme.typography.fontSizes.h2};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.black};
-  margin-bottom: ${({ theme }) => theme.space.space24};
-
-  @media (max-width: 768px) {
-    font-size: ${({ theme }) => theme.typography.fontSizes.h3};
-    margin-bottom: ${({ theme }) => theme.space.space16};
-  }
-`;
-
-const QuestionText = styled.h1`
-  padding: ${({ theme }) => theme.space.space40} ${({ theme }) => theme.space.space32};
-  font-size: ${({ theme }) => theme.typography.fontSizes.h1};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-
-  @media (max-width: 768px) {
-    padding: ${({ theme }) => theme.space.space24} 0;
-    font-size: ${({ theme }) => theme.typography.fontSizes.h2};
-  }
-`;
-
-const CardParagraph = styled.p`
-  font-size: ${({ theme }) => theme.typography.fontSizes.body};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.8;
-  &:not(:last-child) {
-    margin-bottom: 1.5em;
-  }
-
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  //띄어쓰기 기준으로 줄바꿈
-  white-space: normal;
-  //강제 줄바꿈
-  word-break: break-all;
-
-  @media (max-width: 768px) {
-    font-size: ${({ theme }) => theme.typography.fontSizes.small};
-    line-height: 1.7;
-  }
-`;
-
-const CardTitle = styled.h3`
-  font-size: ${({ theme }) => theme.typography.fontSizes.h3};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: ${({ theme }) => theme.space.space20};
-  text-align: center;
-
-  @media (max-width: 768px) {
-    font-size: ${({ theme }) => theme.typography.fontSizes.body};
-    margin-bottom: ${({ theme }) => theme.space.space12};
-  }
-`;
-
-const CardList = styled.ul`
-  list-style-position: outside;
-  padding-left: ${({ theme }) => theme.space.space20};
-  //text-align: left;
-
-  @media (max-width: 768px) {
-    padding-left: ${({ theme }) => theme.space.space16};
-  }
-`;
-
-const CardListItem = styled.li`
-  font-size: ${({ theme }) => theme.typography.fontSizes.body};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.8;
-  &:not(:last-child) {
-    margin-bottom: ${({ theme }) => theme.space.space16};
-  }
-
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-
-  @media (max-width: 768px) {
-    font-size: ${({ theme }) => theme.typography.fontSizes.small};
-    line-height: 1.7;
-    &:not(:last-child) {
-      margin-bottom: ${({ theme }) => theme.space.space12};
-    }
-  }
-`;
-
-const FilterWrapper = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.space.space8};
-
-  width: auto;
-  height: auto;
-  padding: ${({ theme }) => theme.space.space8} ${({ theme }) => theme.space.space12};
-  font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
-
-  background-color: rgba(255, 255, 255, 0.4);
-  backdrop-filter: ${({ theme }) => theme.blurs.blur4};
-  border-radius: ${({ theme }) => theme.radius.radius24};
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-`;
-
-const InfoWrapper = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.space.space16};
-  align-items: center;
-  justify-content: center;
-`;
-
-const AIFeedbackWrapper = styled.div`
-  display: flex;
-  flex-direction: column; /* ◀ 1. "좋은 점" 그룹과 "개선할 점" 그룹을 세로로 쌓음 */
-  width: 100%;
-  /* height: 100%; */
-  padding: ${({ theme }) => theme.space.space24};
-  box-sizing: border-box;
-
-  gap: ${({ theme }) => theme.space.space24};
-`;
-
-const LottieWrapper = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 170px;
-  height: auto;
-  pointer-events: none;
-`;
-
-const QButton = styled.button`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-
-  width: 160px;
-  height: 40px;
-
-  font-weight: 700;
-  font-size: 18px;
-
-  color: rgb(0, 0, 0);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 142, 142, 0.4);
-  border-radius: 8px;
-
-  &:hover:not(:disabled) {
-    //background: ${({ theme }) => theme.colors.pointCoral || '#ffffff'};
-    opacity: 0.9;
-    //transform: translateY(-1px);
-    //box-shadow: 0 4px 12px rgba(255, 142, 142, 0.4);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(255, 142, 142, 0.3);
-  }
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
 
 export default FeedbackPage;
