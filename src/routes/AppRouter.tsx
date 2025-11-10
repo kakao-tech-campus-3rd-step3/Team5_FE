@@ -30,7 +30,7 @@ const AppRouter = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return !!localStorage.getItem(ACCESS_TOKEN_KEY);
   });
-  const [isJobSelected, setIsJobSelected] = useState<boolean>(() => {
+  const [, setIsJobSelected] = useState<boolean>(() => {
     return localStorage.getItem('isJobSelected') === 'true';
   });
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -129,17 +129,27 @@ const AppRouter = () => {
           window.history.replaceState({}, '', window.location.pathname);
         }
 
-        localStorage.setItem('isJobSelected', 'false');
-        setIsJobSelected(false); // state도 업데이트
+        const userInfoString = localStorage.getItem('userInfo');
+        const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
+        const hasJobSelected = userInfo && userInfo.job && userInfo.job.main && userInfo.job.sub;
 
-        // 인증 상태 업데이트 및 홈으로 이동
+        if (!hasJobSelected) {
+          localStorage.setItem('isJobSelected', 'false');
+          setIsJobSelected(false); // state도 업데이트
+          if (location.pathname !== ROUTE_PATH.JOBSELECT) {
+            navigate(ROUTE_PATH.JOBSELECT, { replace: true });
+          }
+        } else {
+          setIsJobSelected(true);
+          if (location.pathname === ROUTE_PATH.LOGIN || location.pathname === ROUTE_PATH.LOGIN_OAUTH) {
+            navigate(ROUTE_PATH.HOME, { replace: true });
+          }
+        }
+
+        // 인증 상태 업데이트
         setIsAuthenticated(true);
         setIsCheckingAuth(false);
 
-        // 홈이 아닌 경우에만 이동
-        if (location.pathname !== ROUTE_PATH.HOME) {
-          navigate(ROUTE_PATH.JOBSELECT, { replace: true });
-        }
         return;
       }
 
@@ -162,11 +172,13 @@ const AppRouter = () => {
       // 액세스 토큰이 있으면 인증 상태 업데이트
       if (accessToken) {
         setIsAuthenticated(true);
-        //const isJobSelected = false; // <-- (임시) 실제로는 API로 확인해야 함
-        const currentJobSelected = localStorage.getItem('isJobSelected') === 'true';
-        setIsJobSelected(currentJobSelected);
+        const userInfoString = localStorage.getItem('userInfo');
+        const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
+        const hasJobSelected = userInfo && userInfo.job && userInfo.job.main && userInfo.job.sub;
 
-        if (!isJobSelected && location.pathname !== ROUTE_PATH.JOBSELECT) {
+        setIsJobSelected(hasJobSelected);
+
+        if (!hasJobSelected && location.pathname !== ROUTE_PATH.JOBSELECT) {
           console.warn('⚠️ [기존 로그인] 직업 선택이 필요합니다. 직업 선택 페이지로 이동합니다.');
           navigate(ROUTE_PATH.JOBSELECT, { replace: true });
         }
@@ -184,7 +196,7 @@ const AppRouter = () => {
         const currentJobSelected = localStorage.getItem('isJobSelected') === 'true';
         setIsJobSelected(currentJobSelected); // 13. state에도 반영
 
-        if (!isJobSelected && location.pathname !== ROUTE_PATH.JOBSELECT) {
+        if (!currentJobSelected && location.pathname !== ROUTE_PATH.JOBSELECT) {
           console.warn('⚠️ [토큰 갱신] 직업 선택이 필요합니다. 직업 선택 페이지로 이동합니다.');
           navigate(ROUTE_PATH.JOBSELECT, { replace: true });
         }

@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 import useFetch from '../../shared/hooks/useFetch';
 
 import StreakSection from './StreakSection';
+import FeedbackBoundary from '../../shared/components/Feedback/FeedbackBoundary';
 
 export interface DailySolveCount {
   date: string;
@@ -33,43 +34,40 @@ const MyPage = () => {
 
   const { data } = useFetch<UserSummary>(profileApiUrl);
 
-  const getTodayString = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  };
-
-  const todayString = getTodayString();
-  const todayData = data?.dailySolveCounts?.find((d) => d.date === todayString);
-  const todayCount = todayData?.count || 0;
-
   if (!data) {
     return null;
   }
   return (
     <Wrapper>
-      <SearchBar placeholder="🔍" />
-
       <ProfileCard>
         <ProfileIcon>👤</ProfileIcon>
         <ProfileInfo>
+          <FeedbackBoundary data={data?.streak}>
           <Nickname>{data?.name}</Nickname>
-          <div>{todayCount} 개</div>
+          </FeedbackBoundary>
         </ProfileInfo>
       </ProfileCard>
 
       <StatsContainer>
         <StatCard>
           <StatLabel>현재 스트릭</StatLabel>
-          <StatContent>{data?.streak} days +</StatContent>
+          <FeedbackBoundary data={data?.streak}>
+            <StatContent>{data?.streak} days +</StatContent>
+          </FeedbackBoundary>
         </StatCard>
         <StatCard>
           <StatLabel>답변한 질문 개수</StatLabel>
-          <StatContent>{data?.totalAnswerCount}</StatContent>
+          <FeedbackBoundary data={data?.totalAnswerCount}>
+            <StatContent>{data?.totalAnswerCount}</StatContent>
+          </FeedbackBoundary>
         </StatCard>
       </StatsContainer>
 
       <StreakCard>
-        <StreakSection data={data} />
+        {/* UserSummary */}
+        <FeedbackBoundary data={data?.totalAnswerCount}>
+          <StreakSection data={data} />
+        </FeedbackBoundary>
       </StreakCard>
 
       <CheerButton type="button">응원하기</CheerButton>
@@ -87,19 +85,6 @@ const Wrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 24px;
-`;
-
-const SearchBar = styled.input`
-  width: 100%;
-  max-width: 400px;
-  padding: 12px 16px;
-  border-radius: 100px;
-  border: 1px solid rgb(117, 117, 117);
-  font-size: 1rem;
-
-  &::placeholder {
-    color: hsl(0, 0%, 0%);
-  }
 `;
 
 const cardBaseStyles = css`

@@ -3,14 +3,15 @@ import Lottie from 'lottie-react';
 
 import LoadingAnimation from '../../../assets/lottie/loading3.json';
 import type { Feedback } from '../../../pages/FeedbackDetail/FeedbackDetail';
+import type { UserSummary } from '../../../pages/MyPage/StreakSection';
 
 interface FeedbackBoundaryProps {
-  data: Feedback | string | undefined;
+  data: Feedback | string | number | UserSummary | undefined;
   children: React.ReactNode;
 }
 
 const FeedbackBoundary = ({ data, children }: FeedbackBoundaryProps) => {
-  const isLoading = !data;
+  const isLoading = data === null || data === undefined;
 
   if (isLoading) {
     return (

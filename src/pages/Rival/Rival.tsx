@@ -109,26 +109,35 @@ const RivalPage = () => {
             <ModalHeader>
               <ModalAvatar>👤</ModalAvatar>
               <ModalTitle>{modalProfile.name}</ModalTitle>
-              <ModalSubtitle>{modalProfile.email}</ModalSubtitle>
+              <ModalSubtitle>{modalSearchResult?.email ?? '이메일 정보 없음'}</ModalSubtitle>
             </ModalHeader>
             <ModalBody>
               <ModalInfoRow>
-                <InfoLabel>한줄소개</InfoLabel>
-                <InfoValue>{modalProfile.intro || '소개가 아직 없어요.'}</InfoValue>
-              </ModalInfoRow>
-              <ModalInfoRow>
                 <InfoLabel>연속 참여</InfoLabel>
-                <InfoValue>{modalProfile.dailyQDays || 0}일</InfoValue>
+                <InfoValue>{modalProfile.streak ?? 0}일</InfoValue>
               </ModalInfoRow>
               <ModalInfoRow>
                 <InfoLabel>답변 수</InfoLabel>
-                <InfoValue>{modalProfile.answeredQuestions || 0}개</InfoValue>
+                <InfoValue>{modalProfile.totalAnswerCount ?? 0}개</InfoValue>
               </ModalInfoRow>
+              {modalProfile.dailySolveCounts && modalProfile.dailySolveCounts.length > 0 && (
+                <SolveCountHint>
+                  최근 {modalProfile.dailySolveCounts[0]?.date}에{' '}
+                  {modalProfile.dailySolveCounts[0]?.count ?? 0}개 해결
+                </SolveCountHint>
+              )}
+              {modalProfile.isMe && (
+                <ModalMessage>내 프로필입니다. 라이벌 등록은 비활성화됩니다.</ModalMessage>
+              )}
               {modalError && <ModalError>{modalError}</ModalError>}
               {modalMessage && <ModalMessage>{modalMessage}</ModalMessage>}
             </ModalBody>
             <ModalActions>
-              <PrimaryModalButton type="button" disabled={isAddingRival} onClick={handleAddRival}>
+              <PrimaryModalButton
+                type="button"
+                disabled={isAddingRival || modalProfile.isMe}
+                onClick={handleAddRival}
+              >
                 {isAddingRival ? '등록 중...' : '라이벌로 등록'}
               </PrimaryModalButton>
             </ModalActions>
@@ -437,6 +446,13 @@ const InfoValue = styled.span`
   color: #333;
   font-weight: 600;
   text-align: right;
+`;
+
+const SolveCountHint = styled.p`
+  margin: 12px 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  text-align: center;
 `;
 
 const ModalError = styled.p`

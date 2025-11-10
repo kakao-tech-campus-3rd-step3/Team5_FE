@@ -149,7 +149,7 @@ const HomePage = () => {
         </GridWrapper>
         <ContentCard>
           <span>DailyQ 모의 면접</span>
-          <GlassBackground>질문을 모두 소진하셨습니다</GlassBackground>
+          <GlassBackground>다음날 오전 9시에 새로운 질문이 생성됩니다</GlassBackground>
         </ContentCard>
       </Wrapper>
     );
@@ -222,16 +222,17 @@ const Wrapper = styled.div`
   }
 
   &::after {
-    content: '';
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(245, 158, 11, 0.3));
-    bottom: -10%;
-    right: -10%;
-    filter: blur(100px);
-    z-index: 0;
+    display: none;
+    // content: '';
+    // position: absolute;
+    // width: 300px;
+    // height: 300px;
+    // border-radius: 50%;
+    // background: linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(245, 158, 11, 0.3));
+    // bottom: -10%;
+    // right: -10%;
+    // filter: blur(100px);
+    // z-index: 0;
   }
 `;
 

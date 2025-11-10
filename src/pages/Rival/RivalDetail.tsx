@@ -22,15 +22,6 @@ const RivalDetail = () => {
   const { userId } = useParams<{ userId: string }>();
   const { data } = useFetch<UserSummary>(`/api/rivals/${userId}/profile`);
 
-  const getTodayString = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  };
-
-  const todayString = getTodayString();
-  const todayData = data?.dailySolveCounts?.find((d) => d.date === todayString);
-  const todayCount = todayData?.count || 0;
-
   if (!data) {
     return null;
   }
@@ -42,7 +33,6 @@ const RivalDetail = () => {
         <ProfileIcon>👤</ProfileIcon>
         <ProfileInfo>
           <Nickname>{data?.name}</Nickname>
-          <div>{todayCount} 개</div>
         </ProfileInfo>
       </ProfileCard>
 
@@ -71,7 +61,7 @@ export default RivalDetail;
 const Wrapper = styled.div`
   min-height: 100vh;
   padding: 24px;
-  padding-bottom: calc(24px + 65px + 20px); /* 네비게이션 바 높이(65px) + 여유 공간(20px) */
+  padding-bottom: calc(24px + 65px + 20px);
   display: flex;
   flex-direction: column;
   align-items: center;

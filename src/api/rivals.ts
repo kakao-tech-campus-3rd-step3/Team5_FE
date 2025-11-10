@@ -8,13 +8,17 @@ export interface RivalSearchResponse {
 }
 
 // 프로필 응답 타입
+export interface DailySolveCount {
+  date: string;
+  count: number;
+}
+
 export interface RivalProfileResponse {
-  userId: number;
-  email: string;
   name: string;
-  intro?: string;
-  dailyQDays?: number;
-  answeredQuestions?: number;
+  streak: number;
+  totalAnswerCount: number;
+  dailySolveCounts?: DailySolveCount[];
+  isMe: boolean;
 }
 
 // 팔로잉/팔로워 목록 아이템

@@ -82,6 +82,7 @@ const SectionFirst = styled.section`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  touch-action: pan-y;
 `;
 
 const SectionSecond = styled.section`
@@ -101,6 +102,10 @@ const ButtonWrapper = styled.div`
   bottom: 110px;
   left: 50%;
   transform: translate(-50%, -50%);
+
+  @media (max-width: 768px) {
+    bottom: 170px;
+  }
 `;
 
 const ScrollButton = styled.button`
