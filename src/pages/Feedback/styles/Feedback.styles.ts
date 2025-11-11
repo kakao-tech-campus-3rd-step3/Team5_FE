@@ -195,7 +195,7 @@ export const LottieWrapper = styled.div`
   pointer-events: none;
 `;
 
-export const QButton = styled(SharedButton)`
+export const QButton = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
