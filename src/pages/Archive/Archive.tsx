@@ -83,6 +83,11 @@ const SectionFirst = styled.section`
   align-items: center;
   justify-content: center;
   touch-action: pan-y;
+
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 `;
 
 const SectionSecond = styled.section`
