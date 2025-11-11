@@ -71,7 +71,7 @@ interface IFollowUpResponse {
 }
 
 const FeedbackPage = () => {
-  const { id, data, feedback, question, isLoading } = useAnswers();
+  const { id, data, feedback, question } = useAnswers();
 
   const { patchData } = usePatch<AnswerPayload, AnswerPayload>(id ? `/api/answers/${id}` : '');
 
@@ -128,16 +128,6 @@ const FeedbackPage = () => {
     patchData,
   });
 
-  if (isLoading || !id) {
-    return (
-      <S.Wrapper>
-        <S.LottieWrapper>
-          <Lottie animationData={LoadingAnimation} loop autoplay />
-        </S.LottieWrapper>
-      </S.Wrapper>
-    );
-  }
-
   return (
     <S.Wrapper>
       <S.SectionContainer>
@@ -156,7 +146,13 @@ const FeedbackPage = () => {
       <S.SectionContainer>
         <S.Title>나의 답변</S.Title>
         <Card>
-          <S.CardParagraph>{data?.answerText}</S.CardParagraph>
+          {!data ? (
+            <S.LottieWrapper>
+              <Lottie animationData={LoadingAnimation} loop autoplay />
+            </S.LottieWrapper>
+          ) : (
+            <S.CardParagraph>{data.answerText}</S.CardParagraph>
+          )}
         </Card>
       </S.SectionContainer>
 
