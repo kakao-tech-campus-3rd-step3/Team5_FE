@@ -43,7 +43,7 @@ const MyPage = () => {
         <ProfileIcon>👤</ProfileIcon>
         <ProfileInfo>
           <FeedbackBoundary data={data?.streak}>
-          <Nickname>{data?.name}</Nickname>
+            <Nickname>{data?.name}</Nickname>
           </FeedbackBoundary>
         </ProfileInfo>
       </ProfileCard>
